@@ -1,0 +1,50 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+	 xmlns:rddl="http://rddl.org/"
+	 xmlns:xr="http://xmlresolver.org/ns/catalog"
+         prefer="system">
+
+  <xr:testCase method="lookupPublic"
+	       publicId="public-identifier-1"
+	       expected="http://example.com/resource-1-public"/>
+
+  <public publicId="public-identifier-1"
+	  uri="http://example.com/resource-1-public"/>
+
+  <xr:testCase method="lookupPublic"
+	       systemId="system-identifier-2"
+	       expected="http://example.com/resource-2-system"/>
+
+  <system systemId="system-identifier-2"
+	  uri="http://example.com/resource-2-system"/>
+
+  <xr:testCase method="lookupPublic"
+	       publicId="public-identifier-3"
+	       systemId="system-identifier-3"
+	       expected="http://example.com/resource-3-system"/>
+
+  <public publicId="public-identifier-3"
+	  uri="http://example.com/resource-3-public"/>
+
+  <system systemId="system-identifier-3"
+	  uri="http://example.com/resource-3-system"/>
+
+  <xr:testCase method="lookupPublic"
+	       publicId="public-identifier-4"
+	       systemId="system-identifier-4"
+	       expected="http://example.com/resource-4-system"/>
+
+  <system systemId="system-identifier-4"
+	  uri="http://example.com/resource-4-system"/>
+
+  <xr:testCase method="lookupPublic"
+	       publicId="public-identifier-5"
+	       systemId="system-identifier-5"
+	       expected="http://example.com/resource-5-system"/>
+
+  <public publicId="public-identifier-5"
+	  uri="http://example.com/resource-5-public"/>
+
+  <system systemId="system-identifier-5"
+	  uri="http://example.com/resource-5-system"/>
+
+</catalog>

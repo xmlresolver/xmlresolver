@@ -1,0 +1,2 @@
+<!ELEMENT doc (p+)>
+<!ELEMENT p (#PCDATA)*>

@@ -1,0 +1,12 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+	 xmlns:rddl="http://rddl.org/"
+	 xmlns:xr="http://xmlresolver.org/ns/catalog"
+         prefer="public">
+
+  <public publicId="-//Example//DTD PI Document//EN"
+	  uri="doc.dtd"/>
+
+  <system systemId="pi.dtd"
+	  uri="doc.dtd"/>
+
+</catalog>

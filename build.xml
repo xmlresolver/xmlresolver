@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="xmlresolver" default="default" basedir=".">
+  <description>Builds the distribution jar because IntelliJ sucks at it</description>
+
+  <property file="resources/etc/vendor.properties"/>
+  <property file="resources/etc/version.properties"/>
+
+  <property name="version" value="${version.major}.${version.minor}.${version.release}"/>
+  <property name="dist.dir" value="dist"/>
+  <property name="install.dir" value="${dist.dir}/xmlresolver-${version}"/>
+  <property name="build.dir" value="out/production/Xmlresolver"/>
+
+  <path id="build.classpath">
+    <fileset dir="lib">
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="default" depends="jar"/>
+
+  <target name="init"/>
+
+  <target name="jar" depends="compile">
+    <jar destfile="xmlresolver.jar">
+      <manifest>
+	<attribute name="Built-By" value="${built.by}"/>
+	<attribute name="Implementation-Vendor" value="${implementation.vendor}"/>
+	<attribute name="Implementation-Title" value="${implementation.title}"/>
+	<attribute name="Implementation-Version" value="${version}"/>
+      </manifest>
+
+      <fileset dir="${build.dir}"/>
+    </jar>
+  </target>
+
+  <target name="clean" depends="init">
+    <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
+  </target>
+
+  <target name="distclean" depends="init">
+    <delete dir="${dist.dir}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <mkdir dir="${build.dir}"/>
+    <javac destdir="${build.dir}"
+	   classpathref="build.classpath"
+           includeantruntime="false">
+      <src path="src"/>
+    </javac>
+  </target>
+
+  <target name="dist" depends="jar">
+    <mkdir dir="${install.dir}"/>
+    <mkdir dir="${install.dir}/docs"/>
+    <copy todir="${install.dir}/docs">
+      <fileset file="docs/LICENSE"/>
+      <fileset file="docs/**txt"/>
+    </copy>
+    <copy todir="${install.dir}">
+      <fileset file="README"/>
+    </copy>
+    <jar destfile="${install.dir}/xmlresolver.jar">
+      <manifest>
+        <attribute name="Built-By" value="${built.by}"/>
+        <attribute name="Implementation-Vendor" value="${implementation.vendor}"/>
+        <attribute name="Implementation-Title" value="${implementation.title}"/>
+        <attribute name="Implementation-Version" value="${version}"/>
+      </manifest>
+
+      <fileset dir="${build.dir}"/>
+    </jar>
+
+    <echo file="${install.dir}/VERSION">${version}</echo>
+
+    <zip destfile="${dist.dir}/xmlresolver-${version}.zip"
+         basedir="${dist.dir}"
+         includes="xmlresolver-${version}/**"/>
+  </target>
+</project>

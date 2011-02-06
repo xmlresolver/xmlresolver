@@ -1,0 +1,9 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+	 xmlns:rddl="http://rddl.org/"
+	 xmlns:xr="http://xmlresolver.org/ns/catalog"
+         prefer="public">
+
+  <uri name="http://www.w3.org/2001/XMLSchema"
+       uri="wxsns.html"/>
+
+</catalog>
