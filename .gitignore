@@ -1,6 +1,6 @@
-out
-XMLResolver.ipr
-XMLResolver.iws
+*~
+.idea
 Xmlresolver.iml
 dist
+out
 xmlresolver.jar
