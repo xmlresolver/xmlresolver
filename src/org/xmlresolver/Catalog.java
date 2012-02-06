@@ -71,11 +71,6 @@ import org.xmlresolver.helpers.URIUtils;
  * no caching is performed. The directory specified must be writable by the application.
  * The default is not to cache.
  * </dd>
- * <dt><code>verbosity</code> (system property <code>xml.catalog.verbosity</code>)</dt>
- * <dd>Specifies the initial "verbosity" of the resolver. The resolver uses the
- * <code>java.util.logging</code> framework. The <code>verbosity</code> should be
- * set to one of the logging values. The default is "<code>info</code>".
- * </dd>
  * <dt><code>catalogs</code> (system property <code>xml.catalog.files</code>)</dt>
  * <dd>A semi-colon delimited list of catalog files. Each of these files will be
  * loaded, in turn and as necessary, when searching for entries. Additional files
@@ -118,7 +113,6 @@ public class Catalog {
     private Vector<String> catalogList = null;
     private Vector<Document> documentList = null;
     private ResourceCache cache = null;
-    private int verbosity = 0;
 
     /** Creates a catalog using properties read from the default property file.
      *
@@ -200,8 +194,6 @@ public class Catalog {
             }
         }
 
-        setVerbosity(queryVerbosity());
-        
         if (catalogFiles == null || catalogFiles.size() == 0) {
             catalogFiles = queryCatalogFiles();
         }
@@ -271,57 +263,6 @@ public class Catalog {
         return cacheDir;
     }
 
-    private int queryVerbosity() {
-        String verb = System.getProperty("xml.catalog.verbosity");
-
-        if (verb == null && resources != null) {
-            try {
-                verb = resources.getString("verbosity");
-            } catch (MissingResourceException e) {
-                verb = null;
-            }
-        }
-
-        return convertVerbosityString(verb);
-    }
-    
-    private int convertVerbosityString(String verb) {
-        int v = verbosity;
-        
-        if (verb == null) {
-            return v;
-        }
-        
-        // Support the Java logger values
-        if (verb.equalsIgnoreCase("severe")) {
-            v = 1;
-        } else if (verb.equalsIgnoreCase("warning") || verb.equalsIgnoreCase("warn")) {
-            v = 2;
-        } else if (verb.equalsIgnoreCase("info")) {
-            v = 3;
-        } else if (verb.equalsIgnoreCase("config")) {
-            v = 4;
-        } else if (verb.equalsIgnoreCase("fine")) {
-            v = 5;
-        } else if (verb.equalsIgnoreCase("finer")) {
-            v = 6;
-        } else if (verb.equalsIgnoreCase("finest")) {
-            v = 7;
-        } else if (verb.equalsIgnoreCase("all")) {
-            v = 8;
-        } else if (verb.equalsIgnoreCase("off")) {
-            v = 0;
-        } else {
-            try {
-                v = Integer.parseInt(verb);
-            } catch (NumberFormatException nfe) {
-                // nop
-            }
-        }
-        
-        return v;
-    }
-    
     private Vector<String> queryCatalogFiles() {
         String catalogList = System.getProperty("xml.catalog.files");
         boolean fromPropertiesFile = false;
@@ -415,54 +356,6 @@ public class Catalog {
     /** Returns the resource cache associated with this catalog, if there is one. */
     public ResourceCache cache() {
         return cache;
-    }
-
-    /** Returns the verbosity level. */
-    public int getVerbosity() {
-        return verbosity;
-    }
-
-    /** Sets the verbosity level.
-     *
-     * <p>A level of 0 turns off logging, levels 1 through 8 select progressively more
-     * verbose levels of logging. Level 1 corresponds to <code>java.util.logging.Level.SEVERE</code>,
-     * 2 to <code>java.util.logging.Level.WARNING</code>, etc. Any other value has no effect on the
-     * curent setting.
-     *
-     * <p>The default verbosity is "0".</p>
-     *
-     * @param verbosity The desired verbosity.
-     */
-    public void setVerbosity(int verbosity) {
-        this.verbosity = verbosity;
-        switch (verbosity) {
-            case 0: logger.setLevel(Level.OFF); break;
-            case 1: logger.setLevel(Level.SEVERE); break;
-            case 2: logger.setLevel(Level.WARNING); break;
-            case 3: logger.setLevel(Level.INFO); break;
-            case 4: logger.setLevel(Level.CONFIG); break;
-            case 5: logger.setLevel(Level.FINE); break;
-            case 6: logger.setLevel(Level.FINER); break;
-            case 7: logger.setLevel(Level.FINEST); break;
-            default: logger.setLevel(Level.ALL); break;
-        }
-    }
-
-    /** Sets the verbosity level.
-     *
-     * <p>The strings "OFF", "SEVERE", "WARNING" (or "WARN"), "INFO", "CONFIG",
-     * "FINE", "FINER", "FINEST", and "ALL" are recognized, irrespective of case.
-     * verbose levels of logging. Level 1 corresponds to <code>java.util.logging.Level.SEVERE</code>,
-     * 2 to <code>java.util.logging.Level.WARNING</code>, etc. The strings "0" through "8" are also
-     * recognized. Any other value has no effect on the
-     * current setting.</p>
-     *
-     * <p>The default verbosity is "OFF".</p>
-     *
-     * @param verbosity The desired verbosity.
-     */
-    public void setVerbosity(String verbosity) { 
-        setVerbosity(convertVerbosityString(verbosity));
     }
 
     /** Checks if the specified URI scheme is cached.
