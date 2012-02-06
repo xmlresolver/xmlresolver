@@ -40,11 +40,32 @@ import org.apache.commons.httpclient.methods.GetMethod;
  */
 public class ResourceResolver {
     private static Logger logger = Logger.getLogger("org.xmlresolver");
+
+    // the static catalog is initialized lazily. Maybe it is not neede.
     private static Catalog staticCatalog = null;
+    
     private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     private static DocumentBuilder builder = null;
+    
+    static {
+      factory.setNamespaceAware(true);
+      factory.setValidating(false);
+      try {
+        builder = factory.newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        // nop
+      }
+    }
+    
     private Catalog catalog = null;
     private ResourceCache cache = null;
+    
+    private static synchronized Catalog getStaticCatalog() {
+      if (staticCatalog == null) {
+        staticCatalog = new Catalog();
+      }
+      return staticCatalog;
+    }
     
     /**
      * Creates a new instance of ResourceResolver.
@@ -52,10 +73,7 @@ public class ResourceResolver {
      * <p>By default, a static catalog initialized using the default properties is used by all ResourceResolvers.</p>
      */
     public ResourceResolver() {
-        if (staticCatalog == null) {
-            staticCatalog = new Catalog();
-        }
-        init(staticCatalog);
+        init(getStaticCatalog());
     }
 
     /**
@@ -86,18 +104,6 @@ public class ResourceResolver {
     private void init(Catalog catalog) {
         this.catalog = catalog;
         cache = catalog.cache();
-
-        synchronized (factory) {
-            factory.setNamespaceAware(true);
-            factory.setValidating(false);
-            if (builder == null) {
-                try {
-                    builder = factory.newDocumentBuilder();
-                } catch (ParserConfigurationException pce) {
-                    builder = null;
-                }
-            }
-        }
     }
 
     /** Returns the {@link Catalog} used by this ResourceResolver. */
@@ -415,7 +421,10 @@ public class ResourceResolver {
         String rddlURI = null;
 
         try {
-            Document doc = builder.parse(nsResult.uri());
+            Document doc;
+            synchronized (builder) {
+              doc = builder.parse(nsResult.uri());
+            }
             NodeList rsrcs = doc.getElementsByTagNameNS(Catalog.NS_RDDL, "resource");
             for (int pos = 0; rddlURI == null && pos < rsrcs.getLength(); pos++) {
                 Element rsrc = (Element) rsrcs.item(pos);

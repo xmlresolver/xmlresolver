@@ -9,34 +9,13 @@
 
 package org.xmlresolver;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.acl.Group;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 import org.xmlresolver.helpers.DOMUtils;
-import org.xmlresolver.helpers.FileURI;
 import org.xmlresolver.helpers.PublicId;
 import org.xmlresolver.helpers.URIUtils;
 
@@ -70,6 +49,10 @@ import org.xmlresolver.helpers.URIUtils;
  * <dd>Identifies a directory where caching will be performed. If not specified,
  * no caching is performed. The directory specified must be writable by the application.
  * The default is not to cache.
+ * </dd>
+ * <dt><code>cacheUnderHome</code> (system property <code>xml.catalog.cacheUnderHome</code>)</dt>
+ * <dd>If set to "true/yes/1" and no cache directory was specified then the cache
+ * directory "&lt;home&gt;/.xmlresolver/cache" is used.
  * </dd>
  * <dt><code>catalogs</code> (system property <code>xml.catalog.files</code>)</dt>
  * <dd>A semi-colon delimited list of catalog files. Each of these files will be
@@ -105,13 +88,19 @@ public class Catalog {
     /** The XML Namespace name of XML Resolver Catalog extensions, "http://xmlresolver.org/ns/catalog". */
     public static final String NS_XMLRESOURCE_EXT = "http://xmlresolver.org/ns/catalog";
     
-    private static Logger logger = Logger.getLogger("org.xmlresolver");
-    private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    private String propertyFile = null;
-    private URL propertyFileURI = null;
-    private ResourceBundle resources = null;
-    private Vector<String> catalogList = null;
-    private Vector<Document> documentList = null;
+    public static Logger logger = Logger.getLogger("org.xmlresolver");
+    
+    private static String defaultPropertiesFiles() {
+        // Yes, this is XMLResolver.properties even though the class is Catalog; that's because this
+        // is the XML Resolver project.
+        String propfile = System.getProperty("xmlresolver.properties");
+        return (propfile != null ? propfile + ";" : "") + "XMLResolver.properties;CatalogManager.properties";
+    }
+    
+    private Configuration conf;
+    
+    private Vector<CatalogSource> catalogList = new Vector<CatalogSource>();
+    private Vector<Document> documentList = new Vector<Document>();
     private ResourceCache cache = null;
 
     /** Creates a catalog using properties read from the default property file.
@@ -119,45 +108,18 @@ public class Catalog {
      * <p>The default property file is <code>XMLResolver.properties</code>.</p>
      */
     public Catalog() {
-        // Yes, this is XMLResolver.properties even though the class is Catalog; that's because this
-        // is the XML Resolver project.
-        String propfile = System.getProperty("xmlresolver.properties");
-        if (propfile != null) {
-            try {
-                InputStream in = new FileInputStream(new File(propfile));
-                if (in==null) {
-                    logger.warning("Cannot find "+propertyFile);
-                } else {
-                    resources = new PropertyResourceBundle(in);
-                    propertyFile = propfile;
-                }
-            } catch (MissingResourceException mre) {
-                logger.warning("Cannot read resources in "+propertyFile);
-            } catch (java.io.IOException e) {
-                logger.warning("I/O error reading "+propertyFile);
-            }
-        }
-
-        init("XMLResolver.properties;CatalogManager.properties", null);
+        this(defaultPropertiesFiles(), (String)null);
     }
     
     /** Creates a catalog using the specified list of catalog files.
      *
      * <p>Reads all other properties from the default property file, <code>XMLResolver.properties</code>.</p>
      *
-     * @param catalogList A semicolon delimited list of catalog files.
+     * @param catalogList A semicolon delimited list of catalog files. If {@code null} is specified then
+     * the default "./catalog.xml" is used.
      */
     public Catalog(String catalogList) {
-        Vector<String> catalogFiles = new Vector<String> ();
-        StringTokenizer tokens = new StringTokenizer(catalogList, ";");
-        while (tokens.hasMoreTokens()) {
-            String catalogFile = tokens.nextToken();
-            catalogFiles.add(catalogFile);
-        }
-
-        // Yes, this is XMLResolver.properties even though the class is Catalog; that's because this
-        // is the XML Resolver project.
-        init("XMLResolver.properties;CatalogManager.properties", catalogFiles);
+        this(defaultPropertiesFiles(), catalogList);
     }
 
     /** Creates a catalog using the specified property file and list of catalog files.
@@ -167,170 +129,31 @@ public class Catalog {
      * file that can be found is used. The list of property files must be delimited with semicolons (";").
      *
      * @param propertyFileList The name of one or more property files.
-     * @param catalogList A semicolon delimited list of catalog files.
+     * @param catalogList A semicolon delimited list of catalog files. If {@code null} is specified then
+     * the default "./catalog.xml" is used.
      */
     public Catalog(String propertyFileList, String catalogList) {
-        Vector<String> catalogFiles = new Vector<String> ();
-        if (catalogList != null) {
-            for (String catalogFile : catalogList.split(";")) {
-                catalogFiles.add(catalogFile);
-            }
-        }
-        init(propertyFileList, catalogFiles);
+      this(Configuration.create(propertyFileList), catalogList);
     }
     
-    private Catalog(ResourceBundle resources, Vector<String> catalogFiles) {
-        this.resources = resources;
-        init(null, catalogFiles);
+    public Catalog(Configuration conf, String catalogList) {
+        this(conf, createSources(conf, catalogList));
     }
     
-    private void init(String propertyFiles, Vector<String> catalogFiles) {
-        if (propertyFiles != null) {
-            String[] fileList = propertyFiles.split(";");
-            for (int pos = 0; pos < fileList.length && propertyFile == null; pos++) {
-                if (readProperties(fileList[pos])) {
-                    propertyFile = fileList[pos];
-                }
-            }
-        }
-
-        if (catalogFiles == null || catalogFiles.size() == 0) {
-            catalogFiles = queryCatalogFiles();
-        }
-        
-        catalogList = catalogFiles;
-        documentList = new Vector<Document> ();
-        
-        synchronized (factory) {
-            factory.setNamespaceAware(true);
-        }
-        
-        String cacheDir = queryCache();
-        if (cacheDir != null) {
+    public Catalog(Configuration conf, Vector<CatalogSource> catalogList) {
+      this.conf = conf;
+      this.catalogList = catalogList;
+      setCacheDir(conf.queryCache());
+    }
+    
+    public final void setCacheDir(String cacheDir) {
+        if (cacheDir != null && !cacheDir.equals("")) {
             cache = new ResourceCache(cacheDir);
+        } else {
+            cache = null;
         }
     }
 
-    private synchronized boolean readProperties(String propertyFile) {
-        try {
-            propertyFileURI = Catalog.class.getResource("/"+propertyFile);
-            InputStream in = Catalog.class.getResourceAsStream("/"+propertyFile);
-            if (in==null) {
-                logger.warning("Cannot find "+propertyFile);
-                return false;
-            }
-            resources = new PropertyResourceBundle(in);
-        } catch (MissingResourceException mre) {
-            logger.warning("Cannot read resources in "+propertyFile);
-            return false;
-        } catch (java.io.IOException e) {
-            logger.warning("I/O error reading "+propertyFile);
-            return false;
-        }
-      
-        return true;
-    }
-
-    private String queryCache() {
-        String cacheDir = System.getProperty("xml.catalog.cache");
-
-        if (cacheDir == null && resources != null) {
-            try {
-                cacheDir = resources.getString("cache");
-            } catch (MissingResourceException e) {
-                cacheDir = null;
-            }
-        }
-
-        if (cacheDir == null) {
-            // Let's see if we can find a reasonable default...
-            String home = System.getProperty("user.home");
-            
-            if (home != null && !"".equals(home)) {
-                String dir = home + "/.xmlresolver/cache";
-                File fDir = new File(dir);
-                if (!fDir.exists()) {
-                    fDir.mkdirs();
-                }
-                if (!fDir.exists() || !fDir.isDirectory()) {
-                    logger.warning("Could not create default cache directory: " + dir);
-                } else {
-                    cacheDir = dir;
-                }
-            }
-        }
-        
-        return cacheDir;
-    }
-
-    private Vector<String> queryCatalogFiles() {
-        String catalogList = System.getProperty("xml.catalog.files");
-        boolean fromPropertiesFile = false;
-        boolean relativeCatalogs = true;
-
-        if (resources != null) {
-            if (catalogList == null) {
-                try {
-                    catalogList = resources.getString("catalogs");
-                    fromPropertiesFile = true;
-                } catch (MissingResourceException e) {
-                    catalogList = null;
-                }
-            }
-
-            try {
-                String allow = resources.getString("relative-catalogs");
-                relativeCatalogs = (allow.equalsIgnoreCase("true")
-                                    || allow.equalsIgnoreCase("yes")
-                                    || allow.equalsIgnoreCase("1"));
-            } catch (MissingResourceException e) {
-                // nop;
-            }
-        }
-        
-        if (catalogList == null) {
-            catalogList = "./catalog.xml";
-        }
-        
-        Vector<String> catalogFiles = new Vector<String> ();
-        StringTokenizer tokens = new StringTokenizer(catalogList, ";");
-        while (tokens.hasMoreTokens()) {
-            String catalogFile = tokens.nextToken();
-            URL absURI = null;
-
-            if (fromPropertiesFile && !relativeCatalogs) {
-                try {
-                    absURI = new URL(propertyFileURI, catalogFile);
-                    catalogFile = absURI.toString();
-                } catch (MalformedURLException mue) {
-                    // nop
-                }
-            }
-
-            catalogFiles.add(catalogFile);
-        }
-
-        return catalogFiles;
-    }
-
-    private boolean queryPreferPublic() {
-        String prefer = System.getProperty("xml.catalog.prefer");
-
-        if (prefer == null) {
-            if (resources != null) {
-                try {
-                    prefer = resources.getString("prefer");
-                } catch (MissingResourceException e) {
-                    return true;
-                }
-            } else {
-                return true;
-            }
-        }
-        
-        return "public".equalsIgnoreCase(prefer);
-    }
-    
     // ======================================================================================================
     
     /** Returns the list of known catalog files.
@@ -339,11 +162,11 @@ public class Catalog {
      * Additional catalogs may be added to this list as <code>nextCatalog</code> entries
      * are processed. Note also that delegation replaces this list with a new list.</p>
      *
-     * @return A semicolon delimited list of knonw catalog files.
+     * @return A semicolon delimited list of known catalog files.
      */
     public String catalogList() {
         String list = "";
-        for (String catalog : catalogList) {
+        for (CatalogSource catalog : catalogList) {
             if (list.length() > 0) {
                 list = list + ";";
             }
@@ -371,26 +194,7 @@ public class Catalog {
      * @return true if and only if URIs in the requested scheme should be cached.
      */
     public boolean cacheSchemeURI(String scheme) {
-        if (scheme == null) {
-            return false;
-        }
-
-        String prop = System.getProperty("xml.catalog.cache."+scheme);
-
-        if (prop == null) {
-            if (resources != null) {
-                try {
-                    prop = resources.getString("cache-"+scheme+"-uri");
-                } catch (MissingResourceException e) {
-                    return !"file".equals(scheme);
-                }
-            } else {
-                return !"file".equals(scheme);
-            }
-        }
-        
-        return prop.equalsIgnoreCase("true") || prop.equalsIgnoreCase("yes") || prop.equalsIgnoreCase("1");
-
+      return conf.queryCacheSchemeURI(scheme);
     }
 
     private synchronized Document loadCatalog(int index) {
@@ -398,26 +202,10 @@ public class Catalog {
             return documentList.get(index);
         }
         
-        String catalog = catalogList.get(index);
+        CatalogSource catalog = catalogList.get(index);
 
-        DocumentBuilder builder = null;
-        Document doc = null;
+        Document doc = catalog.parse();
         
-        try {
-            builder = factory.newDocumentBuilder();
-            doc = builder.parse(catalog);
-        } catch (ParserConfigurationException pce) {
-            logger.warning("Parser configuration exception attempting to load " + catalog);
-            return null;
-        } catch (FileNotFoundException fnfe) {
-            // ignore this one
-            logger.finer("Catalog file not found: " + catalog);
-        } catch (IOException ex) {
-            logger.warning("I/O exception reading " + catalog + ": " + ex.toString());
-        } catch (SAXException ex) {
-            logger.warning("SAX exception reading " + catalog + ": " + ex.toString());
-        }
-
         while (documentList.size() <= index) {
             documentList.add(null);
         }
@@ -436,9 +224,9 @@ public class Catalog {
                         logger.finer("Next catalog: " + nextCat.getAttribute("catalog") + " (" + nextCatalog + ")");
                         
                         if (index+offset >= catalogList.size()) {
-                            catalogList.add(nextCatalog);
+                            catalogList.add(new CatalogSource.UriCatalogSource(nextCatalog));
                         } else {
-                            catalogList.insertElementAt(nextCatalog, index+offset);
+                            catalogList.insertElementAt(new CatalogSource.UriCatalogSource(nextCatalog), index+offset);
                         }
                         offset++;
                     }
@@ -625,7 +413,7 @@ public class Catalog {
         }
 
         if (!delegated.isEmpty()) {
-            Catalog dResolver = new Catalog(resources, delegated);
+            Catalog dResolver = new Catalog(conf, toCatalogSources(delegated));
             CatalogResult resolved = null;
             if (nature != null || purpose != null) {
                 resolved = dResolver.lookupNamespaceURI(uri, nature, purpose);
@@ -742,7 +530,7 @@ public class Catalog {
         // If there's a PUBLIC entry in this catalog, use it
         for (Element child : entries(group, "public", "publicId", publicId, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = queryPreferPublic();
+            boolean preferpublic = conf.queryPreferPublic();
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -776,7 +564,7 @@ public class Catalog {
         }
 
         if (!delegated.isEmpty()) {
-            Catalog dResolver = new Catalog(resources, delegated);
+            Catalog dResolver = new Catalog(conf, toCatalogSources(delegated));
             CatalogResult resolved = dResolver.lookupSystem(systemId);
             return resolved;
         }
@@ -897,7 +685,7 @@ public class Catalog {
         }
 
         if (!delegated.isEmpty()) {
-            Catalog dResolver = new Catalog(resources, delegated);
+            Catalog dResolver = new Catalog(conf, toCatalogSources(delegated));
             CatalogResult resolved = dResolver.lookupSystem(systemId);
             return resolved;
         }
@@ -982,7 +770,7 @@ public class Catalog {
         // If there's a DOCTYPE entry in this catalog, use it
         for (Element child : entries(group, "doctype", "name", entityName, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = queryPreferPublic();
+            boolean preferpublic = conf.queryPreferPublic();
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -1119,7 +907,7 @@ public class Catalog {
         // If there's a ENTITY entry in this catalog, use it
         for (Element child : entries(group, "entity", "name", entityName, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = queryPreferPublic();
+            boolean preferpublic = conf.queryPreferPublic();
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -1218,7 +1006,7 @@ public class Catalog {
         // If there's a NOTATION entry in this catalog, use it
         for (Element child : entries(group, "notation", "name", notName, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = queryPreferPublic();
+            boolean preferpublic = conf.queryPreferPublic();
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -1241,5 +1029,31 @@ public class Catalog {
         }
 
         return null;
+    }
+    
+    public synchronized void addSource(CatalogSource aCatalogSource) {
+      catalogList.add(aCatalogSource);
+    }
+
+    private static Vector<CatalogSource> createSources(Configuration aConf, String aCatalogFiles) {
+        Vector<CatalogSource> res = new Vector<CatalogSource>();
+        if (aCatalogFiles == null) {
+            for (String s: aConf.queryCatalogFiles()) {
+                res.add(new CatalogSource.UriCatalogSource(s));
+            }
+        } else {
+            for (String s: aCatalogFiles.split(";")) {
+                if (!"".equals(s)) res.add(new CatalogSource.UriCatalogSource(s));
+            }
+        }
+        return res;
+    }
+    
+    private static Vector<CatalogSource> toCatalogSources(Vector<String> aCatalogFiles) {
+      Vector<CatalogSource> res = new Vector<CatalogSource>();
+      for (String s: aCatalogFiles) {
+        res.add(new CatalogSource.UriCatalogSource(s));
+      }
+      return res;
     }
 }
