@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.logging.Logger;
+
 import org.xml.sax.ErrorHandler;
 
 import org.xml.sax.SAXException;
@@ -89,6 +91,8 @@ import org.xmlresolver.tools.ResolvingXMLReader;
  * @version 1.0
  */
 public class Parse {
+    private static Logger logger = Logger.getLogger("org.xmlresolver.apps.Parse");
+
     protected static final String SCHEMA_VALIDATION_FEATURE_ID
 	= "http://apache.org/xml/features/validation/schema";
 
@@ -117,86 +121,78 @@ public class Parse {
     
     /** The main entry point */
     public void run(String[] args) {
+        String  xmlfile    = null;
+        int     maxErrs    = 10;
+        boolean nsAware    = true;
+        boolean validating = true;
+        boolean useSchema  = false;
+        boolean showWarnings = true;
+        boolean showErrors = true;
+        boolean fullChecking = false; // true implies useSchema
+        Vector<String> xsdFiles = new Vector<String>();
+        Vector<String> catalogFiles = new Vector<String>();
 
-	String  xmlfile    = null;
-	String  debugLevel = "info";
-	int     maxErrs    = 10;
-	boolean nsAware    = true;
-	boolean validating = true;
-	boolean useSchema  = false;
-	boolean showWarnings = true;
-	boolean showErrors = true;
-	boolean fullChecking = false; // true implies useSchema
-	Vector<String> xsdFiles = new Vector<String>();
-	Vector<String> catalogFiles = new Vector<String>();
+        for (int i=0; i<args.length; i++) {
+            if (args[i].equals("-c")) {
+                ++i;
+                catalogFiles.add(args[i]);
+                continue;
+            }
 
-	for (int i=0; i<args.length; i++) {
-	    if (args[i].equals("-c")) {
-		++i;
-		catalogFiles.add(args[i]);
-		continue;
-	    }
+            if (args[i].equals("-w")) {
+                validating = false;
+                continue;
+            }
 
-	    if (args[i].equals("-w")) {
-		validating = false;
-		continue;
-	    }
+            if (args[i].equals("-v")) {
+                validating = true;
+                continue;
+            }
 
-	    if (args[i].equals("-v")) {
-		validating = true;
-		continue;
-	    }
+            if (args[i].equals("-s")) {
+                useSchema = true;
+                continue;
+            }
 
-	    if (args[i].equals("-s")) {
-		useSchema = true;
-		continue;
-	    }
+            if (args[i].equals("-S")) {
+                ++i;
+                xsdFiles.add(args[i]);
+                useSchema = true;
+                continue;
+            }
 
-	    if (args[i].equals("-S")) {
-		++i;
-		xsdFiles.add(args[i]);
-		useSchema = true;
-		continue;
-	    }
+            if (args[i].equals("-f")) {
+                fullChecking = true;
+                useSchema = true;
+                continue;
+            }
 
-	    if (args[i].equals("-f")) {
-		fullChecking = true;
-		useSchema = true;
-		continue;
-	    }
+            if (args[i].equals("-n")) {
+                nsAware = false;
+                continue;
+            }
 
-	    if (args[i].equals("-n")) {
-		nsAware = false;
-		continue;
-	    }
+            if (args[i].equals("-N")) {
+                nsAware = true;
+                continue;
+            }
 
-	    if (args[i].equals("-N")) {
-		nsAware = true;
-		continue;
-	    }
+            if (args[i].equals("-E")) {
+                ++i;
+                String errstr = args[i];
+                try {
+                    int errs = Integer.parseInt(errstr);
+                    if (errs >= 0) {
+                        maxErrs = errs;
+                    }
+                } catch (Exception e) {
+                    // nop
+                }
+                continue;
+            }
 
-	    if (args[i].equals("-d")) {
-		++i;
-                debugLevel = args[i];
-		continue;
-	    }
-
-	    if (args[i].equals("-E")) {
-		++i;
-		String errstr = args[i];
-		try {
-		    int errs = Integer.parseInt(errstr);
-		    if (errs >= 0) {
-			maxErrs = errs;
-		    }
-		} catch (Exception e) {
-		    // nop
-		}
-		continue;
-	    }
-
-	    xmlfile = args[i];
-	}
+            xmlfile = args[i];
+        }
 
 	if (xmlfile == null && !fullChecking) {
 	    // Hack
@@ -212,7 +208,6 @@ public class Parse {
 	    System.out.println("-f               Enable full schema checking (implies -s)");
 	    System.out.println("-n               Perform a namespace-ignorant parse");
 	    System.out.println("-N               Perform a namespace-aware parse (the default)");
-	    System.out.println("-d integer       Set the debug level (warnings are level 2)");
 	    System.out.println("-E integer       Set the maximum number of errors to display");
 	    System.out.println("");
 	    System.out.println("The process ends with error-level 1, if there are errors.");
@@ -222,11 +217,11 @@ public class Parse {
 	Hashtable schemaList = lookupSchemas(xsdFiles);
 
         String catalogList = "";
-	for (int count = 0; count < catalogFiles.size(); count++) {
-	    String file = catalogFiles.elementAt(count);
+        for (int count = 0; count < catalogFiles.size(); count++) {
+            String file = catalogFiles.elementAt(count);
             if (count > 0) { catalogList += ";"; }
             catalogList += file;
-	}
+        }
 
         Catalog catalog = null;
         if ("".equals(catalogList)) {
@@ -234,58 +229,52 @@ public class Parse {
         } else {
             catalog = new Catalog(catalogList);
         }
-        catalog.setVerbosity(debugLevel);
-        showWarnings = (catalog.getVerbosity() >= 2);
 
         Resolver resolver = new Resolver(catalog);
-	ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
-        
-	try {
-	    nsAware = true;
-	    reader.setFeature("http://xml.org/sax/features/namespaces",
-			      nsAware);
-	    reader.setFeature("http://xml.org/sax/features/validation",
-			      validating);
-	    if (useSchema) {
-		reader.setFeature(SCHEMA_VALIDATION_FEATURE_ID, useSchema);
-		reader.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, fullChecking);
-		if (schemaList != null) {
-		    String slh = "";
-		    String nons_slh = "";
-		    Enumeration nskey = schemaList.keys();
-		    while (nskey.hasMoreElements()) {
-			String ns = (String) nskey.nextElement();
-			String xsd = (String) schemaList.get(ns);
-			if ("".equals(ns)) {
-			    nons_slh = xsd;
-			    if (catalog.getVerbosity() >= 3) {
-				System.err.println("Hint: ''=" + xsd);
-			    }
-			} else {
-			    if (!"".equals(slh)) {
-				slh = slh + " ";
-			    }
-			    slh = slh + ns + " " + xsd;
-			    if (catalog.getVerbosity() >= 3) {
-				System.err.println("Hint: " + ns + "=" + xsd);
-			    }
-			}
-		    }
+	    ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
 
-		    if (!"".equals(slh)) {
-			reader.setProperty(EXTERNAL_SCHEMA_LOCATION_PROPERTY_ID,
-					   slh);
-		    }
+        try {
+            nsAware = true;
+            reader.setFeature("http://xml.org/sax/features/namespaces",
+                    nsAware);
+            reader.setFeature("http://xml.org/sax/features/validation",
+                    validating);
+            if (useSchema) {
+                reader.setFeature(SCHEMA_VALIDATION_FEATURE_ID, useSchema);
+                reader.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, fullChecking);
+                if (schemaList != null) {
+                    String slh = "";
+                    String nons_slh = "";
+                    Enumeration nskey = schemaList.keys();
+                    while (nskey.hasMoreElements()) {
+                        String ns = (String) nskey.nextElement();
+                        String xsd = (String) schemaList.get(ns);
+                        if ("".equals(ns)) {
+                            nons_slh = xsd;
+                            logger.finer("Hint: ''=" + xsd);
+                        } else {
+                            if (!"".equals(slh)) {
+                                slh = slh + " ";
+                            }
+                            slh = slh + ns + " " + xsd;
+                            logger.finer("Hint: " + ns + "=" + xsd);
+                        }
+                    }
 
-		    if (!"".equals(nons_slh)) {
-			reader.setProperty(EXTERNAL_NONS_SCHEMA_LOCATION_PROPERTY_ID,
-					   nons_slh);
-		    }
-		}
-	    }
-	} catch (SAXException e) {
-	    // nop;
-	}
+                    if (!"".equals(slh)) {
+                        reader.setProperty(EXTERNAL_SCHEMA_LOCATION_PROPERTY_ID,
+                                slh);
+                    }
+
+                    if (!"".equals(nons_slh)) {
+                        reader.setProperty(EXTERNAL_NONS_SCHEMA_LOCATION_PROPERTY_ID,
+                                nons_slh);
+                    }
+                }
+            }
+        } catch (SAXException e) {
+            // nop;
+        }
 
         
 	XParseError xpe = new XParseError(showErrors, showWarnings);
