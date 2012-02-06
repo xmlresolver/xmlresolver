@@ -16,6 +16,7 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.logging.Logger;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -160,11 +161,20 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
                 // In case someone uses baseURI=null, systemId="../some/local/path"
                 // nop;
             }
+        } else {
+          
+            try {
+              URL url = new URL(systemId);
+              absSystem = url.toExternalForm();
+            } catch (MalformedURLException e) {
+              // noop
+            }
+          
         }
 
         logger.fine("resolveEntity(" + name + "," + publicId + "," + absSystem + ")");
 
-        Resource rsrc = resolver.resolveEntity(name, publicId, absSystem);
+        Resource rsrc = resolver.resolveEntity(name, absSystem, publicId);
         if (rsrc == null) {
             logger.fine("  not resolved locally");
             return null;
