@@ -50,7 +50,7 @@ public class CacheFlush {
 
     public void run(String dir) {
         ResourceCache cache = new ResourceCache(dir);
-        Document catalog = cache.catalog();
+        Element catalog = cache.catalog();
         Vector<String> expired = new Vector<String> ();
         Vector<String> uptodate = new Vector<String> ();
 
@@ -60,7 +60,7 @@ public class CacheFlush {
         }
 
         int count = 0;
-        Element entry = DOMUtils.getFirstElement(catalog.getDocumentElement());
+        Element entry = DOMUtils.getFirstElement(catalog);
         while (entry != null) {
             String uri = null;
             if ("uri".equals(entry.getLocalName())) {
@@ -76,7 +76,7 @@ public class CacheFlush {
         int okCount = 0;
         int expCount = 0;
         
-        entry = DOMUtils.getFirstElement(catalog.getDocumentElement());
+        entry = DOMUtils.getFirstElement(catalog);
         while (entry != null) {
             String uri = null;
             if ("uri".equals(entry.getLocalName())) {

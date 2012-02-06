@@ -289,7 +289,7 @@ public class ResourceCache {
     }
 
     /** Returns an OASIS XML Catalog document for the resources in the cache. */
-    public synchronized Document catalog() {
+    public synchronized Element catalog() {
         if (!cacheDir.exists() || !cacheDir.isDirectory()) {
             return null;
         }
@@ -299,7 +299,7 @@ public class ResourceCache {
             cleanupCache();
         }
 
-        return cache;
+        return catalog;
     }
 
     private synchronized void cleanupCache() {

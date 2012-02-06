@@ -42,7 +42,7 @@ public class ResourceCacheTest extends TestCase {
 
     public void testInit() {
         ResourceCache cache = new ResourceCache("catalogs/cache");
-        Document catalog = cache.catalog();
+        Element catalog = cache.catalog();
     }
     
     public void testAddURI() throws MalformedURLException, IOException {

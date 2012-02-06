@@ -100,7 +100,7 @@ public class Catalog {
     private Configuration conf;
     
     private Vector<CatalogSource> catalogList = new Vector<CatalogSource>();
-    private Vector<Document> documentList = new Vector<Document>();
+    private Vector<Element> documentList = new Vector<Element>();
     private ResourceCache cache = null;
 
     /** Creates a catalog using properties read from the default property file.
@@ -197,26 +197,25 @@ public class Catalog {
       return conf.queryCacheSchemeURI(scheme);
     }
 
-    private synchronized Document loadCatalog(int index) {
+    private synchronized Element loadCatalog(int index) {
         if (index < documentList.size()) {
             return documentList.get(index);
         }
         
         CatalogSource catalog = catalogList.get(index);
 
-        Document doc = catalog.parse();
+        Element docRoot = catalog.parse();
         
         while (documentList.size() <= index) {
             documentList.add(null);
         }
-        documentList.set(index, doc);
+        documentList.set(index, docRoot);
 
         int offset = 1;
-        if (doc != null) {
-            Element root = doc.getDocumentElement();
+        if (docRoot != null) {
                         
-            if (catalogElement(root, "catalog")) {
-                Element child = DOMUtils.getFirstElement(root);
+            if (catalogElement(docRoot, "catalog")) {
+                Element child = DOMUtils.getFirstElement(docRoot);
                 while (child != null) {
                     if (catalogElement(child, "nextCatalog")) {
                         Element nextCat = (Element) child;
@@ -235,7 +234,7 @@ public class Catalog {
             }
         }
         
-        return doc;
+        return docRoot;
     }
 
     private boolean catalogElement(Node node, String localName) {
@@ -315,10 +314,10 @@ public class Catalog {
         return _lookupNamespaceURI(uri, nature, purpose);
     }
     
-    private static CatalogResult lookupInDoc(LookupFunction aFunction, Document aDoc) {
-        if (aDoc != null) {
-            logger.finer("  Looking in " + aDoc.getBaseURI());
-            CatalogResult resolved = aFunction.apply(aDoc.getDocumentElement());
+    private static CatalogResult lookupInDoc(LookupFunction aFunction, Element aDocRoot) {
+        if (aDocRoot != null) {
+            logger.finer("  Looking in " + aDocRoot.getBaseURI());
+            CatalogResult resolved = aFunction.apply(aDocRoot);
             if (resolved != null) {
                 logger.fine("  Found: " + resolved);
                 return resolved;
@@ -331,8 +330,8 @@ public class Catalog {
         int index = 0;
         while (index < catalogList.size()) {
             loadCatalog(index);
-            Document doc = documentList.get(index);
-            CatalogResult resolved = lookupInDoc(aFunction, doc);
+            Element docRoot = documentList.get(index);
+            CatalogResult resolved = lookupInDoc(aFunction, docRoot);
             if (resolved != null) return resolved;
             index++;
         }
