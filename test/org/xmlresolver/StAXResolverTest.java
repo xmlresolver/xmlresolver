@@ -7,15 +7,13 @@
 
 package org.xmlresolver;
 
+import junit.framework.TestCase;
+
 import java.io.FileInputStream;
-import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import junit.framework.*;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  *
