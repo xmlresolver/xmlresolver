@@ -40,7 +40,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
  */
 public class ResourceResolver {
     private static Logger logger = Logger.getLogger("org.xmlresolver");
-    private static Catalog staticCatalog = new Catalog();
+    private static Catalog staticCatalog = null;
     private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     private static DocumentBuilder builder = null;
     private Catalog catalog = null;
@@ -52,6 +52,9 @@ public class ResourceResolver {
      * <p>By default, a static catalog initialized using the default properties is used by all ResourceResolvers.</p>
      */
     public ResourceResolver() {
+        if (staticCatalog == null) {
+            staticCatalog = new Catalog();
+        }
         init(staticCatalog);
     }
 
