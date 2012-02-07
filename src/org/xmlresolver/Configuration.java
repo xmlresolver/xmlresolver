@@ -129,10 +129,6 @@ public class Configuration {
     return cacheDir;
   }
 
-  public String queryVerbosity() {
-    return getProperty("xml.catalog.verbosity", "verbosity");
-  }
-
   public boolean queryCacheSchemeURI(String scheme) {
     if (scheme == null) {
       return false;
