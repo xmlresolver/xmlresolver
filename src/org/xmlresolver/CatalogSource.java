@@ -41,7 +41,6 @@ public abstract class CatalogSource<S> {
       return null;
     } catch (FileNotFoundException fnfe) {
       // ignore this one
-      // ignore this one
       Catalog.logger.finer("Catalog file not found: " + this);
     } catch (IOException ex) {
       Catalog.logger.warning("I/O exception reading " + this + ": " + ex.toString());

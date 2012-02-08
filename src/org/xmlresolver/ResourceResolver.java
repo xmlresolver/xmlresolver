@@ -293,7 +293,7 @@ public class ResourceResolver {
      * @return The resource that represents the URI.
      */
     public Resource resolveURI(String href, String base) {
-        logger.fine("resolveURI(" + href + "," + base + ")");
+        logger.finer("resolveURI(" + href + "," + base + ")");
         String uri = href;
         CatalogResult resolved = catalog.lookupURI(uri);
         boolean skipCache = false;
@@ -347,7 +347,7 @@ public class ResourceResolver {
      * @return The resource that represents the external identifier.
      */
     public Resource resolvePublic(String systemId, String publicId) {
-        logger.fine("resolvePublic(" + systemId + "," + publicId + ")");
+        logger.finer("resolvePublic(" + systemId + "," + publicId + ")");
         CatalogResult resolved = catalog.lookupPublic(systemId, publicId);
         if (resolved == null || resolved.expired()) {
             return cacheStreamSystem(systemId, publicId);
@@ -374,7 +374,7 @@ public class ResourceResolver {
      * @return The resource that represents the entity.
      */
     public Resource resolveEntity(String name, String systemId, String publicId) {
-        logger.fine("resolveEntity(" + name + "," + systemId + "," + publicId + ")");
+        logger.finer("resolveEntity(" + name + "," + systemId + "," + publicId + ")");
         CatalogResult resolved = catalog.lookupEntity(name, systemId, publicId);
         if (resolved == null || resolved.expired()) {
             return cacheStreamSystem(systemId, publicId);
@@ -404,7 +404,7 @@ public class ResourceResolver {
      * @return The resource that represents the URI.
      */
     public Resource resolveNamespaceURI(String uri, String nature, String purpose) {
-        logger.fine("resolveNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
+        logger.finer("resolveNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
         CatalogResult resolved = catalog.lookupNamespaceURI(uri, nature, purpose);
         if (resolved != null) {
             return streamResult(resolved);
@@ -465,7 +465,7 @@ public class ResourceResolver {
      * @return The resource that represents the external subset.
      */
     public Resource resolveDoctype(String name) {
-        logger.fine("resolveDoctype(" + name + ")");
+        logger.finer("resolveDoctype(" + name + ")");
         CatalogResult resolved = catalog.lookupDoctype(name, null, null);
         if (resolved == null) {
             return null;

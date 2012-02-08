@@ -292,7 +292,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupURI(String uri) {
-        logger.fine("lookupURI(" + uri + ")");
+        logger.finer("lookupURI(" + uri + ")");
         return _lookupNamespaceURI(uri, null, null);
     }
 
@@ -311,7 +311,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupNamespaceURI(String uri, String nature, String purpose) {
-        logger.fine("lookupNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
+        logger.finer("lookupNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
         return _lookupNamespaceURI(uri, nature, purpose);
     }
 
@@ -334,7 +334,7 @@ public class Catalog {
                 logger.finer("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupURI(doc.getDocumentElement(), uri, nature, purpose);
                 if (resolved != null) {
-                    logger.fine("  Found: " + resolved);
+                    logger.finer("  Found: " + resolved);
                     return resolved;
                 }
             }
@@ -345,12 +345,12 @@ public class Catalog {
             logger.finer("  Looking in " + cache.catalog().getBaseURI());
             CatalogResult resolved = lookupURI(cache.catalog().getDocumentElement(), uri, nature, purpose);
             if (resolved != null) {
-                logger.fine("  Found: " + resolved);
+                logger.finer("  Found: " + resolved);
                 return resolved;
             }
         }
         
-        logger.fine("  Not found");
+        logger.finer("  Not found");
         return null;
     }
 
@@ -445,7 +445,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupPublic(String systemId, String publicId) {
-        logger.fine("lookupPublic(" + systemId + "," + publicId + ")");
+        logger.finer("lookupPublic(" + systemId + "," + publicId + ")");
 
         if (systemId != null) {
             systemId = URIUtils.normalizeURI(systemId);
@@ -474,7 +474,7 @@ public class Catalog {
                 logger.finer("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupPublic(doc.getDocumentElement(), systemId, publicId);
                 if (resolved != null) {
-                    logger.fine("  Found: " + resolved);
+                    logger.finer("  Found: " + resolved);
                     return resolved;
                 }
             }
@@ -485,12 +485,12 @@ public class Catalog {
             logger.finer("  Looking in " + cache.catalog().getBaseURI());
             CatalogResult resolved = lookupPublic(cache.catalog().getDocumentElement(), systemId, publicId);
             if (resolved != null) {
-                logger.fine("  Found: " + resolved);
+                logger.finer("  Found: " + resolved);
                 return resolved;
             }
         }
         
-        logger.fine("  Not found");
+        logger.finer("  Not found");
         return null;
     }        
         
@@ -588,7 +588,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupSystem(String systemId) {
-        logger.fine("lookupSystem(" + systemId + ")");
+        logger.finer("lookupSystem(" + systemId + ")");
 
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -604,7 +604,7 @@ public class Catalog {
                 logger.finer("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupLocalSystem(doc.getDocumentElement(), systemId);
                 if (resolved != null) {
-                    logger.fine("  Found: " + resolved);
+                    logger.finer("  Found: " + resolved);
                     return resolved;
                 }
             }
@@ -615,12 +615,12 @@ public class Catalog {
             logger.finer("  Looking in " + cache.catalog().getBaseURI());
             CatalogResult resolved = lookupLocalSystem(cache.catalog().getDocumentElement(), systemId);
             if (resolved != null) {
-                logger.fine("  Found: " + resolved);
+                logger.finer("  Found: " + resolved);
                 return resolved;
             }
         }
 
-        logger.fine("  Not found");
+        logger.finer("  Not found");
         return null;
     }
     
@@ -710,7 +710,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupDoctype(String entityName, String systemId, String publicId) {
-        logger.fine("lookupDoctype(" + entityName + "," + publicId + "," + systemId + ")");
+        logger.finer("lookupDoctype(" + entityName + "," + publicId + "," + systemId + ")");
   
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -737,14 +737,14 @@ public class Catalog {
                 logger.finer("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupDoctype(doc.getDocumentElement(), entityName, systemId, publicId);
                 if (resolved != null) {
-                    logger.fine("  Found: " + resolved);
+                    logger.finer("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.fine("  Not found");
+        logger.finer("  Not found");
         return null;
     }
   
@@ -804,7 +804,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupDocument() {
-        logger.fine("lookupDocument()");
+        logger.finer("lookupDocument()");
         int index = 0;
         while (index < catalogList.size()) {
             loadCatalog(index);
@@ -813,14 +813,14 @@ public class Catalog {
                 logger.finer("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupDocument(doc.getDocumentElement());
                 if (resolved != null) {
-                    logger.fine("  Found: " + resolved);
+                    logger.finer("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.fine("  Not found");
+        logger.finer("  Not found");
         return null;
     }
 
@@ -847,7 +847,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupEntity(String entityName, String systemId, String publicId) {
-        logger.fine("lookupEntity(" + entityName + "," + publicId + "," + systemId + ")");
+        logger.finer("lookupEntity(" + entityName + "," + publicId + "," + systemId + ")");
 
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -874,14 +874,14 @@ public class Catalog {
                 logger.finer("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupEntity(doc.getDocumentElement(), entityName, systemId, publicId);
                 if (resolved != null) {
-                    logger.fine("  Found: " + resolved);
+                    logger.finer("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.fine("  Not found");
+        logger.finer("  Not found");
         return null;
     }
   
@@ -946,7 +946,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupNotation(String notName, String systemId, String publicId) {
-        logger.fine("lookupNotation(" + notName + "," + publicId + "," + systemId + ")");
+        logger.finer("lookupNotation(" + notName + "," + publicId + "," + systemId + ")");
 
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -973,14 +973,14 @@ public class Catalog {
                 logger.finer("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupNotation(doc.getDocumentElement(), notName, systemId, publicId);
                 if (resolved != null) {
-                    logger.fine("  Found: " + resolved);
+                    logger.finer("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.fine("  Not found");
+        logger.finer("  Not found");
         return null;
     }
   

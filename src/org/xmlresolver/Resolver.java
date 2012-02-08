@@ -33,7 +33,7 @@ import org.xml.sax.ext.EntityResolver2;
  * and {@link NamespaceResolver}.
  */
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
-    private static Logger logger = Logger.getLogger("org.xmlresolver.Resolver");
+    private static Logger logger = Logger.getLogger(Resolver.class.getName());
     ResourceResolver resolver = null;
     
     /** Creates a new instance of Resolver.
@@ -76,13 +76,13 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             href = base;
             base = null;
         }
-        logger.fine("resolveResource(" + href + "," + base + ")");
+        logger.finer("resolveResource(" + href + "," + base + ")");
         Resource rsrc = resolver.resolveURI(href, base);
-        if (rsrc == null) {
-            logger.fine("  not resolved locally");
-        } else {
-            logger.fine("  resolved locally: "  + rsrc.uri());
-        }
+
+        logger.finer(href
+                + (base == null ? "" : " (" + base + ")") + " => "
+                + (rsrc == null ? href : rsrc.uri()));
+
         return rsrc;
     }
 
@@ -100,13 +100,15 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
     /** Implements the {@link NamespaceResolver} interface. */
     public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
-        logger.fine("resolveNamespace(" + uri + "," + nature + "," + purpose + ")");
+        logger.finer("resolveNamespace(" + uri + "," + nature + "," + purpose + ")");
         Resource rsrc = resolver.resolveNamespaceURI(uri, nature, purpose);
+
+        logger.finer(uri + " (" + nature + "," + purpose + ") => "
+                + (rsrc == null ? uri : rsrc.uri()));
+
         if (rsrc == null) {
-            logger.fine("  not resolved locally");
             return null;
         } else {
-            logger.fine("  resolved locally: "  + rsrc.uri());
             SAXSource source = new SAXSource(new InputSource(rsrc.body()));
             source.setSystemId(rsrc.uri());
             return source;
@@ -115,13 +117,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
     /** Implements the {@link org.xml.sax.EntityResolver} interface. */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        logger.fine("resolveEntity(" + publicId + "," + systemId + ")");
+        logger.finer("resolveEntity(" + publicId + "," + systemId + ")");
         Resource rsrc = resolver.resolvePublic(systemId, publicId);
+        
+        logger.finer(systemId
+                    + (publicId == null ? "" : " (" + publicId + ")") + " => "
+                    + (rsrc == null ? systemId : rsrc.uri()));
+
         if (rsrc == null) {
-            logger.fine("  not resolved locally");
             return null;
         } else {
-            logger.fine("  resolved locally: "  + rsrc.uri());
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(rsrc.uri());
             return source;
@@ -130,13 +135,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
     /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface. */
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-        logger.fine("getExternalSubset(" + name + "," + baseURI + ")");
+        logger.finer("getExternalSubset(" + name + "," + baseURI + ")");
         Resource rsrc = resolver.resolveDoctype(name);
+
+        logger.finer(baseURI
+                + (name == null ? "" : " (" + name + ")") + " => "
+                + (rsrc == null ? baseURI : rsrc.uri()));
+
         if (rsrc == null) {
-            logger.fine("  not resolved locally");
             return null;
         } else {
-            logger.fine("  resolved locally: "  + rsrc.uri());
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(rsrc.uri());
             return source;
@@ -172,14 +180,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
           
         }
 
-        logger.fine("resolveEntity(" + name + "," + publicId + "," + absSystem + ")");
-
+        logger.finer("resolveEntity(" + name + "," + publicId + "," + absSystem + ")");
         Resource rsrc = resolver.resolveEntity(name, absSystem, publicId);
+
+        logger.finer(absSystem
+                + (publicId == null ? "" : " (" + publicId + ")") + " => "
+                + (rsrc == null ? absSystem : rsrc.uri()));
+
         if (rsrc == null) {
-            logger.fine("  not resolved locally");
             return null;
         } else {
-            logger.fine("  resolved locally: "  + rsrc.uri());
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(rsrc.uri());
             return source;
@@ -208,20 +218,23 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
         Resource rsrc = null;
         if ("http://www.w3.org/TR/REC-xml".equals(type)) {
-            logger.fine("resolveResource(XML," + publicId + "," + absSystem + ")");
+            logger.finer("resolveResource(XML," + publicId + "," + absSystem + ")");
             rsrc = resolver.resolvePublic(absSystem, publicId);
         } else if ("http://www.w3.org/2001/XMLSchema".equals(type)) {
-            logger.fine("resolveResource(XMLSchema," + namespace + "," + absSystem + ")");
+            logger.finer("resolveResource(XMLSchema," + namespace + "," + absSystem + ")");
             rsrc = resolver.resolveURI(absSystem, baseURI);
         } else {
             return null;
         }
-        
+
+        logger.finer(absSystem
+                + (publicId == null ? "" : " (" + publicId + ")")
+                + (namespace == null ? "" : " (" + namespace + ")") + " => "
+                + (rsrc == null ? absSystem : rsrc.uri()));
+
         if (rsrc == null) {
-            logger.fine("  not resolved locally");
             return null;
         } else {
-            logger.fine("  resolved locally: "  + rsrc.uri());
             return new ResolverLSInput(rsrc, publicId);
         }
     }

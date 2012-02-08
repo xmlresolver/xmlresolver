@@ -117,7 +117,7 @@ public class ResourceCache {
     /** The XML Namespace name of XML Resolver cache file, "http://xmlresolver.org/ns/cache". */
     public static final String NS_CACHE = "http://xmlresolver.org/ns/cache";
 
-    private static Logger logger = Logger.getLogger("org.xmlresolver");
+    private static Logger logger = Logger.getLogger(ResourceCache.class.getName());
     private static GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
     private static GregorianCalendar now = new GregorianCalendar();
     private static DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -203,6 +203,7 @@ public class ResourceCache {
         File fDir = new File(dir);
         try {
             cacheDir = fDir.getCanonicalFile();
+            logger.fine("Cache: " + cacheDir);
         } catch (IOException ioe) {
             cacheDir = null;
         }
@@ -726,7 +727,7 @@ public class ResourceCache {
             info = defaultCacheInfo;
         }
                 
-        logger.finer("CacheURI " + uri + ": " + info.cache());
+        logger.info("CacheURI " + uri + ": " + info.cache());
         return info.cache();
     }
 
@@ -832,27 +833,27 @@ public class ResourceCache {
             }
             
             if (conn.getResponseCode() != 200) {
-                logger.finer("Expired " + origURI + "? No (HTTP " + conn.getResponseCode() + ").");
+                logger.fine("Not expired: " + origURI + " (HTTP " + conn.getResponseCode() + ")");
                 return false;
             }
             
         } catch (MalformedURLException mue) {
-            logger.finer("Expired " + origURI + "? No (MalformedURLException).");
+            logger.fine("Not expired: " + origURI + " (MalformedURLException)");
             return false;
         } catch (IOException ioe) {
-            logger.finer("Expired " + origURI + "? No (IOException)");
+            logger.fine("Not expired: " + origURI + " (IOException)");
             return false;
         }
 
         if (lastModified == 0) {
-            logger.finer("Expired " + origURI + "? Yes (no last-modified header)");
+            logger.fine("Expired: " + origURI + " (no last-modified header)");
             return true;
         } else if (lastModified > cacheTime) {
-            logger.finer("Expired " + origURI + "? Yes.");
+            logger.fine("Expired: " + origURI);
             expire(uri);
             return true;
         } else {
-            logger.finer("Expired " + origURI + "? No.");
+            logger.fine("Not expired: " + origURI);
             return false;
         }
     }

@@ -82,14 +82,14 @@ public class StAXResolver implements XMLResolver {
             }
         }
 
-        logger.fine("resolveEntity(" + publicId + "," + absSystem + "," + namespace + ")");
+        logger.finer("resolveEntity(" + publicId + "," + absSystem + "," + namespace + ")");
 
         Resource rsrc = resolver.resolvePublic(publicId, absSystem);
         if (rsrc == null) {
-            logger.fine("  not resolved locally");
+            logger.finer("  not resolved locally");
             return null;
         } else {
-            logger.fine("  resolved locally: "  + rsrc.uri());
+            logger.finer("  resolved locally: "  + rsrc.uri());
             return rsrc.body();
         }
     }
