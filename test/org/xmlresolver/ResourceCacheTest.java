@@ -48,18 +48,16 @@ public class ResourceCacheTest extends TestCase {
     public void testAddURI() throws MalformedURLException, IOException {
         ResourceCache cache = new ResourceCache("catalogs/cache");
         String uri = "http://www.w3.org/2001/XMLSchema";
-        URL url = new URL(uri);
-        URLConnection conn = url.openConnection();
-        cache.addURI(uri, conn.getContentType(), conn.getInputStream());
+        ResourceConnection conn = new ResourceConnection(uri);
+        cache.addURI(conn);
     }
 
     public void testAddSystem() throws MalformedURLException, IOException {
         ResourceCache cache = new ResourceCache("catalogs/cache");
         String systemId = "http://docbook.org/xml/4.5/docbookx.dtd";
         String publicId = "-//OASIS//DTD DocBook XML V4.5//EN";
-        URL url = new URL(systemId);
-        URLConnection conn = url.openConnection();
-        cache.addSystem(systemId, publicId, conn.getContentType(), conn.getInputStream());
+        ResourceConnection conn = new ResourceConnection(systemId);
+        cache.addSystem(conn, publicId);
     }
     
 }

@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -59,8 +60,8 @@ import org.xmlresolver.helpers.DOMUtils;
  * <ul>
  * <li>Catalog entries for files in the cache are stored in the
  * <code>entry</code> directory.</li>
- * <li>The actual resources are stored in <code>data</code>.
- * </li>
+ * <li>The actual resources are stored in the <code>data</code>
+ * directory.</li>
  * <li>Expired entries are stored in <code>expired</code>.</li>
  * <li>The <code>lock</code> file is used to maintain synchronized access
  * to the cache directory (multiple threads and even multiple applications
@@ -90,25 +91,23 @@ import org.xmlresolver.helpers.DOMUtils;
  * 	       max-age="86400" delete-wait="86400"
  * 	       size="1500" space="10m">
  * &lt;cache uri="http://www.w3.org/" max-age="172800" space="500k"/>
- * &lt;no-cache uri="http://www.flickr.com/"/>
- * &lt;no-cache uri="http://flickr.com/"/>
+ * &lt;no-cache uri="http://localhost/"/>
+ * &lt;cache uri="http://www.flickr.com/" max-age="0"/>
+ * &lt;cache uri="http://flickr.com/" max-age="0"/>
  * &lt;/cache-control></pre>
- * 
- * <p>A resource that is less than "max age" seconds old is assumed to be
- * up-to-date without even checking the web.</p>
- * 
- * <p>Entries in the cache are sorted by age. If there are more than
- * "size" entries in the cache before the current entry, then the current
- * entry is expired.</p>
- * 
- * <p>If there are more than "space" bytes of storage consumed by entries in
- * the cache before the current entry, then the current entry is expired.
- * </p>
- * 
+ *
+ * <p>If definitive information about the age of a resource cannot be
+ * determined and it is older than "max-age", it will be treated as
+ * out-of-date and its cached entry will be updated.</p>
+ *
+ * <p>Entries in the cache are sorted by age. If the cache exceeds "size"
+ * entries or "space" bytes of storage, then the oldest entries are deleted.</p>
+ *
  * <p>The <code>cache</code> and <code>no-cache</code> elements match URIs
  * by regular expression. If a <code>no-cache</code> entry matches, then the
  * URI is not cached. If no entry matches, the default is to cache with the
- * parameters specified on the <code>cache-control</code> element.</p>
+ * parameters specified on the <code>cache-control</code> element. Any paramters
+ * not specified are inherited from the preceding <code>cache</code> element.</p>
  * </div>
  *
  * @author ndw
@@ -134,6 +133,7 @@ public class ResourceCache {
     private long deleteWait = 60*60*24*7; // 1 week
     private long cacheSize = 1000;
     private long cacheSpace = 10240;
+    private long maxAge = -1;
     
     /** Creates a new instance of ResourceCache.
      *
@@ -161,17 +161,19 @@ public class ResourceCache {
         }
 
         // In case there is no control.xml file...
-        defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace);
+        defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace, maxAge);
 
         try {
             FileInputStream controlFile = new FileInputStream(dir + "/control.xml");
             Document cacheControl = builder.parse(controlFile);
             Element control = cacheControl.getDocumentElement();
             if (NS_CACHE.equals(control.getNamespaceURI()) && "cache-control".equals(control.getLocalName())) {
-                deleteWait = parseLong(control,"delete-wait", deleteWait);
+                deleteWait = parseTimeLong(control, "delete-wait", deleteWait);
                 cacheSize = parseLong(control, "size", cacheSize);
                 cacheSpace = parseSizeLong(control, "space", cacheSpace);
-                defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace);
+                maxAge = parseTimeLong(control, "max-age", maxAge);
+                
+                defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace, maxAge);
 
                 Element child = DOMUtils.getFirstElement(control);
                 while (child != null) {
@@ -179,13 +181,15 @@ public class ResourceCache {
                         CacheInfo info = new CacheInfo(child.getAttribute("uri"), true,
                                 parseLong(child,"delete-wait", deleteWait),
                                 parseLong(child,"size", cacheSize),
-                                parseSizeLong(child,"space", cacheSpace));
+                                parseSizeLong(child,"space", cacheSpace),
+                                parseLong(child,"max-age",maxAge));
                         cacheInfo.add(info);
                     } else if ("no-cache".equals(child.getLocalName())) {
                         CacheInfo info = new CacheInfo(child.getAttribute("uri"), false,
                                 parseLong(child,"delete-wait", deleteWait),
                                 parseLong(child,"size", cacheSize),
-                                parseSizeLong(child,"space", cacheSpace));
+                                parseSizeLong(child,"space", cacheSpace),
+                                parseLong(child,"max-age",maxAge));
                         cacheInfo.add(info);
                     }
                 
@@ -250,7 +254,40 @@ public class ResourceCache {
             return defVal;
         }
     }
-    
+
+    private long parseTimeLong(Element node, String attr, long defVal) {
+        if (!node.hasAttribute(attr)) {
+            return defVal;
+        }
+
+        String longStr = node.getAttribute(attr);
+        long units = 1;
+        if (Pattern.matches("^[0-9]+[sS]$", longStr)) {
+            units = 1;
+            longStr = longStr.substring(0,longStr.length()-1);
+        } else if (Pattern.matches("^[0-9]+[mM]$", longStr)) {
+            units = 60;
+            longStr = longStr.substring(0,longStr.length()-1);
+        } else if (Pattern.matches("^[0-9]+[hH]$", longStr)) {
+            units = 3600;
+            longStr = longStr.substring(0,longStr.length()-1);
+        } else if (Pattern.matches("^[0-9]+[dD]$", longStr)) {
+            units = 3600*24;
+            longStr = longStr.substring(0,longStr.length()-1);
+        } else if (Pattern.matches("^[0-9]+[wW]$", longStr)) {
+            units = 3600*24*7;
+            longStr = longStr.substring(0,longStr.length()-1);
+        }
+
+        try {
+            long val = Long.parseLong(longStr);
+            return val * units;
+        } catch (NumberFormatException nfe) {
+            logger.warning("Bad numeric value in cache control file: " + longStr);
+            return defVal;
+        }
+    }
+
     /** Returns an OASIS XML Catalog document for the resources in the cache. */
     public synchronized Document catalog() {
         if (!cacheDir.exists() || !cacheDir.isDirectory()) {
@@ -262,7 +299,6 @@ public class ResourceCache {
             cleanupCache();
         }
 
-        
         return cache;
     }
 
@@ -355,17 +391,11 @@ public class ResourceCache {
                             Element cEntry = DOMUtils.getFirstElement(root);
                             while (cEntry != null) {
                                 Element entry = (Element) cache.importNode(cEntry, true);
-                                entry.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:oTime",
-                                        entry.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "time"));
-                                entry.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:time", ""+lastModified);
                                 insertSorted(catalog, entry);
                                 cEntry = DOMUtils.getNextElement(cEntry);
                             }
                         } else {
                             Element entry = (Element) cache.importNode(root, true);
-                            entry.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:oTime",
-                                    entry.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "time"));
-                            entry.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:time", ""+lastModified);
                             insertSorted(catalog, entry);
                         }
                     } catch (SAXException se) {
@@ -417,35 +447,13 @@ public class ResourceCache {
      * <p>This method reads the supplied InputStream, storing the resource locally, and returns the name
      * of the local file where that body may be retrieved.</p>
      *
-     * @param name The (absolute) URI to be added to the cache.
-     * @param contentType The MIME content-type of the resource.
-     * @param resource An InputStream which will return the body of the resource.
+     * @param connection The connection.
      *
      * @return The filename of the cached resource.
      */
-    public String addURI(String name, String contentType, InputStream resource) {
-        logger.info("Caching URI: " + name);
-        return _addNamespaceURI(name, null, null, contentType, resource, null);
-    }
-
-    /** Add a URI to the cache.
-     *
-     * <p>This method reads the supplied InputStream, storing the resource locally, and returns the name
-     * of the local file where that body may be retrieved. The redirected URI is also stored so that it
-     * may be reported when the cached resource is retrieved.</p>
-     *
-     * <p>Note: Caching 3xx responses is not enabled by default.</p>
-     *
-     * @param name The (absolute) URI to be added to the cache.
-     * @param contentType The MIME content-type of the resource.
-     * @param resource An InputStream which will return the body of the resource.
-     * @param redirName The (absolute) URI that was ultimately retrieved after redirection(s)
-     *
-     * @return The filename of the cached resource.
-     */
-    public String addURI(String name, String contentType, InputStream resource, String redirName) {
-        logger.info("Caching URI: " + name);
-        return _addNamespaceURI(name, null, null, contentType, resource, redirName);
+    public String addURI(ResourceConnection connection) throws IOException {
+        logger.info("Caching URI: " + connection.getURI());
+        return _addNamespaceURI(connection, null, null);
     }
 
     /** Add a Namespace URI to the cache.
@@ -453,20 +461,19 @@ public class ResourceCache {
      * <p>This method reads the supplied InputStream, storing the resource locally, and returns the name
      * of the local file where that body may be retrieved.</p>
      *
-     * @param name The (absolute) URI to be added to the cache.
+     * @param connection The URL connection.
      * @param nature The RDDL nature of the resource.
      * @param purpose the RDDL purpose of the resource.
-     * @param contentType The MIME content-type of the resource.
-     * @param resource An InputStream which will return the body of the resource.
      *
      * @return The filename of the cached resource.
      */
-    public synchronized String addNamespaceURI(String name, String nature, String purpose, String contentType, InputStream resource) {
+    public synchronized String addNamespaceURI(ResourceConnection connection, String nature, String purpose) throws IOException {
+        String name = connection.getURI();
         logger.info("Caching resource for namespace: " + name + " (nature: " + nature + "; purpose: " + purpose + ")");
-        return _addNamespaceURI(name, nature, purpose, contentType, resource, null);
+        return _addNamespaceURI(connection, nature, purpose);
     }
 
-    private synchronized String _addNamespaceURI(String name, String nature, String purpose, String contentType, InputStream resource, String redirName) {
+    private synchronized String _addNamespaceURI(ResourceConnection connection, String nature, String purpose) throws IOException {
         if (cache == null) {
             loadCatalog();
             if (cache == null) {
@@ -474,44 +481,49 @@ public class ResourceCache {
             }
         }
 
-        // Make addNamespaceURI() idempotent
-        Element entry = DOMUtils.getFirstElement(catalog);
-        while (entry != null) {
-            if (DOMUtils.catalogElement(entry, "uri")) {
-                String eName = DOMUtils.attr(entry, "name");
-                String eUri = DOMUtils.attr(entry, "uri");
-                String eNature = DOMUtils.attr(entry, "nature");
-                String ePurpose = DOMUtils.attr(entry, "purpose");
-                String eRedir = DOMUtils.attr(entry, "redir");
-                
-                if ((eName != null && eName.equals(name))
-                    && ((eNature == null && nature == null)
-                        || (eNature != null && eNature.equals(nature)))
-                    && ((ePurpose == null && purpose == null)
-                        || (ePurpose != null && ePurpose.equals(purpose)))
-                    && eUri != null) {
-                    if (eRedir != null) {
-                        return eRedir;
-                    } else {
-                        return eUri;
-                    }
-                }
-            }
-            entry = DOMUtils.getNextElement(entry);
-        }
-
-        String uri = null;
-        String suffix = pickSuffix(name, contentType);
-        File localFile = null;
+        String name = connection.getURI();
+        String contentType = connection.getContentType();
+        InputStream resource = connection.getStream();
+        
+        logger.info("Caching uri: " + name);
 
         DirectoryLock lock = new DirectoryLock();
         if (!lock.locked()) {
             return null;
         }
-        
+
+        String uri = null;
+        File localFile = null;
+
         try {
-            localFile = File.createTempFile("xrc", suffix, dataDir);
-            uri = localFile.getPath();
+            // Make addNamespaceURI() idempotent
+            Element entry = DOMUtils.getFirstElement(catalog);
+            while (entry != null && localFile == null) {
+                if (DOMUtils.catalogElement(entry, "uri")) {
+                    String eName = DOMUtils.attr(entry, "name");
+                    String eUri = DOMUtils.attr(entry, "uri");
+                    String eNature = DOMUtils.attr(entry, "nature");
+                    String ePurpose = DOMUtils.attr(entry, "purpose");
+                    String eRedir = DOMUtils.attr(entry, "redir");
+
+                    if ((eName != null && eName.equals(name))
+                            && ((eNature == null && nature == null)
+                            || (eNature != null && eNature.equals(nature)))
+                            && ((ePurpose == null && purpose == null)
+                            || (ePurpose != null && ePurpose.equals(purpose)))
+                            && eUri != null) {
+                        localFile = new File(eUri);
+                        uri = eRedir == null ? eUri : eRedir;
+                    }
+                }
+                entry = DOMUtils.getNextElement(entry);
+            }
+
+            if (localFile == null) {
+                String suffix = pickSuffix(name, contentType);
+                localFile = File.createTempFile("xrc", suffix, dataDir);
+                uri = localFile.getPath();
+            }
 
             FileOutputStream fos = new FileOutputStream(localFile);
             
@@ -543,10 +555,17 @@ public class ResourceCache {
         if (contentType != null) {
             newuri.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:contentType", contentType);
         }
+        
+        String redirName = connection.getRedirect();
         if (redirName != null) {
             newuri.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:redir", redirName);
         }
         newuri.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:time", "" + calendar.getTimeInMillis());
+
+        String etag = connection.getEtag();
+        if (etag != null) {
+            newuri.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:etag", etag);
+        }
 
         root.appendChild(cache.createTextNode("\n"));
         root.appendChild(newuri);
@@ -583,49 +602,54 @@ public class ResourceCache {
      * <p>This method reads the supplied InputStream, storing the resource locally, and returns the name
      * of the local file where that body may be retrieved.</p>
      *
-     * @param systemId The (absolute) URI to be added to the cache.
+     * @param connection The URL connection.
      * @param publicId The public identifier associated with the resource.
-     * @param contentType The MIME content-type of the resource.
-     * @param resource An InputStream which will return the body of the resource.
      *
      * @return The filename of the cached resource.
      */
-    public String addSystem(String systemId, String publicId, String contentType, InputStream resource) {
+    public String addSystem(ResourceConnection connection, String publicId) throws IOException {
         if (cache == null) {
             loadCatalog();
             if (cache == null) {
                 throw new UnsupportedOperationException("No underlying cache");
             }
         }
-        
+
+        String contentType = connection.getContentType();
+        InputStream resource = connection.getStream();
+        String systemId = connection.getURI();
+
         logger.info("Caching system identifier: " + systemId);
-
-        // Make addSystem() idempotent
-        Element entry = DOMUtils.getFirstElement(catalog);
-        while (entry != null) {
-            if (DOMUtils.catalogElement(entry, "system")) {
-                String eName = DOMUtils.attr(entry, "systemId");
-                String eUri = DOMUtils.attr(entry, "uri");
-                
-                if (eName != null && eName.equals(systemId) && eUri != null) {
-                    return eUri;
-                }
-            }
-            entry = DOMUtils.getNextElement(entry);
-        }
-
-        String uri = null;
-        String suffix = pickSuffix(systemId, contentType);
-        File localFile = null;
 
         DirectoryLock lock = new DirectoryLock();
         if (!lock.locked()) {
             return null;
         }
-        
+
+        String uri = null;
+        File localFile = null;
+
         try {
-            localFile = File.createTempFile("xrc", suffix, dataDir);
-            uri = localFile.getPath();
+            // Make addSystem() idempotent
+            Element entry = DOMUtils.getFirstElement(catalog);
+            while (entry != null && localFile == null) {
+                if (DOMUtils.catalogElement(entry, "system")) {
+                    String eName = DOMUtils.attr(entry, "systemId");
+                    String eUri = DOMUtils.attr(entry, "uri");
+
+                    if (eName != null && eName.equals(systemId) && eUri != null) {
+                        localFile = new File(eUri);
+                        uri = eUri;
+                    }
+                }
+                entry = DOMUtils.getNextElement(entry);
+            }
+
+            if (localFile == null) {
+                String suffix = pickSuffix(systemId, contentType);
+                localFile = File.createTempFile("xrc", suffix, dataDir);
+                uri = localFile.getPath();
+            }
 
             FileOutputStream fos = new FileOutputStream(localFile);
             
@@ -654,6 +678,11 @@ public class ResourceCache {
             newuri.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:contentType", contentType);
         }
         newuri.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:time", "" + curTime);
+        
+        String etag = connection.getEtag();
+        if (etag != null) {
+            newuri.setAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "xr:etag", etag);
+        }
  
         Element newpub = null;
         if (publicId != null) {
@@ -726,14 +755,16 @@ public class ResourceCache {
         if (info == null) {
             info = defaultCacheInfo;
         }
-                
-        logger.info("CacheURI " + uri + ": " + info.cache());
+         
+        if (!info.cache()) {
+            logger.info("Not caching: " + uri);
+        }
         return info.cache();
     }
 
     /** Attempts to determine if the local copy is out of date.
      *
-     * <p>If the URI is an <code>http:</code> URI, a HEAD requeste is made and the
+     * <p>If the URI is an <code>http:</code> URI, a HEAD request is made and the
      * <code>cachedTime()</code> is compared to the last modified time. If the resource
      * on the web is more recent, <code>true</code> is returned.</p>
      *
@@ -773,25 +804,28 @@ public class ResourceCache {
             return true;
         }
 
-        // Find out how many matching entries precede this one in the cache and how much space they occupy
+        // Find out how many matching entries are in the cache and how much space they occupy
         Pattern uriPattern = Pattern.compile(info.pattern() + ".*");
-        //System.out.println("PATTERN: " + info.pattern() + ".*");
-        //System.out.println("ORIGURI: " + origURI);
         int cacheCount = 0;
         long cacheSize = 0;
+        long cacheTime = -1;
+        String cachedEtag = null;
         boolean found = false;
         Element node = DOMUtils.getFirstElement(catalog);
         while (node != null) {
             found = found || (node == entry);
             String srcuri = null;
+            if (node.hasAttribute("publicId")) {
+                // They must also have a system entry; skip the public one so we don't count it twice
+                node = DOMUtils.getNextElement(node);
+                continue;
+            }
+
             if (node.hasAttribute("systemId")) {
                 srcuri = node.getAttribute("systemId");
             } else {
                 srcuri = node.getAttribute("name");
             }
-            
-            //System.out.print("\t" + uriPattern.matcher(srcuri).matches());
-            //System.out.println(" " + srcuri);
             
             if (uriPattern.matcher(srcuri).matches()) {
                 cacheCount++;
@@ -800,35 +834,44 @@ public class ResourceCache {
             }
             node = DOMUtils.getNextElement(node);
         }
-        
+
         // If this entry isn't in the catalog, it's not expired. This should never happen.
         if (!found) {
             return false;
         }
 
-        long cacheTime = -1;
+        // Flush oldest entries...
+        if (cacheCount > info.cacheSize() || cacheSize > info.cacheSpace()) {
+            flushCache(uriPattern, info.cacheSize(), info.cacheSpace());
+        }
+        
+        cacheTime = -1;
         if (entry.hasAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "time")) {
             cacheTime = Long.parseLong(entry.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "time"));
         }
-
-        // If there are already too many entries that match this pattern, it's expired
-        if (cacheCount > info.cacheSize()) {
-            // FIXME: uncomment this: expire(uri);
-            return true;
-        }
-
-        // If we've already used too much space for entries that match this pattern, it's expired
-        if (cacheSize > info.cacheSpace()) {
-            // FIXME: uncomment this: expire(uri);
-            return true;
-        }
         
+        if (entry.hasAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "etag")) {
+            cachedEtag = entry.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "etag");
+        }
+
+        String etag = null;
         long lastModified = 0;
         try {
             URL url = new URL(origURI);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             lastModified = conn.getLastModified();
-            if (lastModified == 0) {
+            etag = conn.getHeaderField("etag");
+            if (etag != null && "".equals(etag)) { etag = null; }
+            if (lastModified == 0 && (etag == null || cachedEtag == null)) {
+                // Hmm. We're not sure when it was last modified?
+                long maxAge = info.maxAge();
+                if (maxAge >= 0) {
+                    long oldest = now.getTimeInMillis() - (maxAge * 1000);
+                    if (maxAge == 0 || cacheTime < oldest) {
+                        return true;
+                    }
+                }
+
                 lastModified = conn.getDate();
             }
             
@@ -836,7 +879,6 @@ public class ResourceCache {
                 logger.fine("Not expired: " + origURI + " (HTTP " + conn.getResponseCode() + ")");
                 return false;
             }
-            
         } catch (MalformedURLException mue) {
             logger.fine("Not expired: " + origURI + " (MalformedURLException)");
             return false;
@@ -845,10 +887,12 @@ public class ResourceCache {
             return false;
         }
 
+        boolean etagsDiffer = (etag != null && cachedEtag != null && !etag.equals(cachedEtag));
+        
         if (lastModified == 0) {
             logger.fine("Expired: " + origURI + " (no last-modified header)");
             return true;
-        } else if (lastModified > cacheTime) {
+        } else if (lastModified > cacheTime || etagsDiffer) {
             logger.fine("Expired: " + origURI);
             expire(uri);
             return true;
@@ -857,34 +901,78 @@ public class ResourceCache {
             return false;
         }
     }
-    
+
+    private synchronized void flushCache(Pattern uriPattern, long maxCount, long maxSize) {
+        int cacheCount = 0;
+        long cacheSize = 0;
+        Vector<String> expired = new Vector<String>();
+        
+        // N.B. The entries in the cache are sorted in reverse date order, so as soon as we pass
+        // a threshold, we burn everything that follows...
+        Element node = DOMUtils.getFirstElement(catalog);
+        while (node != null) {
+            String srcuri = null;
+            if (node.hasAttribute("publicId")) {
+                // They must also have a system entry; skip the public one so we don't count it twice
+                node = DOMUtils.getNextElement(node);
+                continue;
+            }
+
+            if (node.hasAttribute("systemId")) {
+                srcuri = node.getAttribute("systemId");
+            } else {
+                srcuri = node.getAttribute("name");
+            }
+
+            if (uriPattern.matcher(srcuri).matches()) {
+                cacheCount++;
+                File lclFile = new File(node.getAttribute("uri"));
+                cacheSize += lclFile.length();
+
+                if (cacheCount > maxCount || cacheSize > maxSize) {
+                    expired.add(node.getAttribute("uri"));
+                }
+            }
+            node = DOMUtils.getNextElement(node);
+        }
+        
+        expire(expired);
+    }
+
     private synchronized void expire(String localFile) {
+        Vector<String> expired = new Vector<String>();
+        expired.add(localFile);
+        expire(expired);
+    }
+
+    private synchronized void expire(Vector<String> expired) {
         DirectoryLock lock = new DirectoryLock();
         if (!lock.locked()) {
             return;
         }
 
-        String name = localFile;
-        int pos = name.lastIndexOf("/");
-        if (pos >= 0) {
-            name = name.substring(pos+1);
-        }
-        pos = name.lastIndexOf(".");
-        if (pos >= 0) {
-            name = name.substring(0, pos);
-        }
+        for (String localFile : expired) {
+            String name = localFile;
+            int pos = name.lastIndexOf("/");
+            if (pos >= 0) {
+                name = name.substring(pos+1);
+            }
+            pos = name.lastIndexOf(".");
+            if (pos >= 0) {
+                name = name.substring(0, pos);
+            }
 
-        logger.info("Expiring: " + name);
+            logger.finer("Expiring: " + name);
 
-        File entry = new File(entryDir + "/" + name + ".xml");
-        if (entry.exists() && entry.isFile()) {
-            File renamed = new File(expiredDir + "/" + name + ".xml");
-            entry.renameTo(renamed);
-            renamed.setLastModified(calendar.getTimeInMillis());
+            File entry = new File(entryDir + "/" + name + ".xml");
+            if (entry.exists() && entry.isFile()) {
+                File renamed = new File(expiredDir + "/" + name + ".xml");
+                entry.renameTo(renamed);
+                renamed.setLastModified(calendar.getTimeInMillis());
+            }
         }
 
         cache = null; // Force the catalog to be reloaded...
-            
         lock.unlock();
     }
     
@@ -951,13 +1039,15 @@ public class ResourceCache {
         private long deleteWait = -1;
         private long cacheSize = -1;
         private long cacheSpace = -1;
+        private long maxAge = -1;
 
-        public CacheInfo(String uriPattern, boolean cache, long deleteWait, long cacheSize, long cacheSpace) {
+        public CacheInfo(String uriPattern, boolean cache, long deleteWait, long cacheSize, long cacheSpace, long maxAge) {
             this.pattern = uriPattern;
             this.cache = cache;
             this.deleteWait = deleteWait;
             this.cacheSize = cacheSize;
             this.cacheSpace = cacheSpace;
+            this.maxAge = maxAge;
         }
         
         public String pattern() {
@@ -978,6 +1068,10 @@ public class ResourceCache {
 
         public long cacheSpace() {
             return cacheSpace;
+        }
+        
+        public long maxAge() {
+            return maxAge;
         }
     }
 }

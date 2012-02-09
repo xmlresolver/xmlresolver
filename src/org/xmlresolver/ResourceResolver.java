@@ -126,150 +126,67 @@ public class ResourceResolver {
     }    
     
     private Resource cacheStreamURI(String resolved) {
-        URL url = null;
-        boolean suppressCT = false;
+        ResourceConnection conn = new ResourceConnection(resolved);
 
-        try {
-            URI uri = new URI(resolved);
-            url = uri.toURL();
-
-            String absuriString = url.toString();
-            /* FIXME: DO THIS OR NOT!?!?
-            if (absuriString.startsWith("file:/") && !absuriString.startsWith("file:///")) {
-                absuriString = "file:///" + absuriString.substring(6);
-            }
-             */
-
-            // don't report contentType for file: URIs; it's no better a guess now than later
-            suppressCT = absuriString.startsWith("file:");
-
-            int statusCode = 0;
-            InputStream stream = null;
-            String contentType = null;
-            String rediruriString = absuriString;
-
-            if (absuriString.startsWith("http:") || absuriString.startsWith("https:")) {
-                // Use Apache HttpClient
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(absuriString);
-                // Provide custom retry handler is necessary
-                get.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-                        new DefaultHttpMethodRetryHandler(3, false));
-                statusCode = client.executeMethod(get);
-
-                Header contentTypeHeader = get.getResponseHeader("Content-Type");
-                HeaderElement[] elems = contentTypeHeader.getElements();
-                if (elems == null || elems.length == 0) {
-                    // This should never happen
-                    contentType = "application/octet-stream";
-                } else {
-                    contentType = elems[0].getName();
-                }
-
-                if (statusCode == 200) {
-                    stream = get.getResponseBodyAsStream();
-                    rediruriString = get.getURI().toString();
-                }
-            } else {
-                URLConnection connection = url.openConnection();
-                connection.connect();
-                contentType = connection.getContentType();
-                stream = connection.getInputStream();
-                statusCode = 200;
-            }
-
-            if (statusCode == 200) {
-                if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
-                    String localName = cache.addURI(absuriString, suppressCT ? null: contentType, stream, rediruriString);
+        if (conn.getStatusCode() == 200) {
+            String absuriString = conn.getURI();
+            if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
+                try {
+                    String localName = cache.addURI(conn);
                     File localFile = new File(localName);
                     InputStream result = new FileInputStream(localFile);
-                    return new Resource(result, rediruriString);
-                } else {
-                    return new Resource(stream, rediruriString);
+                    return new Resource(result, conn.getRedirect());
+                } catch (IOException ioe) {
+                    return null;
                 }
             } else {
-                return null;
+                return new Resource(conn.getStream(), conn.getRedirect());
             }
-        } catch (URISyntaxException use) {
-            return null;
-        } catch (IOException ioe) {
+        } else {
             return null;
         }
     }    
     
     private Resource cacheStreamNamespaceURI(String resolved, String nature, String purpose) {
-        URL url = null;
-        boolean suppressCT = false;
+        ResourceConnection conn = new ResourceConnection(resolved);
 
-        try {
-            URI uri = new URI(resolved);
-            url = uri.toURL();
-
-            String absuriString = url.toString();
-
-            /* FIXME: DO THIS OR NOT!?!?
-            if (absuriString.startsWith("file:/") && !absuriString.startsWith("file:///")) {
-                absuriString = "file:///" + absuriString.substring(6);
-            }
-             */
-            
-            // don't report contentType for file: URIs; it's no better a guess now than later
-            suppressCT = !absuriString.startsWith("file:");
-
-            URLConnection connection = url.openConnection();
-            connection.connect();
-
+        if (conn.getStatusCode() == 200) {
+            String absuriString = conn.getURI();
             if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
-                String localName = cache.addNamespaceURI(absuriString, nature, purpose,
-                                                         suppressCT ? null : connection.getContentType(),
-                                                         connection.getInputStream());
-                File localFile = new File(localName);
-                InputStream result = new FileInputStream(localFile);
-                return new Resource(result, absuriString);
+                try {
+                    String localName = cache.addNamespaceURI(conn, nature, purpose);
+                    File localFile = new File(localName);
+                    InputStream result = new FileInputStream(localFile);
+                    return new Resource(result, absuriString);
+                } catch (IOException ioe) {
+                    return null;
+                }
             } else {            
-                return new Resource(connection.getInputStream(), absuriString);
+                return new Resource(conn.getStream(), absuriString);
             }
-        } catch (URISyntaxException use) {
-            return null;
-        } catch (IOException ioe) {
+        } else {
             return null;
         }
     }    
     
     private Resource cacheStreamSystem(String resolved, String publicId) {
-        URL url = null;
-        boolean suppressCT = false;
+        ResourceConnection conn = new ResourceConnection(resolved);
 
-        try {
-            URI uri = new URI(resolved);
-            url = uri.toURL();
-
-            String absuriString = url.toString();
-
-            /* FIXME: DO THIS OR NOT!?!?
-            if (absuriString.startsWith("file:/") && !absuriString.startsWith("file:///")) {
-                absuriString = "file:///" + absuriString.substring(6);
-            }
-             */
-
-            // don't report contentType for file: URIs; it's no better a guess now than later
-            suppressCT = !absuriString.startsWith("file:");
-            
-            URLConnection connection = url.openConnection();
-            connection.connect();
-
+        if (conn.getStatusCode() == 200) {
+            String absuriString = conn.getURI();
             if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
-                String contentType = suppressCT ? null : connection.getContentType();
-                InputStream is = connection.getInputStream();
-                String localName = cache.addSystem(absuriString, publicId, contentType, is);
-                InputStream result = new FileInputStream(new File(localName));
-                return new Resource(result, absuriString);
+                try {
+                    String localName = cache.addSystem(conn, publicId);
+                    File localFile = new File(localName);
+                    InputStream result = new FileInputStream(localFile);
+                    return new Resource(result, absuriString);
+                } catch (IOException ioe) {
+                    return null;
+                }
             } else {                        
-                return new Resource(connection.getInputStream(), absuriString);
+                return new Resource(conn.getStream(), absuriString);
             }
-        } catch (URISyntaxException use) {
-            return null;
-        } catch (IOException ioe) {
+        } else {
             return null;
         }
     }    
