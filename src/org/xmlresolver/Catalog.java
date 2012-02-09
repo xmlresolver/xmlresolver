@@ -319,7 +319,7 @@ public class Catalog {
             logger.finer("  Looking in " + aDocRoot.getBaseURI());
             CatalogResult resolved = aFunction.apply(aDocRoot);
             if (resolved != null) {
-                logger.fine("  Found: " + resolved);
+                logger.finer("  Found: " + resolved);
                 return resolved;
             }
         }
@@ -349,7 +349,7 @@ public class Catalog {
     private CatalogResult lookupInDocsOnly(LookupFunction aFunction) {
       CatalogResult r1 = lookupInDocs(aFunction);
       if (r1 == null) {
-          logger.fine("  Not found");
+          logger.finer("  Not found");
       }
       return r1;
     }
@@ -358,7 +358,7 @@ public class Catalog {
       CatalogResult r1 = lookupInDocs(aFunction);
       CatalogResult r2 = r1 != null ? r1: lookupInCache(aFunction);
       if (r2 == null) {
-          logger.fine("  Not found");
+          logger.finer("  Not found");
       }
       return r2;
     }
@@ -505,7 +505,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupPublic(String systemId, String publicId) {
-        logger.fine("lookupPublic(" + systemId + "," + publicId + ")");
+        logger.finer("lookupPublic(" + systemId + "," + publicId + ")");
         final ProcessedIds processedIds = processIds(systemId, publicId);
         return lookupInDocsOrCache(new LookupFunction() {
             public CatalogResult apply(Element docElem) {
@@ -608,7 +608,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupSystem(String aSystemId) {
-        logger.fine("lookupSystem(" + aSystemId + ")");
+        logger.finer("lookupSystem(" + aSystemId + ")");
 
         final String systemId = URIUtils.normalizeURI(aSystemId);
 
@@ -709,7 +709,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupDoctype(final String entityName, String systemId, String publicId) {
-        logger.fine("lookupDoctype(" + entityName + "," + publicId + "," + systemId + ")");
+        logger.finer("lookupDoctype(" + entityName + "," + publicId + "," + systemId + ")");
         final ProcessedIds processedIds = processIds(systemId, publicId);
         // Maybe lookupInDocsOrCache should be used here too.
         return lookupInDocsOnly(new LookupFunction() {
@@ -775,7 +775,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupDocument() {
-        logger.fine("lookupDocument()");
+        logger.finer("lookupDocument()");
         return lookupInDocsOnly(new LookupFunction() {
             public CatalogResult apply(Element docElem) {
               return lookupDocument(docElem);
@@ -806,7 +806,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupEntity(final String entityName, String systemId, String publicId) {
-        logger.fine("lookupEntity(" + entityName + "," + publicId + "," + systemId + ")");
+        logger.finer("lookupEntity(" + entityName + "," + publicId + "," + systemId + ")");
         final ProcessedIds processedIds = processIds(systemId, publicId);
         return lookupInDocsOnly(new LookupFunction() {
             public CatalogResult apply(Element docElem) {
@@ -876,7 +876,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupNotation(final String notName, String systemId, String publicId) {
-        logger.fine("lookupNotation(" + notName + "," + publicId + "," + systemId + ")");
+        logger.finer("lookupNotation(" + notName + "," + publicId + "," + systemId + ")");
         final ProcessedIds processedIds = processIds(systemId, publicId);
         return lookupInDocsOnly(new LookupFunction() {
             public CatalogResult apply(Element docElem) {
