@@ -95,6 +95,11 @@ public class ResourceConnection {
     
     private String getHeader(GetMethod get, String name, String def) {
         Header contentTypeHeader = get.getResponseHeader(name);
+
+        if (contentTypeHeader == null) {
+            return def;
+        }
+
         HeaderElement[] elems = contentTypeHeader.getElements();
         if (elems == null || elems.length == 0) {
             // This should never happen
