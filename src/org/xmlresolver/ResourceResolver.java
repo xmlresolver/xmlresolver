@@ -16,8 +16,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,12 +26,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
 import org.xmlresolver.helpers.DOMUtils;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HeaderElement;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.commons.httpclient.methods.GetMethod;
 
 /** Resolves resources in the catalog.
  *
@@ -130,17 +122,22 @@ public class ResourceResolver {
 
         if (conn.getStatusCode() == 200) {
             String absuriString = conn.getURI();
+            String finalURI = conn.getRedirect();
+            if (finalURI == null) {
+                finalURI = absuriString;
+            }
+
             if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
                 try {
                     String localName = cache.addURI(conn);
                     File localFile = new File(localName);
                     InputStream result = new FileInputStream(localFile);
-                    return new Resource(result, conn.getRedirect());
+                    return new Resource(result, finalURI);
                 } catch (IOException ioe) {
                     return null;
                 }
             } else {
-                return new Resource(conn.getStream(), conn.getRedirect());
+                return new Resource(conn.getStream(), finalURI);
             }
         } else {
             return null;
