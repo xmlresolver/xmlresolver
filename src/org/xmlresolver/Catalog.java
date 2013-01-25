@@ -331,7 +331,7 @@ public class Catalog {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in " + doc.getBaseURI());
+                logger.finer("  Looking in catalog: " + doc.getBaseURI());
                 CatalogResult resolved = lookupURI(doc.getDocumentElement(), uri, nature, purpose);
                 if (resolved != null) {
                     logger.finer("  Found: " + resolved);
@@ -342,7 +342,7 @@ public class Catalog {
         }
 
         if (cache != null && cache.catalog() != null) {
-            logger.finer("  Looking in " + cache.catalog().getBaseURI());
+            logger.finer("  Looking in cache: " + cache.catalog().getBaseURI());
             CatalogResult resolved = lookupURI(cache.catalog().getDocumentElement(), uri, nature, purpose);
             if (resolved != null) {
                 logger.finer("  Found: " + resolved);
@@ -357,8 +357,12 @@ public class Catalog {
     protected CatalogResult lookupURI(Element group, String uri, String nature, String purpose) {
         for (Element child : entries(group, "uri", "name", uri, nature, purpose)) {
             String entry_uri = child.getAttribute("uri");
-            String entry_redir = child.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "redir");
-            return new CatalogResult(entry_redir == null ? entry_uri : entry_redir, DOMUtils.makeAbsolute(child, entry_uri), child, cache);
+            String entry_name = child.getAttribute("name");
+            String entry_redir = null;
+            if (child.hasAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "redir")) {
+                entry_redir = child.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "redir");
+            }
+            return new CatalogResult(entry_redir == null ? entry_name : entry_redir, DOMUtils.makeAbsolute(child, entry_uri), child, cache);
         }
 
         // If there's a REWRITE_URI entry in this catalog, use it
