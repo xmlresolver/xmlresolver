@@ -1,11 +1,19 @@
 package org.xmlresolver;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HeaderElement;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
+import org.apache.http.impl.client.SystemDefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,18 +46,26 @@ public class ResourceConnection {
 
             if (absuri.startsWith("http:") || absuri.startsWith("https:")) {
                 // Use Apache HttpClient so that we can follow the redirect
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(absuri);
-                // You must provide a custom retry handler
-                get.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
-                statusCode = client.executeMethod(get);
+                SystemDefaultHttpClient client = new SystemDefaultHttpClient();
+                client.setHttpRequestRetryHandler(new StandardHttpRequestRetryHandler(3, false));
 
-                contentType = getHeader(get, "Content-Type", "application/octet-stream");
-                etag = getHeader(get, "Etag", null);
+                HttpParams params = new BasicHttpParams();
+                HttpContext localContext = new BasicHttpContext();
+
+                HttpUriRequest httpRequest = new HttpGet(absuri);
+                httpRequest.setParams(params);
+
+                HttpResponse httpResponse = client.execute(httpRequest, localContext);
+                statusCode = httpResponse.getStatusLine().getStatusCode();
+                contentType = getHeader(httpResponse, "Content-Type", "application/octet-stream");
+                etag = getHeader(httpResponse, "Etag", null);
                 
                 if (statusCode == 200) {
-                    stream = get.getResponseBodyAsStream();
-                    redirect = get.getURI().toString();
+                    stream = httpResponse.getEntity().getContent();
+
+                    HttpHost host = (HttpHost) localContext.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+                    HttpUriRequest req = (HttpUriRequest) localContext.getAttribute(ExecutionContext.HTTP_REQUEST);
+                    redirect = (req.getURI().isAbsolute()) ? req.getURI().toString() : (host.toURI() + req.getURI());
                     if (absuri.equals(redirect)) {
                         redirect = null;
                     }
@@ -93,19 +109,18 @@ public class ResourceConnection {
         return statusCode;
     }
     
-    private String getHeader(GetMethod get, String name, String def) {
-        Header contentTypeHeader = get.getResponseHeader(name);
+    private String getHeader(HttpResponse resp, String name, String def) {
+        Header[] headers = resp.getHeaders(name);
 
-        if (contentTypeHeader == null) {
+        if (headers == null) {
             return def;
         }
 
-        HeaderElement[] elems = contentTypeHeader.getElements();
-        if (elems == null || elems.length == 0) {
+        if (headers == null || headers.length == 0) {
             // This should never happen
             return def;
         } else {
-            return elems[0].getName();
+            return headers[0].getValue();
         }
     }
 }
