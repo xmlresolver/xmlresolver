@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.TestCase;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -42,30 +43,35 @@ public class CatalogLookupTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
+    @Test
     public void testCatalog1() {
         System.out.println("testCatalog1");
 
-        runCatalogTests("catalogs/catalog.xml");
+        runCatalogTests("tests/catalogs/catalog.xml");
     }
-    
+
+    @Test
     public void testCatalog2() {
         System.out.println("testCatalog2");
 
-        runCatalogTests("catalogs/prefer-public.xml");
+        runCatalogTests("tests/catalogs/prefer-public.xml");
     }
-    
+
+    @Test
     public void testCatalog3() {
         System.out.println("testCatalog3");
 
-        runCatalogTests("catalogs/prefer-system.xml");
+        runCatalogTests("tests/catalogs/prefer-system.xml");
     }
-    
+
+    @Test
     public void testCatalog4() {
         System.out.println("testCatalog4");
 
-        runCatalogTests("catalogs/sgmlcatalog.xml");
+        runCatalogTests("tests/catalogs/sgmlcatalog.xml");
     }
 
+    @Test
     public void runCatalogTests(String catalogFile) {
         catalog = new Catalog(catalogFile);
         DocumentBuilder builder = null;
@@ -112,12 +118,12 @@ public class CatalogLookupTest extends TestCase {
             }
         }
     }
-    
+
     private void runLookupEntity(String name, String sysid, String pubid) {
         CatalogResult result = catalog.lookupEntity(name,sysid,pubid);
         checkEqual("lookupEntity", name + "," + sysid + "," + pubid, result.uri());
     }
-    
+
     private void runLookupURI(String name) {
         CatalogResult result = catalog.lookupURI(name);
         checkEqual("lookupURI", name, result.uri());

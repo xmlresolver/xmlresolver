@@ -9,10 +9,12 @@
 
 package org.xmlresolver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
@@ -21,8 +23,7 @@ import javax.xml.stream.XMLStreamException;
  * @author ndw
  */
 public class StAXResolver implements XMLResolver {
-    
-    private static Logger logger = Logger.getLogger("org.xmlresolver.StAXResolver");
+    protected static Logger logger = LoggerFactory.getLogger(StAXResolver.class);
     ResourceResolver resolver = null;
     
     /** Creates a new instance of StAXResolver.
@@ -82,14 +83,14 @@ public class StAXResolver implements XMLResolver {
             }
         }
 
-        logger.finer("resolveEntity(" + publicId + "," + absSystem + "," + namespace + ")");
+        logger.trace("resolveEntity(" + publicId + "," + absSystem + "," + namespace + ")");
 
         Resource rsrc = resolver.resolvePublic(publicId, absSystem);
         if (rsrc == null) {
-            logger.finer("  not resolved locally");
+            logger.trace("  not resolved locally");
             return null;
         } else {
-            logger.finer("  resolved locally: "  + rsrc.uri());
+            logger.trace("  resolved locally: "  + rsrc.uri());
             return rsrc.body();
         }
     }

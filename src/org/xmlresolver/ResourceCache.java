@@ -24,12 +24,13 @@ import java.nio.channels.FileLock;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.Vector;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -116,7 +117,7 @@ public class ResourceCache {
     /** The XML Namespace name of XML Resolver cache file, "http://xmlresolver.org/ns/cache". */
     public static final String NS_CACHE = "http://xmlresolver.org/ns/cache";
 
-    private static Logger logger = Logger.getLogger(ResourceCache.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(ResourceCache.class);
     private static GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
     private static GregorianCalendar now = new GregorianCalendar();
     private static DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -207,7 +208,7 @@ public class ResourceCache {
         File fDir = new File(dir);
         try {
             cacheDir = fDir.getCanonicalFile();
-            logger.fine("Cache: " + cacheDir);
+            logger.trace("Cache: " + cacheDir);
         } catch (IOException ioe) {
             cacheDir = null;
         }
@@ -223,7 +224,7 @@ public class ResourceCache {
             long val = Long.parseLong(node.getAttribute(attr));
             return val;
         } catch (NumberFormatException nfe) {
-            logger.warning("Bad numeric value in cache control file: " + node.getAttribute(attr));
+            logger.warn("Bad numeric value in cache control file: " + node.getAttribute(attr));
             return defVal;
         }
     }
@@ -250,7 +251,7 @@ public class ResourceCache {
             long val = Long.parseLong(longStr);
             return val * units;
         } catch (NumberFormatException nfe) {
-            logger.warning("Bad numeric value in cache control file: " + longStr);
+            logger.warn("Bad numeric value in cache control file: " + longStr);
             return defVal;
         }
     }
@@ -283,7 +284,7 @@ public class ResourceCache {
             long val = Long.parseLong(longStr);
             return val * units;
         } catch (NumberFormatException nfe) {
-            logger.warning("Bad numeric value in cache control file: " + longStr);
+            logger.warn("Bad numeric value in cache control file: " + longStr);
             return defVal;
         }
     }
@@ -876,28 +877,28 @@ public class ResourceCache {
             }
             
             if (conn.getResponseCode() != 200) {
-                logger.fine("Not expired: " + origURI + " (HTTP " + conn.getResponseCode() + ")");
+                logger.trace("Not expired: " + origURI + " (HTTP " + conn.getResponseCode() + ")");
                 return false;
             }
         } catch (MalformedURLException mue) {
-            logger.fine("Not expired: " + origURI + " (MalformedURLException)");
+            logger.trace("Not expired: " + origURI + " (MalformedURLException)");
             return false;
         } catch (IOException ioe) {
-            logger.fine("Not expired: " + origURI + " (IOException)");
+            logger.trace("Not expired: " + origURI + " (IOException)");
             return false;
         }
 
         boolean etagsDiffer = (etag != null && cachedEtag != null && !etag.equals(cachedEtag));
         
         if (lastModified == 0) {
-            logger.fine("Expired: " + origURI + " (no last-modified header)");
+            logger.trace("Expired: " + origURI + " (no last-modified header)");
             return true;
         } else if (lastModified > cacheTime || etagsDiffer) {
-            logger.fine("Expired: " + origURI);
+            logger.trace("Expired: " + origURI);
             expire(uri);
             return true;
         } else {
-            logger.fine("Not expired: " + origURI);
+            logger.trace("Not expired: " + origURI);
             return false;
         }
     }
@@ -962,7 +963,7 @@ public class ResourceCache {
                 name = name.substring(0, pos);
             }
 
-            logger.finer("Expiring: " + name);
+            logger.trace("Expiring: " + name);
 
             File entry = new File(entryDir + "/" + name + ".xml");
             if (entry.exists() && entry.isFile()) {

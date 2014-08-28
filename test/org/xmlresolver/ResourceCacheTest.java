@@ -8,43 +8,24 @@
 package org.xmlresolver;
 
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import junit.framework.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+
+import junit.framework.TestCase;
+import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
 
 /**
  *
  * @author ndw
  */
 public class ResourceCacheTest extends TestCase {
-    
-    public ResourceCacheTest(String testName) {
-        super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
+    @Test
     public void testInit() {
         ResourceCache cache = new ResourceCache("catalogs/cache");
         Document catalog = cache.catalog();
     }
-    
+
+    @Test
     public void testAddURI() throws MalformedURLException, IOException {
         ResourceCache cache = new ResourceCache("catalogs/cache");
         String uri = "http://www.w3.org/2001/XMLSchema";
@@ -52,6 +33,7 @@ public class ResourceCacheTest extends TestCase {
         cache.addURI(conn);
     }
 
+    @Test
     public void testAddSystem() throws MalformedURLException, IOException {
         ResourceCache cache = new ResourceCache("catalogs/cache");
         String systemId = "http://docbook.org/xml/4.5/docbookx.dtd";

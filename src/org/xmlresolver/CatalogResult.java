@@ -9,15 +9,14 @@
 
 package org.xmlresolver;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.GregorianCalendar;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /** Represents the result of a catalog search.
@@ -25,7 +24,7 @@ import org.w3c.dom.Element;
  * @author ndw
  */
 public class CatalogResult {
-    private static Logger logger = Logger.getLogger("org.xmlresolver");
+    private static Logger logger = LoggerFactory.getLogger(CatalogResult.class);
     private String origURI = null;
     private String uri = null;
     private String contentType = null;

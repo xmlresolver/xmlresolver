@@ -17,11 +17,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Logger;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.EntityResolver;
@@ -33,7 +35,7 @@ import org.xml.sax.ext.EntityResolver2;
  * and {@link NamespaceResolver}.
  */
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
-    private static Logger logger = Logger.getLogger(Resolver.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(Resolver.class);
     ResourceResolver resolver = null;
     
     /** Creates a new instance of Resolver.
@@ -76,10 +78,10 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             href = base;
             base = null;
         }
-        logger.finer("resolveResource(" + href + "," + base + ")");
+        logger.trace("resolveResource(" + href + "," + base + ")");
         Resource rsrc = resolver.resolveURI(href, base);
 
-        logger.finer(href
+        logger.trace(href
                 + (base == null ? "" : " (" + base + ")") + " => "
                 + (rsrc == null ? href : rsrc.uri()));
 
@@ -100,10 +102,10 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
     /** Implements the {@link NamespaceResolver} interface. */
     public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
-        logger.finer("resolveNamespace(" + uri + "," + nature + "," + purpose + ")");
+        logger.trace("resolveNamespace(" + uri + "," + nature + "," + purpose + ")");
         Resource rsrc = resolver.resolveNamespaceURI(uri, nature, purpose);
 
-        logger.finer(uri + " (" + nature + "," + purpose + ") => "
+        logger.trace(uri + " (" + nature + "," + purpose + ") => "
                 + (rsrc == null ? uri : rsrc.uri()));
 
         if (rsrc == null) {
@@ -117,10 +119,10 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
     /** Implements the {@link org.xml.sax.EntityResolver} interface. */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        logger.finer("resolveEntity(" + publicId + "," + systemId + ")");
+        logger.trace("resolveEntity(" + publicId + "," + systemId + ")");
         Resource rsrc = resolver.resolvePublic(systemId, publicId);
         
-        logger.finer(systemId
+        logger.trace(systemId
                     + (publicId == null ? "" : " (" + publicId + ")") + " => "
                     + (rsrc == null ? systemId : rsrc.uri()));
 
@@ -135,10 +137,10 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
     /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface. */
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-        logger.finer("getExternalSubset(" + name + "," + baseURI + ")");
+        logger.trace("getExternalSubset(" + name + "," + baseURI + ")");
         Resource rsrc = resolver.resolveDoctype(name);
 
-        logger.finer(baseURI
+        logger.trace(baseURI
                 + (name == null ? "" : " (" + name + ")") + " => "
                 + (rsrc == null ? baseURI : rsrc.uri()));
 
@@ -180,10 +182,10 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
           
         }
 
-        logger.finer("resolveEntity(" + name + "," + publicId + "," + absSystem + ")");
+        logger.trace("resolveEntity(" + name + "," + publicId + "," + absSystem + ")");
         Resource rsrc = resolver.resolveEntity(name, absSystem, publicId);
 
-        logger.finer(absSystem
+        logger.trace(absSystem
                 + (publicId == null ? "" : " (" + publicId + ")") + " => "
                 + (rsrc == null ? absSystem : rsrc.uri()));
 
@@ -218,16 +220,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
         Resource rsrc = null;
         if ("http://www.w3.org/TR/REC-xml".equals(type)) {
-            logger.finer("resolveResource(XML," + publicId + "," + absSystem + ")");
+            logger.trace("resolveResource(XML," + publicId + "," + absSystem + ")");
             rsrc = resolver.resolvePublic(absSystem, publicId);
         } else if ("http://www.w3.org/2001/XMLSchema".equals(type)) {
-            logger.finer("resolveResource(XMLSchema," + namespace + "," + absSystem + ")");
+            logger.trace("resolveResource(XMLSchema," + namespace + "," + absSystem + ")");
             rsrc = resolver.resolveURI(absSystem, baseURI);
         } else {
             return null;
         }
 
-        logger.finer(absSystem
+        logger.trace(absSystem
                 + (publicId == null ? "" : " (" + publicId + ")")
                 + (namespace == null ? "" : " (" + namespace + ")") + " => "
                 + (rsrc == null ? absSystem : rsrc.uri()));

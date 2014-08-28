@@ -10,8 +10,9 @@
 package org.xmlresolver;
 
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -88,7 +89,7 @@ public class Catalog {
     /** The XML Namespace name of XML Resolver Catalog extensions, "http://xmlresolver.org/ns/catalog". */
     public static final String NS_XMLRESOURCE_EXT = "http://xmlresolver.org/ns/catalog";
     
-    public static Logger logger = Logger.getLogger("org.xmlresolver");
+    public static Logger logger = LoggerFactory.getLogger(Catalog.class);
     
     private static String defaultPropertiesFiles() {
         // Yes, this is XMLResolver.properties even though the class is Catalog; that's because this
@@ -221,7 +222,7 @@ public class Catalog {
                     if (catalogElement(child, "nextCatalog")) {
                         Element nextCat = (Element) child;
                         String nextCatalog = DOMUtils.makeAbsolute(nextCat, nextCat.getAttribute("catalog"));
-                        logger.finer("Next catalog: " + nextCat.getAttribute("catalog") + " (" + nextCatalog + ")");
+                        logger.trace("Next catalog: " + nextCat.getAttribute("catalog") + " (" + nextCatalog + ")");
                         
                         if (index+offset >= catalogList.size()) {
                             catalogList.add(new CatalogSource.UriCatalogSource(nextCatalog));
@@ -292,7 +293,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupURI(String uri) {
-        logger.finer("lookupURI(" + uri + ")");
+        logger.trace("lookupURI(" + uri + ")");
         return _lookupNamespaceURI(uri, null, null);
     }
 
@@ -311,7 +312,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupNamespaceURI(String uri, String nature, String purpose) {
-        logger.finer("lookupNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
+        logger.trace("lookupNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
         return _lookupNamespaceURI(uri, nature, purpose);
     }
 
@@ -331,10 +332,10 @@ public class Catalog {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in catalog: " + doc.getBaseURI());
+                logger.trace("  Looking in catalog: " + doc.getBaseURI());
                 CatalogResult resolved = lookupURI(doc.getDocumentElement(), uri, nature, purpose);
                 if (resolved != null) {
-                    logger.finer("  Found: " + resolved);
+                    logger.trace("  Found: " + resolved);
                     return resolved;
                 }
             }
@@ -342,15 +343,15 @@ public class Catalog {
         }
 
         if (cache != null && cache.catalog() != null) {
-            logger.finer("  Looking in cache: " + cache.catalog().getBaseURI());
+            logger.trace("  Looking in cache: " + cache.catalog().getBaseURI());
             CatalogResult resolved = lookupURI(cache.catalog().getDocumentElement(), uri, nature, purpose);
             if (resolved != null) {
-                logger.finer("  Found: " + resolved);
+                logger.trace("  Found: " + resolved);
                 return resolved;
             }
         }
         
-        logger.finer("  Not found");
+        logger.trace("  Not found");
         return null;
     }
 
@@ -449,7 +450,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupPublic(String systemId, String publicId) {
-        logger.finer("lookupPublic(" + systemId + "," + publicId + ")");
+        logger.trace("lookupPublic(" + systemId + "," + publicId + ")");
 
         if (systemId != null) {
             systemId = URIUtils.normalizeURI(systemId);
@@ -462,7 +463,7 @@ public class Catalog {
         if (systemId != null && systemId.startsWith("urn:publicid:")) {
             systemId = PublicId.decodeURN(systemId);
             if (publicId != null && !publicId.equals(systemId)) {
-                logger.warning("urn:publicid: system identifier differs from public identifier; using public identifier");
+                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
                 systemId = null;
             } else {
                 publicId = systemId;
@@ -475,10 +476,10 @@ public class Catalog {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in " + doc.getBaseURI());
+                logger.trace("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupPublic(doc.getDocumentElement(), systemId, publicId);
                 if (resolved != null) {
-                    logger.finer("  Found: " + resolved);
+                    logger.trace("  Found: " + resolved);
                     return resolved;
                 }
             }
@@ -486,15 +487,15 @@ public class Catalog {
         }
 
         if (cache != null && cache.catalog() != null) {
-            logger.finer("  Looking in " + cache.catalog().getBaseURI());
+            logger.trace("  Looking in " + cache.catalog().getBaseURI());
             CatalogResult resolved = lookupPublic(cache.catalog().getDocumentElement(), systemId, publicId);
             if (resolved != null) {
-                logger.finer("  Found: " + resolved);
+                logger.trace("  Found: " + resolved);
                 return resolved;
             }
         }
         
-        logger.finer("  Not found");
+        logger.trace("  Not found");
         return null;
     }        
         
@@ -592,7 +593,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupSystem(String systemId) {
-        logger.finer("lookupSystem(" + systemId + ")");
+        logger.trace("lookupSystem(" + systemId + ")");
 
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -605,10 +606,10 @@ public class Catalog {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in " + doc.getBaseURI());
+                logger.trace("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupLocalSystem(doc.getDocumentElement(), systemId);
                 if (resolved != null) {
-                    logger.finer("  Found: " + resolved);
+                    logger.trace("  Found: " + resolved);
                     return resolved;
                 }
             }
@@ -616,15 +617,15 @@ public class Catalog {
         }
 
         if (cache != null && cache.catalog() != null) {
-            logger.finer("  Looking in " + cache.catalog().getBaseURI());
+            logger.trace("  Looking in " + cache.catalog().getBaseURI());
             CatalogResult resolved = lookupLocalSystem(cache.catalog().getDocumentElement(), systemId);
             if (resolved != null) {
-                logger.finer("  Found: " + resolved);
+                logger.trace("  Found: " + resolved);
                 return resolved;
             }
         }
 
-        logger.finer("  Not found");
+        logger.trace("  Not found");
         return null;
     }
     
@@ -714,7 +715,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupDoctype(String entityName, String systemId, String publicId) {
-        logger.finer("lookupDoctype(" + entityName + "," + publicId + "," + systemId + ")");
+        logger.trace("lookupDoctype(" + entityName + "," + publicId + "," + systemId + ")");
   
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -725,7 +726,7 @@ public class Catalog {
         if (systemId != null && systemId.startsWith("urn:publicid:")) {
             systemId = PublicId.decodeURN(systemId);
             if (publicId != null && !publicId.equals(systemId)) {
-                logger.warning("urn:publicid: system identifier differs from public identifier; using public identifier");
+                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
                 systemId = null;
             } else {
                 publicId = systemId;
@@ -738,17 +739,17 @@ public class Catalog {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in " + doc.getBaseURI());
+                logger.trace("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupDoctype(doc.getDocumentElement(), entityName, systemId, publicId);
                 if (resolved != null) {
-                    logger.finer("  Found: " + resolved);
+                    logger.trace("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.finer("  Not found");
+        logger.trace("  Not found");
         return null;
     }
   
@@ -808,23 +809,23 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupDocument() {
-        logger.finer("lookupDocument()");
+        logger.trace("lookupDocument()");
         int index = 0;
         while (index < catalogList.size()) {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in " + doc.getBaseURI());
+                logger.trace("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupDocument(doc.getDocumentElement());
                 if (resolved != null) {
-                    logger.finer("  Found: " + resolved);
+                    logger.trace("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.finer("  Not found");
+        logger.trace("  Not found");
         return null;
     }
 
@@ -851,7 +852,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupEntity(String entityName, String systemId, String publicId) {
-        logger.finer("lookupEntity(" + entityName + "," + publicId + "," + systemId + ")");
+        logger.trace("lookupEntity(" + entityName + "," + publicId + "," + systemId + ")");
 
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -862,7 +863,7 @@ public class Catalog {
         if (systemId != null && systemId.startsWith("urn:publicid:")) {
             systemId = PublicId.decodeURN(systemId);
             if (publicId != null && !publicId.equals(systemId)) {
-                logger.warning("urn:publicid: system identifier differs from public identifier; using public identifier");
+                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
                 systemId = null;
             } else {
                 publicId = systemId;
@@ -875,17 +876,17 @@ public class Catalog {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in " + doc.getBaseURI());
+                logger.trace("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupEntity(doc.getDocumentElement(), entityName, systemId, publicId);
                 if (resolved != null) {
-                    logger.finer("  Found: " + resolved);
+                    logger.trace("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.finer("  Not found");
+        logger.trace("  Not found");
         return null;
     }
   
@@ -950,7 +951,7 @@ public class Catalog {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public CatalogResult lookupNotation(String notName, String systemId, String publicId) {
-        logger.finer("lookupNotation(" + notName + "," + publicId + "," + systemId + ")");
+        logger.trace("lookupNotation(" + notName + "," + publicId + "," + systemId + ")");
 
         systemId = URIUtils.normalizeURI(systemId);
 
@@ -961,7 +962,7 @@ public class Catalog {
         if (systemId != null && systemId.startsWith("urn:publicid:")) {
             systemId = PublicId.decodeURN(systemId);
             if (publicId != null && !publicId.equals(systemId)) {
-                logger.warning("urn:publicid: system identifier differs from public identifier; using public identifier");
+                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
                 systemId = null;
             } else {
                 publicId = systemId;
@@ -974,17 +975,17 @@ public class Catalog {
             loadCatalog(index);
             Document doc = documentList.get(index);
             if (doc != null) {
-                logger.finer("  Looking in " + doc.getBaseURI());
+                logger.trace("  Looking in " + doc.getBaseURI());
                 CatalogResult resolved = lookupNotation(doc.getDocumentElement(), notName, systemId, publicId);
                 if (resolved != null) {
-                    logger.finer("  Found: " + resolved);
+                    logger.trace("  Found: " + resolved);
                     return resolved;
                 }
             }
             index++;
         }
 
-        logger.finer("  Not found");
+        logger.trace("  Not found");
         return null;
     }
   

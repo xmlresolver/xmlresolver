@@ -31,7 +31,7 @@ public class Configuration {
         }
         InputStream in = Catalog.class.getResourceAsStream("/" + fn);
         if (in == null) {
-          Catalog.logger.warning("Cannot find " + fn);
+          Catalog.logger.warn("Cannot find " + fn);
           continue;
         }
         Properties properties = new Properties();
@@ -39,7 +39,7 @@ public class Configuration {
           properties.load(in);
           return new Configuration(properties, url);
         } catch (IOException e) {
-          Catalog.logger.warning("I/O error reading " + fn);
+          Catalog.logger.warn("I/O error reading " + fn);
         }
       }
     }
@@ -119,7 +119,7 @@ public class Configuration {
             fDir.mkdirs();
           }
           if (!fDir.exists() || !fDir.isDirectory()) {
-            Catalog.logger.warning("Could not create default cache directory: " + dir);
+            Catalog.logger.warn("Could not create default cache directory: " + dir);
           } else {
             cacheDir = dir;
           }

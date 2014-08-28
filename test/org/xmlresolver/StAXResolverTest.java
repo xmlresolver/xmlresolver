@@ -8,6 +8,7 @@
 package org.xmlresolver;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.io.FileInputStream;
 import javax.xml.stream.XMLInputFactory;
@@ -20,19 +21,10 @@ import javax.xml.stream.XMLStreamReader;
  * @author ndw
  */
 public class StAXResolverTest extends TestCase {
-    public StAXResolverTest(String testName) {
-        super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
     /**
      * Test of resolve method, of class org.xmlresolver.Resolver.
      */
+    @Test
     public void testResolver() throws Exception {
         System.out.println("testResolver");
         
@@ -41,7 +33,7 @@ public class StAXResolverTest extends TestCase {
         StAXResolver resolver = new StAXResolver(catalog);
         factory.setXMLResolver(new SResolver(resolver));
         
-        String xmlFile = "documents/dtdtest.xml";
+        String xmlFile = "tests/documents/dtdtest.xml";
         XMLStreamReader reader = factory.createXMLStreamReader(xmlFile, new FileInputStream(xmlFile));
 
         while (reader.hasNext()) {
@@ -52,7 +44,7 @@ public class StAXResolverTest extends TestCase {
         // If we didn't get an exception, we passed!
     }
     
-    class SResolver implements XMLResolver {
+    private class SResolver implements XMLResolver {
         private StAXResolver resolver = null;
 
         public SResolver(StAXResolver resolver) {

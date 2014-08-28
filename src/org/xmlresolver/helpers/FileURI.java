@@ -2,9 +2,11 @@
 
 package org.xmlresolver.helpers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Logger;
 
 /**
  * Static method for dealing with file: URLs.
@@ -15,9 +17,11 @@ import java.util.logging.Logger;
  *
  */
 public abstract class FileURI {
-    protected static Logger logger = Logger.getLogger("org.xmlresolver");
+    protected static Logger logger = null;
 
-    protected FileURI() { }
+    protected FileURI() {
+        logger = LoggerFactory.getLogger(this.getClass());
+    }
 
     /**
      * Construct a <code>file:</code> URI for a path name.
@@ -67,7 +71,7 @@ public abstract class FileURI {
 
           return file;
       } catch (URISyntaxException use) {
-          logger.warning("Invalid URI syntax in base URI: " + pathname + " (in " + userdir + " with \"" + sep + "\")");
+          logger.warn("Invalid URI syntax in base URI: " + pathname + " (in " + userdir + " with \"" + sep + "\")");
           return null;
       }
 

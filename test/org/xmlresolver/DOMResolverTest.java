@@ -11,7 +11,9 @@ package org.xmlresolver;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import junit.framework.*;
+
+import junit.framework.TestCase;
+import org.junit.Test;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -24,22 +26,13 @@ import org.w3c.dom.ls.LSResourceResolver;
  * @author ndw
  */
 public class DOMResolverTest extends TestCase {
-    public DOMResolverTest(String testName) {
-        super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
     /**
      * Test of resolve method, of class org.xmlresolver.Resolver.
      */
+    @Test
     public void testResolver() throws Exception {
         System.out.println("testResolver");
-        
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         DOMImplementation domImpl = builder.getDOMImplementation();
@@ -47,12 +40,12 @@ public class DOMResolverTest extends TestCase {
         LSParser parser = domLSImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, "http://www.w3.org/TR/REC-xml");
         DOMConfiguration config = parser.getDomConfig();
         //config.setParameter("resource-resolver", new DOMLSResolver(new Resolver(new Catalog())));
-        parser.parseURI("documents/dtdtest.xml");
+        parser.parseURI("tests/documents/dtdtest.xml");
         
         // If we didn't get an exception, we passed!
     }
     
-    class DOMLSResolver implements LSResourceResolver {
+    private class DOMLSResolver implements LSResourceResolver {
         private Resolver resolver = null;
 
         public DOMLSResolver(Resolver resolver) {

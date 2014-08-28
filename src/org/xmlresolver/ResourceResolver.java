@@ -16,10 +16,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -31,7 +33,7 @@ import org.xmlresolver.helpers.DOMUtils;
  *
  */
 public class ResourceResolver {
-    private static Logger logger = Logger.getLogger("org.xmlresolver");
+    private static Logger logger = LoggerFactory.getLogger(ResourceResolver.class);
 
     // the static catalog is initialized lazily. Maybe it is not neede.
     private static Catalog staticCatalog = null;
@@ -207,7 +209,7 @@ public class ResourceResolver {
      * @return The resource that represents the URI.
      */
     public Resource resolveURI(String href, String base) {
-        logger.finer("resolveURI(" + href + "," + base + ")");
+        logger.trace("resolveURI(" + href + "," + base + ")");
         String uri = href;
         CatalogResult resolved = catalog.lookupURI(uri);
         boolean skipCache = false;
@@ -261,7 +263,7 @@ public class ResourceResolver {
      * @return The resource that represents the external identifier.
      */
     public Resource resolvePublic(String systemId, String publicId) {
-        logger.finer("resolvePublic(" + systemId + "," + publicId + ")");
+        logger.trace("resolvePublic(" + systemId + "," + publicId + ")");
         CatalogResult resolved = catalog.lookupPublic(systemId, publicId);
         if (resolved == null || resolved.expired()) {
             return cacheStreamSystem(systemId, publicId);
@@ -288,7 +290,7 @@ public class ResourceResolver {
      * @return The resource that represents the entity.
      */
     public Resource resolveEntity(String name, String systemId, String publicId) {
-        logger.finer("resolveEntity(" + name + "," + systemId + "," + publicId + ")");
+        logger.trace("resolveEntity(" + name + "," + systemId + "," + publicId + ")");
         CatalogResult resolved = catalog.lookupEntity(name, systemId, publicId);
         if (resolved == null || resolved.expired()) {
             return cacheStreamSystem(systemId, publicId);
@@ -318,7 +320,7 @@ public class ResourceResolver {
      * @return The resource that represents the URI.
      */
     public Resource resolveNamespaceURI(String uri, String nature, String purpose) {
-        logger.finer("resolveNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
+        logger.trace("resolveNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
         CatalogResult resolved = catalog.lookupNamespaceURI(uri, nature, purpose);
         if (resolved != null) {
             return streamResult(resolved);
@@ -379,7 +381,7 @@ public class ResourceResolver {
      * @return The resource that represents the external subset.
      */
     public Resource resolveDoctype(String name) {
-        logger.finer("resolveDoctype(" + name + ")");
+        logger.trace("resolveDoctype(" + name + ")");
         CatalogResult resolved = catalog.lookupDoctype(name, null, null);
         if (resolved == null) {
             return null;

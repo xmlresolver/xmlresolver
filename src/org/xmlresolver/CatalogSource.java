@@ -37,15 +37,15 @@ public abstract class CatalogSource<S> {
       doc = doParse(builder);
       return doc;
     } catch (ParserConfigurationException pce) {
-      Catalog.logger.warning("Parser configuration exception attempting to load " + this);
+      Catalog.logger.warn("Parser configuration exception attempting to load " + this);
       return null;
     } catch (FileNotFoundException fnfe) {
       // ignore this one
-      Catalog.logger.finer("Catalog file not found: " + this);
+      Catalog.logger.trace("Catalog file not found: " + this);
     } catch (IOException ex) {
-      Catalog.logger.warning("I/O exception reading " + this + ": " + ex.toString());
+      Catalog.logger.warn("I/O exception reading " + this + ": " + ex.toString());
     } catch (SAXException ex) {
-      Catalog.logger.warning("SAX exception reading " + this + ": " + ex.toString());
+      Catalog.logger.warn("SAX exception reading " + this + ": " + ex.toString());
     }
     return doc;
   }

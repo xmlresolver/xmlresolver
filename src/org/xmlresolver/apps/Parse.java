@@ -28,8 +28,9 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.ErrorHandler;
 
 import org.xml.sax.SAXException;
@@ -91,7 +92,7 @@ import org.xmlresolver.tools.ResolvingXMLReader;
  * @version 1.0
  */
 public class Parse {
-    private static Logger logger = Logger.getLogger("org.xmlresolver.apps.Parse");
+    private static Logger logger = LoggerFactory.getLogger(Parse.class);
 
     protected static final String SCHEMA_VALIDATION_FEATURE_ID
 	= "http://apache.org/xml/features/validation/schema";
@@ -251,13 +252,13 @@ public class Parse {
                         String xsd = (String) schemaList.get(ns);
                         if ("".equals(ns)) {
                             nons_slh = xsd;
-                            logger.finer("Hint: ''=" + xsd);
+                            logger.trace("Hint: ''=" + xsd);
                         } else {
                             if (!"".equals(slh)) {
                                 slh = slh + " ";
                             }
                             slh = slh + ns + " " + xsd;
-                            logger.finer("Hint: " + ns + "=" + xsd);
+                            logger.trace("Hint: " + ns + "=" + xsd);
                         }
                     }
 

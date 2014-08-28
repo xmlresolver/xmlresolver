@@ -7,12 +7,9 @@
 
 package org.xmlresolver;
 
-import junit.framework.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+
+import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  *
@@ -23,10 +20,6 @@ public class ResourceResolverTest extends TestCase {
     private static ResourceResolver resolver = null;
     private static Resolver entityResolver = null;
     
-    public ResourceResolverTest(String testName) {
-        super(testName);
-    }
-
     protected void setUp() throws Exception {
         catalog = new Catalog("catalogs/catalog.xml;catalogs/cache/catalog.xml");
         resolver = new ResourceResolver(catalog);
@@ -34,13 +27,11 @@ public class ResourceResolverTest extends TestCase {
         resolver.setEntityResolver(entityResolver);
     }
 
-    protected void tearDown() throws Exception {
-    }
-
     /**
      * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
      */
-    public void xtestResolveURI() {
+    @Test
+    public void testResolveURI() {
         System.out.println("resolveURI");
         
         String href = ".bibliography.xml";
@@ -53,6 +44,7 @@ public class ResourceResolverTest extends TestCase {
     /**
      * Test of resolveNamespaceURI method, of class org.xmlresolver.ResourceResolver.
      */
+    @Test
     public void testResolveNamespaceURI() throws Exception {
         System.out.println("testResolveNamespaceURI");
 
