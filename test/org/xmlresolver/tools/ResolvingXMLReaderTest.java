@@ -37,7 +37,7 @@ public class ResolvingXMLReaderTest extends TestCase {
         spf.setValidating(true);
         
         ResolvingXMLReader reader = new ResolvingXMLReader(spf);
-        reader.parse("tests/documents/pitest.xml");
+        reader.parse("resources/test/documents/pitest.xml");
         
         Resolver resolver = reader.getResolver();
         Catalog catalog = resolver.getCatalog();

@@ -13,66 +13,58 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import junit.framework.TestCase;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlresolver.helpers.DOMUtils;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author ndw
  */
-public class CatalogLookupTest extends TestCase {
+public class CatalogLookupTest {
     private Catalog catalog = null;
     private String method = null;    // Not thread safe! Not particularly well designed! But convenient!
     private String expected = null;
     private DocumentBuilderFactory dbfactory = null;
-    
-    public CatalogLookupTest(String testName) {
-        super(testName);
-    }
 
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         dbfactory = DocumentBuilderFactory.newInstance();
         dbfactory.setNamespaceAware(true);
     }
 
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
     }
 
     @Test
     public void testCatalog1() {
-        System.out.println("testCatalog1");
-
-        runCatalogTests("tests/catalogs/catalog.xml");
+        runCatalogTests("resources/test/catalogs/catalog.xml");
     }
 
     @Test
     public void testCatalog2() {
-        System.out.println("testCatalog2");
-
-        runCatalogTests("tests/catalogs/prefer-public.xml");
+        runCatalogTests("resources/test/catalogs/prefer-public.xml");
     }
 
     @Test
     public void testCatalog3() {
-        System.out.println("testCatalog3");
-
-        runCatalogTests("tests/catalogs/prefer-system.xml");
+        runCatalogTests("resources/test/catalogs/prefer-system.xml");
     }
 
     @Test
     public void testCatalog4() {
-        System.out.println("testCatalog4");
-
-        runCatalogTests("tests/catalogs/sgmlcatalog.xml");
+        runCatalogTests("resources/test/catalogs/sgmlcatalog.xml");
     }
 
-    @Test
-    public void runCatalogTests(String catalogFile) {
+    private void runCatalogTests(String catalogFile) {
         catalog = new Catalog(catalogFile);
         DocumentBuilder builder = null;
         Document doc = null;
@@ -82,13 +74,13 @@ public class CatalogLookupTest extends TestCase {
             doc = builder.parse(catalogFile);
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
-            fail("Parser configuration exception? What the ...!?");
+            throw new RuntimeException("Parser configuration exception? What the ...!?");
         } catch (SAXException ex) {
             ex.printStackTrace();
-            fail("SAX exception? What the ...!?");
+            throw new RuntimeException("SAX exception? What the ...!?");
         } catch (IOException ex) {
             ex.printStackTrace();
-            fail("I/O exception? What the ...!?");
+            throw new RuntimeException("I/O exception? What the ...!?");
         }
         
         NodeList tests = doc.getElementsByTagNameNS(Catalog.NS_XMLRESOURCE_EXT, "testCase");
@@ -114,7 +106,7 @@ public class CatalogLookupTest extends TestCase {
             } else if ("lookupDocument".equals(method)) {
                 runLookupDocument();
             } else {
-                fail("Unexpected method name: " + method);
+                throw new RuntimeException("Unexpected method name: " + method);
             }
         }
     }

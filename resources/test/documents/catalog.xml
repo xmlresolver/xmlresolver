@@ -6,4 +6,7 @@
   <uri name="http://www.w3.org/2001/XMLSchema"
        uri="wxsns.html"/>
 
+  <system systemId="http://example.com/entity/ent.xml"
+          uri="real-ent.xml"/>
+
 </catalog>

@@ -20,20 +20,18 @@ import javax.xml.stream.XMLStreamReader;
  *
  * @author ndw
  */
-public class StAXResolverTest extends TestCase {
+public class StAXResolverTest {
     /**
      * Test of resolve method, of class org.xmlresolver.Resolver.
      */
     @Test
     public void testResolver() throws Exception {
-        System.out.println("testResolver");
-        
         XMLInputFactory factory = XMLInputFactory.newInstance();
-        Catalog catalog = new Catalog("documents/catalog.xml");
+        Catalog catalog = new Catalog("resources/test/catalogs/resolver2.xml");
         StAXResolver resolver = new StAXResolver(catalog);
         factory.setXMLResolver(new SResolver(resolver));
         
-        String xmlFile = "tests/documents/dtdtest.xml";
+        String xmlFile = "resources/test/documents/dtdtest.xml";
         XMLStreamReader reader = factory.createXMLStreamReader(xmlFile, new FileInputStream(xmlFile));
 
         while (reader.hasNext()) {

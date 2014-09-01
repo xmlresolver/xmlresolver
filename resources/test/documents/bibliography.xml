@@ -1,0 +1,603 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bibliography><title>References</title>
+
+<!-- My personal ~/.bibliography file, resolved 
+     for "http://docbook.sourceforge.net/release/bibliography/bibliography.xml"
+     by my catalog -->
+
+<!--
+<bibliomixed id="bib."><abbrev></abbrev>, editors.
+<citetitle><ulink url="http://www.w3.org/TR/">
+</ulink></citetitle>.
+World Wide Web Consortium, 200.
+</bibliomixed>
+-->
+
+<bibliomixed id="bib.eyreaffair"><abbrev>Fforde 2001</abbrev>
+<author><firstname>Jasper</firstname><surname>Fforde</surname></author>.
+<citetitle><ulink url="http://www.thursdaynext.com/">The Eyre Affair</ulink></citetitle>.
+<publishername>Hodder and Stoughton</publishername>, London.
+<biblioid class="isbn">0340-82576-7</biblioid>. <pubdate>2001</pubdate>.
+</bibliomixed>
+
+<bibliomixed id="xpath-datamodel"><abbrev>Data Model</abbrev>
+<authorgroup>
+<editor><firstname>Mary</firstname><surname>Fernández</surname></editor>
+<editor><firstname>Ashok</firstname><surname>Malhotra</surname></editor>
+<editor><firstname>Jonathan</firstname><surname>Marsh</surname></editor>
+<editor><firstname>Marton</firstname><surname>Nagy</surname></editor>
+<editor><firstname>Norman</firstname><surname>Walsh</surname></editor>
+</authorgroup>, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xpath-datamodel/">XQuery 1.0 and XPath 2.0 Data Model</ulink></citetitle>.
+<publishername>World Wide Web Consortium</publishername>.
+<pubdate>2003</pubdate>.
+</bibliomixed>
+
+<bibliomixed id="bib.docbook45"><abbrev>DocBook V4.5</abbrev>Norman Walsh, editor.
+<citetitle><ulink url="http://docbook.org/specs/docbook-4.5-spec-cs-01.html">The
+DocBook Document Type: Version 4.5</ulink></citetitle>.
+OASIS, 2006.
+</bibliomixed>
+
+<bibliomixed id="bib.docbook43"><abbrev>DocBook V4.3</abbrev>Norman Walsh, editor.
+<citetitle><ulink url="http://docbook.org/specs/cd-docbook-docbook-4.3.html">The
+DocBook Document Type: Version 4.3</ulink></citetitle>.
+OASIS, 2004.
+</bibliomixed>
+
+<bibliomixed id="bib.docbook43CR2"><abbrev>DocBook V4.3CR2</abbrev>Norman Walsh, editor.
+<citetitle><ulink url="http://docbook.org/specs/wd-docbook-docbook-4.3CR2.html">The
+DocBook Document Type: Version 4.3CR2</ulink></citetitle>.
+OASIS, 2003.
+</bibliomixed>
+
+<bibliomixed id="bib.docbook42"><abbrev>DocBook V4.2</abbrev>Norman Walsh, editor.
+<citetitle><ulink url="http://www.oasis-open.org/docbook/docbook-4.2.html">The
+DocBook Document Type: Version 4.2</ulink></citetitle>.
+OASIS, 2002.
+</bibliomixed>
+
+<bibliomixed id="bib.pdf"><abbrev>PDF</abbrev>Adobe Systems, Incorporated, editor.
+<citetitle><ulink url="http://partners.adobe.com/asn/developer/acrosdk/docs/filefmtspecs/PDFReference.pdf">PDF Reference, Third Edition, Version 1.4</ulink></citetitle>.
+Addison Wesley. <isbn>0-201-75839-3</isbn>. 2001.
+</bibliomixed>
+
+<bibliomixed id="bib.xml-conduits"><abbrev>XML Conduits</abbrev>Norman Walsh.
+<quote><ulink url="http://www.sun.com/software/xml/developers/palm/">XML From Your Palm</ulink></quote>.
+<emphasis><ulink url="http://www.sun.com/software/xml/developers/">XML at Sun Developer Connection</ulink></emphasis>.
+<ulink url="http://www.sun.com/">Sun Microsystems, Inc.</ulink>.
+Aug, 2000.</bibliomixed>
+
+<bibliomixed id="xml-fragment"><abbrev>XML Frag. Interchange</abbrev>Paul Grosso
+and Daniel Veillard, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xml-fragment">XML Fragment
+Interchange</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xquery"><abbrev>XQuery</abbrev>Scott Boag,
+Don Chamberlin, Mary F. Fernandez, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/xquery">XQuery 1.0: An XML
+Query Language</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xforms"><abbrev>XForms 1.0</abbrev>Micah Dubinko,
+Josef Dietl, Leigh L. Klotz, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/xforms">XForms
+1.0</ulink></citetitle>.
+World Wide Web Consortium, 2002.
+</bibliomixed>
+
+<bibliomixed id="bib.svg11"><abbrev>SVG 1.1</abbrev>Jon Ferraiolo,
+&#x85e4;&#x6ca2;  &#x6df3; (FUJISAWA Jun), and Dean Jackson, editors.
+<citetitle><ulink url="http://www.w3.org/TR/SVG11">Scalable Vector Graphics
+(SVG) Version 1.1 Specification</ulink></citetitle>.
+World Wide Web Consortium, 14 Jan 2003.
+</bibliomixed>
+
+<bibliomixed id="bib.mathml2"><abbrev>MathML 2.0</abbrev>David Carlisle,
+Patrick Ion, Robert Miner, Nico Poppelier, editors.
+<citetitle><ulink url="http://www.w3.org/TR/MathML2">Mathematical
+Markup Language (MathML) Version 2.0 (Second Edition)</ulink></citetitle>.
+World Wide Web Consortium, 21 Oct 2003.
+</bibliomixed>
+
+<bibliomixed id="topicmaps"><abbrev>XML Topic Maps</abbrev>Steve Pepper,
+Graham Moore, editors.
+<citetitle><ulink url="http://www.topicmaps.org/xtm/">XML Topic Maps (XTM)
+1.0</ulink></citetitle>.
+TopicMaps.Org, 2001.
+</bibliomixed>
+
+<bibliomixed id="css1"><abbrev>CSS 1</abbrev>Håkon Wium Lie,
+Bert Bos, editors.
+<citetitle><ulink url="http://www.w3.org/TR/REC-CSS1">Cascading
+Style Sheets, level 1</ulink></citetitle>.
+World Wide Web Consortium, 1996.
+</bibliomixed>
+
+<bibliomixed id="xml-rec"><abbrev>XML</abbrev>Tim Bray,
+Jean Paoli, C. M. Sperberg-McQueen, <foreignphrase>et. al.</foreignphrase>,
+editors.
+<citetitle><ulink url="http://www.w3.org/TR/REC-xml">Extensible Markup
+Language (XML) 1.0 (Fourth Edition)</ulink></citetitle>.
+World Wide Web Consortium, 16 August 2006.
+</bibliomixed>
+
+<bibliomixed id="xml-rec2e"><abbrev>XML</abbrev>Tim Bray,
+Jean Paoli, C. M. Sperberg-McQueen, and Eve Maler, editors.
+<citetitle><ulink url="http://www.w3.org/TR/REC-xml">Extensible Markup
+Language (XML) 1.0 Second Edition</ulink></citetitle>.
+World Wide Web Consortium, 2000.
+</bibliomixed>
+
+<bibliomixed id="xml11"><abbrev>XML 1.1</abbrev>John Cowan, editor.
+<citetitle><ulink url="http://www.w3.org/TR/2001/WD-xml11-20011213/">XML 1.1</ulink></citetitle>.
+World Wide Web Consortium, 2002.
+</bibliomixed>
+
+<bibliomixed id="xml-names"><abbrev>Namespaces</abbrev>Tim Bray,
+Dave Hollander,
+and Andrew Layman, editors.
+<citetitle><ulink url="http://www.w3.org/TR/REC-xml-names/">Namespaces in
+XML</ulink></citetitle>.
+World Wide Web Consortium, 1999.
+</bibliomixed>
+
+<bibliomixed id="rfc2119"><abbrev>RFC 2119</abbrev>IETF
+(Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc2119.txt">RFC 2119:
+Key words for use in RFCs to Indicate Requirement Levels</ulink></citetitle>.
+S. Bradner. 1997.</bibliomixed>
+
+<bibliomixed id="rfc2234"><abbrev>RFC 2234</abbrev>IETF
+(Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc2234.txt">RFC 2234:
+Augmented BNF for Syntax Specifications: ABNF</ulink></citetitle>.
+D. Crocker and P. Overell. 1997.</bibliomixed>
+
+<bibliomixed id="rfc3151"><abbrev>RFC 3151</abbrev>IETF
+(Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc3151.txt">RFC 3151: A URN Namespace for Public Identifiers</ulink></citetitle>.
+N. Walsh, J. Cowan, P. Grosso, 2001.</bibliomixed>
+
+<bibliomixed id="xmlbase"><abbrev>XML Base</abbrev>Jonathan Marsh, editor.
+<citetitle><ulink url="http://www.w3.org/TR/xmlbase">XML Base</ulink></citetitle>.
+World Wide Web Consortium, 2000.
+</bibliomixed>
+
+<bibliomixed id="xinclude"><abbrev>XInclude</abbrev>Jonathan Marsh,
+David Orchard, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xinclude">XML Inclusions
+(XInclude) Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="png"><abbrev>PNG</abbrev>Thomas Boutell, editor.
+<citetitle><ulink url="http://www.w3.org/TR/REC-png">PNG (Portable
+Network Graphics) Specification Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 1996.
+</bibliomixed>
+
+<bibliomixed id="xml-c14n"><abbrev>XML C14N</abbrev>John Boyer, editor.
+<citetitle><ulink url="http://www.w3.org/TR/xml-c14n">Canonical XML
+Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="wsdl"><abbrev>WSDL</abbrev>Erik Christensen, Francisco Curbera,
+Greg Meredith, and Sanjiva Weerawarana, editors.
+<citetitle><ulink url="http://www.w3.org/TR/wsdl">Web Services Description
+Language (WSDL) 1.1.</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xml-infoset"><abbrev>XML Infoset</abbrev>John Cowan, Richard
+Tobin, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xml-infoset">XML Information
+Set</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xptr"><abbrev>XPointer</abbrev>Steven DeRose, Eve Maler,
+Ron Daniel, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xptr">XML Pointer Language (XPointer)
+Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xlink"><abbrev>XLink</abbrev>Steven DeRose, Eve Maler,
+David Orchard, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xlink">XML Linking Language (XLink)
+Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xlink11"><abbrev>XLink11</abbrev>Steven DeRose, Eve Maler,
+David Orchard, Norman Walsh, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xlink11">XML Linking Language (XLink)
+Version 1.1</ulink></citetitle>.
+World Wide Web Consortium, 2005.
+</bibliomixed>
+
+<bibliomixed id="xpath"><abbrev>XPath</abbrev>James Clark, Steven DeRose, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xpath">XML Path Language (XPath)
+Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 1999.
+</bibliomixed>
+
+<bibliomixed id="xslt"><abbrev>XSLT</abbrev>James Clark, editor.
+<citetitle><ulink url="http://www.w3.org/TR/xslt">XSL Transformations (XSLT)
+Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 1999.
+</bibliomixed>
+
+<bibliomixed id="xsl"><abbrev>XSL</abbrev>Sharon Adler, Anders Berglund, Jeff
+Caruso, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/xsl">Extensible Stylesheet Language
+(XSL) Version 1.0</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xmlschema-1"><abbrev>W3C XML Schema</abbrev>Henry S. Thompson,
+David Beech, Murray Maloney, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/xmlschema-1/">XML Schema Part 1: Structures</ulink></citetitle>.
+World Wide Web Consortium, 2000.
+</bibliomixed>
+
+<bibliomixed id="dom-level1"><abbrev>W3C DOM Level 1</abbrev>Vidur Apparao, Steve Byrne,
+Mike Champion, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/REC-DOM-Level-1/">Document Object Model
+(DOM) Level 1 Specification</ulink></citetitle>.
+World Wide Web Consortium, 1998
+</bibliomixed>
+
+<bibliomixed id="dom-level2"><abbrev>W3C DOM Level 2</abbrev>Arnaud Le Hors,
+Philippe Le Hégaret, Lauren Wood, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/DOM-Level-2-Core">Document Object Model
+(DOM) Level 2 Core Specification</ulink></citetitle>.
+World Wide Web Consortium, 2000
+</bibliomixed>
+
+<bibliomixed id="dom-level3"><abbrev>W3C DOM Level 3</abbrev>Arnaud Le Hors,
+Philippe Le Hégaret, Gaven Nicol, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/DOM-Level-3-Core">Document Object Model
+(DOM) Level 3 Core Specification</ulink></citetitle>.
+World Wide Web Consortium, 2002
+</bibliomixed>
+
+<bibliomixed id="sax"><abbrev>SAX</abbrev>David Megginson, David Brownell, et. al.
+<citetitle><ulink url="http://sax.sourceforge.net/">Simple API for
+XML</ulink></citetitle>.
+</bibliomixed>
+
+<bibliomixed id="jaxp"><abbrev>JAXP</abbrev>Sun Microsystems, Inc.
+<citetitle><ulink url="http://java.sun.com/xml/jaxp/"><trademark>Java</trademark>
+API for XML Processing</ulink></citetitle>.
+</bibliomixed>
+
+<bibliomixed id="soap12-1"><abbrev>SOAP 1.2</abbrev>Martin Gudgin,
+Marc Hadley, Jean-Jacques Moreau, Henrik Frystyk Nielsen, editors.
+<citetitle><ulink url="http://www.w3.org/TR/soap12-part1/">SOAP Version 1.2
+Part 1: Messaging Framework</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="rdf-syntax"><abbrev>RDF</abbrev>Ora Lassila, Ralph R. Swick,
+editors.
+<citetitle><ulink url="http://www.w3.org/TR/1999/REC-rdf-syntax-19990222/">Resource
+Description Framework (RDF) Model and Syntax Specification</ulink></citetitle>.
+World Wide Web Consortium, 1999.
+</bibliomixed>
+
+<bibliomixed id="rdf-schema"><abbrev>RDF Schema</abbrev>Dan Brickley,
+R.V. Guha, editors.
+<citetitle><ulink url="http://www.w3.org/TR/rdf-schema/">Resource
+Description Framework (RDF) Schema Specification 1.0</ulink></citetitle>.
+World Wide Web Consortium, 2000.
+</bibliomixed>
+
+<bibliomixed id="char-model"><abbrev>Character Model</abbrev>Martin J.
+Dürst, François Yergeau, Richard Ishida, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/charmod/">Character Model
+for the World Wide Web 1.0</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xmldsig-core"><abbrev>XML Signatures</abbrev>Donald Eastlake,
+Joseph Reagle, David Solo, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xmldsig-core/">XML-Signature Syntax
+and Processing</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xmlenc-core"><abbrev>XML Encryption</abbrev>Donald Eastlake,
+Joseph Reagle, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xmlenc-core/">XML Encryption Syntax
+and Processing</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="xkms"><abbrev>XKMS</abbrev>Warwick Ford, Phillip Hallam-Baker,
+Barbara Fox, et. al., editors.
+<citetitle><ulink url="http://www.w3.org/TR/xkms/">XML Key Management
+Specification</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="saml"><abbrev>SAML</abbrev>Phillip Hallam-Baker,
+Eve Maler, editors.
+<citetitle><ulink url="http://www.oasis-open.org/committees/security/docs/draft-sstc-core-25.pdf">Assertions and Protocol for the OASIS Security Assertion Markup
+Language</ulink></citetitle>.
+OASIS. 2002.
+</bibliomixed>
+
+<bibliomixed id="xmlschema-2"><abbrev>W3C XML Datatypes</abbrev>Paul V. Biron
+and Ashok Malhotra, editors.
+<citetitle><ulink url="http://www.w3.org/TR/xmlschema-2/">XML Schema Part 2: Datatypes</ulink></citetitle>.
+World Wide Web Consortium, 2000.
+</bibliomixed>
+
+<bibliomixed id="trex"><abbrev>TREX</abbrev>James Clark, editor.
+<citetitle><ulink url="http://www.oasis-open.org/committees/trex/">OASIS TREX Technical Committee</ulink></citetitle>. OASIS. 2001.
+</bibliomixed>
+
+<bibliomixed id="xmlstyle"><abbrev>XML Stylesheets</abbrev>James Clark, editor.
+<citetitle><ulink url="http://www.w3.org/TR/xml-stylesheet/">Associating
+Style Sheets with XML Documents Version 1.0</ulink></citetitle>.
+World Wide Web Consortium. 1999.
+</bibliomixed>
+
+<bibliomixed id="tr9401"><abbrev>TR 9401</abbrev>Paul Grosso, editor.
+<citetitle><ulink url="http://www.oasis-open.org/html/tr9401.html">OASIS
+Technical Resolution 9401:1997 (Amendment 2 to TR 9401)</ulink></citetitle>.
+OASIS. 1997.
+</bibliomixed>
+
+<bibliomixed id="xmlcatalogs"><abbrev>XML Catalogs</abbrev>Norman Walsh, editor.
+<citetitle><ulink url="http://www.oasis-open.org/committees/entity/spec.html">XML
+Catalogs</ulink></citetitle>. OASIS. 2001.
+</bibliomixed>
+
+<bibliomixed id="relaxng"><abbrev>RELAX NG</abbrev>James Clark, editor.
+<citetitle><ulink url="http://www.oasis-open.org/committees/relax-ng/spec-20010811.html">RELAX NG Specification (Committee Specification)</ulink></citetitle>. OASIS. 2001.
+</bibliomixed>
+
+<bibliomixed id="relaxngdtd"><abbrev>RNG DTD</abbrev>James Clark, editor.
+<citetitle><ulink url="http://www.oasis-open.org/committees/relax-ng/compatibility-20010907.html">RELAX NG DTD Compatibility (Committee Specification)</ulink></citetitle>. OASIS.
+2001.
+</bibliomixed>
+
+<bibliomixed id="schematron2000"><abbrev>Schematron</abbrev>Rick Jelliffe, editor.
+<citetitle><ulink url="http://www.ascc.net/xml/resource/schematron/Schematron2000.html">The Schematron Assertion Language 1.5</ulink></citetitle>. Rick Jelliffe and
+Acedemia Sinica Computing Centre. 2001, 2001.
+</bibliomixed>
+
+<bibliomixed id="rfc2279"><abbrev>RFC 2279</abbrev>IETF (Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc2279.txt">RFC 2279: UTF-8, a transformation format of ISO 10646</ulink></citetitle>.
+F. Yergeau. 1998.
+</bibliomixed>
+
+<bibliomixed id="rfc2396"><abbrev>RFC 2396</abbrev>IETF (Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396: Uniform Resource Identifiers (URI): Generic Syntax</ulink></citetitle>.
+T. Berners-Lee, R. Fielding, L. Masinter. 1998.
+</bibliomixed>
+
+<bibliomixed id="rfc3023"><abbrev>RFC 3023</abbrev>IETF
+(Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc3023.txt">RFC 3023: XML
+Media Types</ulink></citetitle>.
+M. Murata, S. St. Laurent, D. Kohn. 2001.
+</bibliomixed>
+
+<bibliomixed id="rfc2732"><abbrev>RFC 2732</abbrev>IETF (Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc2732.txt">RFC 2732: Format for Literal IPv6 Addresses in URL's</ulink></citetitle>.
+R. Hinden, B. Carpenter, L. Masinter. 1999.
+</bibliomixed>
+
+<bibliomixed id="relax"><abbrev>RELAX</abbrev>
+<citetitle>ISO/IEC DTR 22250-1, Document Description and
+Processing Languages -- Regular Language Description for
+XML (<ulink url="http://www.xml.gr.jp/relax/">RELAX</ulink>) -- Part 1:
+RELAX Core</citetitle>, ISO/IEC, 2000.
+</bibliomixed>
+
+<bibliomixed id="iso-14977"><abbrev>EBNF</abbrev>
+<citetitle>ISO/IEC 14977:1996, Information Technology -- Syntactic
+Metalanguage -- Extended BNF</citetitle>, ISO/IEC, 1996.
+</bibliomixed>
+
+<bibliomixed id="iso2022"><abbrev>ISO 2022:1994</abbrev>JTC 1, SC 2.
+<citetitle>ISO (International Organization for Standardization) ISO 2022:1994
+Information technology -- Character code structure and extension techniques
+(fourth edition).</citetitle>. 1994.
+</bibliomixed>
+
+<bibliomixed id="iso8879"><abbrev>SGML</abbrev>JTC 1, SC 34.
+<citetitle>ISO 8879:1986
+Information processing -- Text and office systems --
+Standard Generalized Markup Language (SGML)</citetitle>. 1986.
+</bibliomixed>
+
+<bibliomixed id="iso9070"><abbrev>ISO/IEC 9070:1991</abbrev>JTC 1, SC 34.
+<citetitle>ISO/IEC 9070:1991
+Information technology -- SGML support facilities -- Registration
+procedures for public text owner identifiers</citetitle>. 1991.
+</bibliomixed>
+
+<bibliomixed id="rfc2141"><abbrev>RFC 2141</abbrev>IETF
+(Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc2141.txt">RFC 2141:
+URN Syntax</ulink></citetitle>. R. Moats. May, 1997.
+</bibliomixed>
+
+<bibliomixed id="rfc3066"><abbrev>RFC 3066</abbrev>IETF
+(Internet Engineering Task Force).
+<citetitle><ulink url="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066:
+Tags for the Identification of Languages</ulink></citetitle>. H. Alvestrand.
+Jan, 2001.
+</bibliomixed>
+
+<bibliomixed id="unicode20"><abbrev>Unicode</abbrev>The Unicode Consortium.
+<citetitle>The Unicode Standard, Version 2.0</citetitle>.
+Addison-Wesley Developers Press. Reading, Mass. 1996.
+</bibliomixed>
+
+<bibliomixed id="bib.style-note"><abbrev>XML Linking and Style</abbrev>Norman
+Walsh, editor.
+<citetitle><ulink url="http://www.w3.org/TR/xml-link-style">XML Linking
+and Style</ulink></citetitle>.
+World Wide Web Consortium, 2001.
+</bibliomixed>
+
+<bibliomixed id="bib.docbooktdg"><abbrev>DocBook: TDG</abbrev> Norman
+Walsh and Leonard Meullner. <citetitle><ulink url="http://docbook.org/tdg/en/">DocBook:
+The Definitive Guide</ulink>. O’Reilly &amp; Associates, 1999.</citetitle>
+</bibliomixed>
+
+<bibliomixed id="bib.docbooktdg5"><abbrev>DocBook: TDG5</abbrev>
+Norman Walsh and Leonard Meullner.
+<citetitle><ulink url="http://docbook.org/tdg5/en/">DocBook 5.0:
+The Definitive Guide</ulink>.</citetitle>
+</bibliomixed>
+
+<biblioentry id="bib.maler96"><abbrev>MalerAndal96</abbrev>
+	<title>Developing SGML DTDs</title>
+	<subtitle>From Text to Model to Markup</subtitle>
+	<authorgroup>
+	  <author>
+	    <firstname>Eve</firstname>
+	    <surname>Maler</surname>
+	  </author>
+	  <author>
+	    <firstname>Jeanne</firstname>
+	    <surname>El Andaloussi</surname>
+	  </author>
+	</authorgroup>
+	<isbn>0-13-309881-8</isbn>
+	<publisher>
+	  <publishername>Prentice-Hall PTR</publishername>
+	  <address>
+	    <city>Upper Saddle River</city>
+	    <state>New Jersey</state>
+	  </address>
+	</publisher>
+	<pubdate>1996</pubdate>
+</biblioentry>
+
+<biblioentry id="bib.practicalSGML">
+	<title>Practical SGML</title>
+	<authorgroup>
+	  <author>
+	    <firstname>Erik</firstname>
+	    <surname>van Herwijnen</surname>
+	  </author>
+	</authorgroup>
+	<edition>2</edition>
+	<isbn>0-7923-9434-8</isbn>
+	<publisher>
+	  <publishername>Kluwer Academic Press</publishername>
+	</publisher>
+	<pubdate>1994</pubdate>
+	<bibliomisc>An introductory book, but not a simple one.</bibliomisc>
+</biblioentry>
+
+<biblioentry id="bib.sgmlhandbook">
+	<title>The SGML Handbook</title>
+	<authorgroup>
+	  <author>
+	    <firstname>Charles</firstname>
+	    <surname>Goldfarb</surname>
+	  </author>
+	  <author>
+	    <firstname>Yuri</firstname>
+	    <surname>Rubinksy</surname>
+	  </author>
+	</authorgroup>
+	<isbn>0-7923-9434-8</isbn>
+	<pubdate>1991</pubdate>
+	<publisher>
+	  <publishername>Oxford University Press</publishername>
+	</publisher>
+	<bibliomisc>A reference book by the author of the SGML <acronym>ISO</acronym> Standard.</bibliomisc>
+</biblioentry>
+
+<biblioentry id="bib.sgmlauthors">
+   <title>SGML: an author's guide to the Standard Generalized Markup Language</title>
+   <authorgroup>
+     <author>
+      <firstname>Martin</firstname>
+      <surname>Bryan</surname>
+     </author>
+   </authorgroup>
+   <isbn>0-201-17535-5</isbn>
+   <pubdate>1988</pubdate>
+   <publisher>
+      <publishername>Addison-Wesley Publishing Company</publishername>
+   </publisher>
+ </biblioentry>
+
+<biblioentry id="bib.sgmlbillion">
+	<title>$GML: The Billion Dollar Secret</title>
+	<authorgroup>
+	  <author>
+	    <firstname>Chet</firstname>
+	    <surname>Ensign</surname>
+	  </author>
+	</authorgroup>
+	<isbn>0-13-226705-5</isbn>
+	<pubdate>1998</pubdate>
+	<publisher>
+	  <publishername>Prentice Hall</publishername>
+	</publisher>
+	<bibliomisc>Effective SGML evangelism.</bibliomisc>
+</biblioentry>
+
+<biblioentry id="bib.xmlprimer">
+	<title>XML: A Primer</title>
+	<authorgroup>
+	  <author>
+	    <firstname>Simon</firstname>
+	    <surname>St. Laurent</surname>
+	  </author>
+	</authorgroup>
+	<isbn>1-5582-8592-X</isbn>
+	<pubdate>1998</pubdate>
+	<publisher>
+	  <publishername>MIS:Press/IDG Books Worldwide</publishername>
+	</publisher>
+	<bibliomisc>Another introductory book about XML.</bibliomisc>
+</biblioentry>
+
+<biblioentry id="bib.undersgmlxmltools">
+    <title>Understanding SGML and XML Tools</title>
+    <authorgroup>
+       <author>
+         <firstname>Peter</firstname>
+         <surname>Flynn</surname>
+       </author>
+     </authorgroup>
+     <isbn>0-7923-8169-6</isbn>
+     <pubdate>1998</pubdate>
+     <publisher>
+       <publishername>Kluwer Academic Publishers</publishername>
+     </publisher>
+<bibliomisc>The standard work on SGML/XML software.</bibliomisc>
+</biblioentry>
+
+ <biblioentry id="bib.latexweb">
+   <title>The LaTeX Web Companion</title>
+   <subtitle>Integrating TeX, HTML, and XML</subtitle>
+   <authorgroup>
+      <author><firstname>Michel</firstname><surname>Goosens</surname></author>
+      <author><firstname>Sebastian</firstname><surname>Rahtz</surname></author>
+   </authorgroup>
+   <isbn>0-201-43311-7</isbn>
+   <pubdate>1999</pubdate>
+   <publisher>
+     <publishername>Addison-Wesley Publishing Company</publishername>
+   </publisher>
+ </biblioentry>
+
+</bibliography>

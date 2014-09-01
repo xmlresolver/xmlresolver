@@ -9,19 +9,22 @@ package org.xmlresolver;
 
 
 import junit.framework.TestCase;
+import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author ndw
  */
-public class ResourceResolverTest extends TestCase {
+public class ResourceResolverTest {
     private static Catalog catalog = null;
     private static ResourceResolver resolver = null;
     private static Resolver entityResolver = null;
-    
-    protected void setUp() throws Exception {
-        catalog = new Catalog("catalogs/catalog.xml;catalogs/cache/catalog.xml");
+
+    @Before
+    public void setUp() throws Exception {
+        catalog = new Catalog("resources/test/catalogs/catalog.xml");
         resolver = new ResourceResolver(catalog);
         entityResolver = new Resolver(resolver);
         resolver.setEntityResolver(entityResolver);
@@ -32,22 +35,30 @@ public class ResourceResolverTest extends TestCase {
      */
     @Test
     public void testResolveURI() {
-        System.out.println("resolveURI");
-        
         String href = ".bibliography.xml";
-        String base = "file:///home/ndw/";
+        String base = "file:///home/nosuchuser/";
         
         Resource result = resolver.resolveURI(href, base);
         assertNotNull(result);
     }
-    
+
+    /**
+     * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
+     */
+    @Test
+    public void testResolveEntity() {
+        String href = ".bibliography.xml";
+        String base = "file:///home/nosuchuser/";
+
+        Resource result = resolver.resolveEntity("bibliography", base + href,null);
+        assertNotNull(result);
+    }
+
     /**
      * Test of resolveNamespaceURI method, of class org.xmlresolver.ResourceResolver.
      */
     @Test
     public void testResolveNamespaceURI() throws Exception {
-        System.out.println("testResolveNamespaceURI");
-
         ResourceResolver myResolver = new ResourceResolver(new Catalog("documents/catalog.xml"));
         
         String uri = "http://www.w3.org/2001/XMLSchema";

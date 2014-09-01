@@ -95,7 +95,9 @@ public class Catalog {
         // Yes, this is XMLResolver.properties even though the class is Catalog; that's because this
         // is the XML Resolver project.
         String propfile = System.getProperty("xmlresolver.properties");
-        return (propfile != null ? propfile + ";" : "") + "XMLResolver.properties;CatalogManager.properties";
+        propfile = (propfile != null ? propfile + ";" : "") + "XMLResolver.properties;CatalogManager.properties";
+        logger.trace("Default properties: " + propfile);
+        return propfile;
     }
     
     private Configuration conf;
@@ -261,7 +263,9 @@ public class Catalog {
         if (catalogElement(group,"group") || catalogElement(group, "catalog")) {
             Element child = DOMUtils.getFirstElement(group);
             while (child != null) {
-                if (catalogElement(child, entry) && (attr == null || value.equals(child.getAttribute(attr)))) {
+                boolean valueEqual = (attr == null);
+                valueEqual = valueEqual || (value != null && value.equals(child.getAttribute(attr)));
+                if (catalogElement(child, entry) && valueEqual) {
                     String uriNature = child.hasAttributeNS(NS_RDDL, "nature") ? child.getAttributeNS(NS_RDDL, "nature") : null;
                     String uriPurpose = child.hasAttributeNS(NS_RDDL, "purpose") ? child.getAttributeNS(NS_RDDL, "purpose") : null;
 
@@ -634,6 +638,7 @@ public class Catalog {
         boolean windows = (osname.indexOf("Windows") >= 0);
 
         for (Element child : entries(group, "system", null, null, null, null)) {
+            logger.trace("Checking: " + child.getTagName() + ": " + child.getAttribute("systemId"));
             if (systemId.equals(child.getAttribute("systemId"))
                 || (windows && systemId.equalsIgnoreCase(child.getAttribute("systemId")))) {
                 return new CatalogResult(systemId, DOMUtils.makeAbsolute(child, child.getAttribute("uri")), child, cache);

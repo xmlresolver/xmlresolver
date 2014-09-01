@@ -85,7 +85,7 @@ public class StAXResolver implements XMLResolver {
 
         logger.trace("resolveEntity(" + publicId + "," + absSystem + "," + namespace + ")");
 
-        Resource rsrc = resolver.resolvePublic(publicId, absSystem);
+        Resource rsrc = resolver.resolvePublic(absSystem, publicId);
         if (rsrc == null) {
             logger.trace("  not resolved locally");
             return null;

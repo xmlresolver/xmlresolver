@@ -5,7 +5,7 @@
 
   <xr:testCase method="lookupEntity"
 	       name="bibliography"
-	       expected="file:///home/ndw/.bibliography.xml"/>
+	       expected="file:///home/nosuchuser/.bibliography.xml"/>
 
   <xr:testCase method="lookupURI"
 	       uri="http://docbook.sf.net/release/xsl/current/html/docbook.xsl"
@@ -26,7 +26,7 @@
 
   <xr:testCase method="lookupSystem"
 	       systemId="http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
-	       expected="file:///home/ndw/docbook.org/xml/4.3/docbookx.dtd"/>
+	       expected="file:///home/nosuchuser/docbook.org/xml/4.3/docbookx.dtd"/>
 
   <xr:testCase method="lookupURI"
 	       uri="http://docbook.sourceforge.net/snapshots/xsl2/common/vi.xml"
@@ -41,7 +41,7 @@
        rddl:nature="XSL" rddl:purpose="transformation"
        uri="file:///sourceforge/docbook/xsl/fo/docbook.xsl"/>
 
-  <group xml:base="/home/ndw/docbook.org/">
+  <group xml:base="/home/nosuchuser/docbook.org/">
     <doctype name="book"
 	     uri="xml/4.5/docbookx.dtd"/>
     <public publicId="-//OASIS//DTD DocBook V4.4//EN"
@@ -50,10 +50,14 @@
 	    uri="xml/4.3/docbookx.dtd"/>
   </group>
 
-  <group xml:base="/home/ndw/">
-    <entity name="bibliography"
-	    uri=".bibliography.xml"/>
-  </group>
+  <entity name="bibliography"
+          uri="file:///home/nosuchuser/.bibliography.xml"/>
+
+  <system systemId="file:///home/nosuchuser/.bibliography.xml"
+	  uri="../documents/bibliography.xml"/>
+
+  <uri name=".bibliography.xml"
+       uri="../documents/bibliography.xml"/>
 
   <document uri="http://example.com/default/book.xml"/>
 

@@ -1,7 +1,0 @@
-<!DOCTYPE doc PUBLIC "-//Example//DTD Example Document//EN" "doc.dtd" [
-<!ENTITY extpara PUBLIC "-//Example//ENTITIES Example Entity//EN" "ent.xml">
-]>
-<doc>
-<p>Foo!</p>
-&extpara;
-</doc>

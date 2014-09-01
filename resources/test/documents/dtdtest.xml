@@ -1,0 +1,8 @@
+<!DOCTYPE doc PUBLIC "-//Example//DTD Example Document//EN" "doc.dtd" [
+<!ENTITY extpara PUBLIC "-//Example//ENTITIES Example Entity//EN"
+                 "http://example.com/entity/ent.xml">
+]>
+<doc>
+<p>Foo!</p>
+&extpara;
+</doc>

@@ -22,19 +22,18 @@ import org.xml.sax.ext.DefaultHandler2;
  *
  * @author ndw
  */
-public class Resolver2Test extends TestCase {
+public class Resolver2Test {
     /**
      * Test of resolve method, of class org.xmlresolver.Resolver.
      */
     @Test
     public void testResolver2() throws Exception {
-        System.out.println("testResolver2");
-
         SAXParserFactory spfactory = SAXParserFactory.newInstance();
         spfactory.setValidating(true);
         SAXParser parser = spfactory.newSAXParser();
         XMLReader reader = parser.getXMLReader();
-        parser.parse("tests/documents/dtdtest.xml", new DevNullHandler(new Resolver(new Catalog("documents/catalog.xml"))));
+        Catalog c = new Catalog("resources/test/catalogs/resolver2.xml");
+        parser.parse("resources/test/documents/dtdtest.xml", new DevNullHandler(new Resolver(c)));
         // If we didn't get an exception, we passed!
     }
     

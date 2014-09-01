@@ -25,22 +25,21 @@ import org.w3c.dom.ls.LSResourceResolver;
  *
  * @author ndw
  */
-public class DOMResolverTest extends TestCase {
+public class DOMResolverTest {
     /**
      * Test of resolve method, of class org.xmlresolver.Resolver.
      */
     @Test
     public void testResolver() throws Exception {
-        System.out.println("testResolver");
-
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         DOMImplementation domImpl = builder.getDOMImplementation();
         DOMImplementationLS domLSImpl = (DOMImplementationLS) domImpl.getFeature("LS","3.0");
         LSParser parser = domLSImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, "http://www.w3.org/TR/REC-xml");
         DOMConfiguration config = parser.getDomConfig();
-        //config.setParameter("resource-resolver", new DOMLSResolver(new Resolver(new Catalog())));
-        parser.parseURI("tests/documents/dtdtest.xml");
+        Catalog c = new Catalog("resources/test/catalogs/domresolver.xml");
+        config.setParameter("resource-resolver", new DOMLSResolver(new Resolver(c)));
+        parser.parseURI("resources/test/documents/dtdtest.xml");
         
         // If we didn't get an exception, we passed!
     }
@@ -53,7 +52,7 @@ public class DOMResolverTest extends TestCase {
         }
 
         public LSInput resolveResource(String type, String namespace, String publicId, String systemId, String baseURI) {
-            System.out.println("resolve: " + type + "," + namespace + "," + publicId + "," + systemId + "," + baseURI);
+            //System.out.println("LS resolve: " + type + "," + namespace + "," + publicId + "," + systemId + "," + baseURI);
             return resolver.resolveResource(type, namespace, publicId, systemId, baseURI);
         }
         

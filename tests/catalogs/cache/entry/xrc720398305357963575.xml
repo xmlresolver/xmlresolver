@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?><catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
-<system systemId="http://docbook.org/xml/4.5/docbookx.dtd" uri="/projects/src/xmlresolver/catalogs/cache/data/xrc720398305357963575.dtd" xmlns:xr="http://xmlresolver.org/ns/catalog" xr:contentType="text/plain; charset=utf-8" xr:time="1279630528544"/>
-<public publicId="-//OASIS//DTD DocBook XML V4.5//EN" uri="/projects/src/xmlresolver/catalogs/cache/data/xrc720398305357963575.dtd" xmlns:xr="http://xmlresolver.org/ns/catalog" xr:contentType="text/plain; charset=utf-8" xmlns:NS1="urn:oasis:names:tc:entity:xmlns:xml:catalog" NS1:systemId="http://docbook.org/xml/4.5/docbookx.dtd" xr:time="1279630528544"/>
-</catalog>

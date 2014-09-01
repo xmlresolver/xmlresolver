@@ -4,3 +4,6 @@ Xmlresolver.iml
 dist
 out
 xmlresolver.jar
+/resources/test/catalogs/cache/data/
+/resources/test/catalogs/cache/entry/
+/resources/test/catalogs/cache/lock

@@ -11,6 +11,7 @@ package org.xmlresolver;
 
 import junit.framework.TestCase;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import javax.xml.transform.URIResolver;
 
@@ -18,7 +19,7 @@ import javax.xml.transform.URIResolver;
  *
  * @author ndw
  */
-public class InstantiationTest extends TestCase {
+public class InstantiationTest {
     @Test
     public void testInstantiate() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         String className = "org.xmlresolver.Resolver";

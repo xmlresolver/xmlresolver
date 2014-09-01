@@ -6,6 +6,9 @@ import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -16,8 +19,9 @@ import org.xml.sax.SAXException;
  * @author swachter
  */
 public abstract class CatalogSource<S> {
-  
-  private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    public static Logger logger = LoggerFactory.getLogger(Catalog.class);
+
+    private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
   static {
     factory.setNamespaceAware(true);
@@ -41,7 +45,7 @@ public abstract class CatalogSource<S> {
       return null;
     } catch (FileNotFoundException fnfe) {
       // ignore this one
-      Catalog.logger.trace("Catalog file not found: " + this);
+      Catalog.logger.debug("Catalog file not found: " + this);
     } catch (IOException ex) {
       Catalog.logger.warn("I/O exception reading " + this + ": " + ex.toString());
     } catch (SAXException ex) {
@@ -62,7 +66,8 @@ public abstract class CatalogSource<S> {
       }
       @Override
       protected Document doParse(DocumentBuilder aDocumentBuilder) throws SAXException, IOException {
-        return aDocumentBuilder.parse(mySource);
+          logger.trace("Parse URI: " + mySource);
+          return aDocumentBuilder.parse(mySource);
       }
     }
     
