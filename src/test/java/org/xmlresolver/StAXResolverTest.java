@@ -27,11 +27,11 @@ public class StAXResolverTest {
     @Test
     public void testResolver() throws Exception {
         XMLInputFactory factory = XMLInputFactory.newInstance();
-        Catalog catalog = new Catalog("resources/test/catalogs/resolver2.xml");
+        Catalog catalog = new Catalog("src/test/resources/catalogs/resolver2.xml");
         StAXResolver resolver = new StAXResolver(catalog);
         factory.setXMLResolver(new SResolver(resolver));
         
-        String xmlFile = "resources/test/documents/dtdtest.xml";
+        String xmlFile = "src/test/resources/documents/dtdtest.xml";
         XMLStreamReader reader = factory.createXMLStreamReader(xmlFile, new FileInputStream(xmlFile));
 
         while (reader.hasNext()) {

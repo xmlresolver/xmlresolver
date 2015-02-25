@@ -10,6 +10,7 @@ package org.xmlresolver;
 
 import junit.framework.TestCase;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -33,7 +34,7 @@ public class ResourceResolverTest {
     /**
      * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
      */
-    @Test
+    @Ignore
     public void testResolveURI() {
         String href = ".bibliography.xml";
         String base = "file:///home/nosuchuser/";
@@ -45,7 +46,7 @@ public class ResourceResolverTest {
     /**
      * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
      */
-    @Test
+    @Ignore
     public void testResolveEntity() {
         String href = ".bibliography.xml";
         String base = "file:///home/nosuchuser/";
@@ -57,7 +58,7 @@ public class ResourceResolverTest {
     /**
      * Test of resolveNamespaceURI method, of class org.xmlresolver.ResourceResolver.
      */
-    @Test
+    @Ignore
     public void testResolveNamespaceURI() throws Exception {
         ResourceResolver myResolver = new ResourceResolver(new Catalog("documents/catalog.xml"));
         

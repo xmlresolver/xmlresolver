@@ -30,14 +30,14 @@ public class ResolverTest {
         SAXParserFactory spfactory = SAXParserFactory.newInstance();
         spfactory.setValidating(true);
         SAXParser parser = spfactory.newSAXParser();
-        Catalog c = new Catalog("resources/test/documents/catalog.xml");
-        parser.parse("resources/test/documents/dtdtest.xml", new DevNullHandler(new Resolver(c)));
+        Catalog c = new Catalog("src/test/resources/documents/catalog.xml");
+        parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new Resolver(c)));
         // If we didn't get an exception, we passed!
     }
 
     @Test
     public void testPerformance() throws Exception {
-        Resolver resolver = new Resolver(new Catalog("resources/test/catalogs/catalog.xml"));
+        Resolver resolver = new Resolver(new Catalog("src/test/resources/catalogs/catalog.xml"));
 
         resolver.resolve("http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl","file:/tmp/test.xsl");
         resolver.resolve("../VERSION","http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl");

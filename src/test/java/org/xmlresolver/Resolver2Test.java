@@ -32,8 +32,8 @@ public class Resolver2Test {
         spfactory.setValidating(true);
         SAXParser parser = spfactory.newSAXParser();
         XMLReader reader = parser.getXMLReader();
-        Catalog c = new Catalog("resources/test/catalogs/resolver2.xml");
-        parser.parse("resources/test/documents/dtdtest.xml", new DevNullHandler(new Resolver(c)));
+        Catalog c = new Catalog("src/test/resources/catalogs/resolver2.xml");
+        parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new Resolver(c)));
         // If we didn't get an exception, we passed!
     }
     

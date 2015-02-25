@@ -37,9 +37,9 @@ public class DOMResolverTest {
         DOMImplementationLS domLSImpl = (DOMImplementationLS) domImpl.getFeature("LS","3.0");
         LSParser parser = domLSImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, "http://www.w3.org/TR/REC-xml");
         DOMConfiguration config = parser.getDomConfig();
-        Catalog c = new Catalog("resources/test/catalogs/domresolver.xml");
+        Catalog c = new Catalog("src/test/resources/catalogs/domresolver.xml");
         config.setParameter("resource-resolver", new DOMLSResolver(new Resolver(c)));
-        parser.parseURI("resources/test/documents/dtdtest.xml");
+        parser.parseURI("src/test/resources/documents/dtdtest.xml");
         
         // If we didn't get an exception, we passed!
     }

@@ -1,7 +1,4 @@
-This is the proto-README for xmlresolver
-
-Summary:	An enhanced XML resolver with XML Catalog support
-License:	GNU General Public License (GPL v. 2.0)
+# XMLResolver: An enhanced XML resolver with XML Catalog support
 
 The xmlresolver project provides an advanced implementation of the SAX
 EntityResolver, the Transformer URIResolver, and a new

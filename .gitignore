@@ -1,9 +1,8 @@
 *~
-.idea
-Xmlresolver.iml
-dist
-out
-xmlresolver.jar
-/resources/test/catalogs/cache/data/
-/resources/test/catalogs/cache/entry/
-/resources/test/catalogs/cache/lock
+/build/
+/xmlresolver.iml
+/.idea/
+/.gradle/
+/src/test/resources/catalogs/cache/data/
+/src/test/resources/catalogs/cache/entry/
+/src/test/resources/catalogs/cache/lock

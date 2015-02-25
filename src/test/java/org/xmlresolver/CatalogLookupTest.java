@@ -46,22 +46,22 @@ public class CatalogLookupTest {
 
     @Test
     public void testCatalog1() {
-        runCatalogTests("resources/test/catalogs/catalog.xml");
+        runCatalogTests("src/test/resources/catalogs/catalog.xml");
     }
 
     @Test
     public void testCatalog2() {
-        runCatalogTests("resources/test/catalogs/prefer-public.xml");
+        runCatalogTests("src/test/resources/catalogs/prefer-public.xml");
     }
 
     @Test
     public void testCatalog3() {
-        runCatalogTests("resources/test/catalogs/prefer-system.xml");
+        runCatalogTests("src/test/resources/catalogs/prefer-system.xml");
     }
 
     @Test
     public void testCatalog4() {
-        runCatalogTests("resources/test/catalogs/sgmlcatalog.xml");
+        runCatalogTests("src/test/resources/catalogs/sgmlcatalog.xml");
     }
 
     private void runCatalogTests(String catalogFile) {
