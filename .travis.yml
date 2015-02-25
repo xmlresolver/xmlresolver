@@ -1,2 +1,11 @@
 language: java
-script: ant test
+script: gradle dist
+
+deploy:
+  provider: releases
+  api_key:
+    secure: GTHdP9/l8vK7HkE7Olj2T11Ce9vOTtxctWJLli8j23MeOcbpUK++u/OoBETKI/KjLvjRfIz1A6szNoRxS75ItovIX0xvJoUrem0qt3dnPpC3opEmU6WMtcBMWRWHRERpJhZ6Sy/F9L83jEx4AVzZsqAzoR+jCFTTJWTCBj8Txpw=
+  file: build/distributions/xmlresolver-$TRAVIS_TAG.zip
+  on:
+    tags: true
+    branch: master
