@@ -115,7 +115,7 @@ uploadArchives {
             }
 
             pom.project {
-               name 'annotations'
+               name 'XML Resolver'
                packaging 'jar'
                description 'An XML entity/uri resolver'
                url 'https://github.com/ndw/xmlresolver'
