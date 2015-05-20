@@ -102,11 +102,30 @@ public class DOMUtils {
 
             //System.out.println("baseURI: " + baseURI.toString());
             //System.out.println("uri: " + uri.toString());
-            
-            uri = baseURI.resolve(uri);
-            
+
+            String path = baseURI.toASCIIString();
+            int pos = path.indexOf("!");
+            if (pos > 0 && (path.startsWith("jar:file:")
+                        || path.startsWith("jar:http:") || path.startsWith("jar:https:"))) {
+                // You can't resolve against jar: scheme URIs because they appear to be opaque.
+                // I wonder if what follows is kosher...
+                String subpath = path.substring(pos+1);
+                String fakeURIstr = "http://example.com";
+                if (subpath.startsWith("/")) {
+                    fakeURIstr += subpath;
+                } else {
+                    fakeURIstr += "/" + subpath;
+                }
+                URI fakeURI = new URI(fakeURIstr);
+                URI resURI = fakeURI.resolve(uri);
+                fakeURIstr = path.substring(0,pos+1) + resURI.getPath();
+                uri = new URI(fakeURIstr);
+            } else {
+                uri = baseURI.resolve(uri);
+            }
+
             //System.out.println("resolved: " + uri.toString());
-            
+
             String absuriString = uri.toString();
             if (absuriString.startsWith("file:/") && !absuriString.startsWith("file:///")) {
                 absuriString = "file:///" + absuriString.substring(6);
