@@ -43,6 +43,19 @@ public class Configuration {
         }
       }
     }
+
+    URL propurl = Catalog.class.getResource("/xmlresolver.properties");
+    if (propurl != null) {
+      Catalog.logger.debug("Loaded xmlresolver.properties from classpath: " + propurl);
+      Properties properties = new Properties();
+      try {
+        properties.load(propurl.openStream());
+        return new Configuration(properties, propurl);
+      } catch (IOException e) {
+        Catalog.logger.warn("I/O error reading " + propurl);
+      }
+    }
+
     return new Configuration(null, null);
   }
   
