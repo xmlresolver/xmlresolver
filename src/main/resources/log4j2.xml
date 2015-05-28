@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_ERR">
+      <PatternLayout pattern="%-5level: %msg%n" />
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Logger name="org.xmlresolver" level="info" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Root level="warn">
+      <AppenderRef ref="Console" />
+    </Root>
+  </Loggers>
+</Configuration>
