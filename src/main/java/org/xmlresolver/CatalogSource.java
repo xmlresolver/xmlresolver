@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xmlresolver.tools.BootstrapResolver;
 
 /**
  * Represents XML sources of catalogs that are parsed by a document builder.
@@ -22,6 +23,8 @@ public abstract class CatalogSource<S> {
     public static Logger logger = LoggerFactory.getLogger(Catalog.class);
 
     private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+    private static BootstrapResolver bootstrapResolver = new BootstrapResolver();
 
   static {
     factory.setNamespaceAware(true);
@@ -38,6 +41,7 @@ public abstract class CatalogSource<S> {
     Document doc = null;
     try {
       builder = factory.newDocumentBuilder();
+      builder.setEntityResolver(bootstrapResolver);
       doc = doParse(builder);
       return doc;
     } catch (ParserConfigurationException pce) {
