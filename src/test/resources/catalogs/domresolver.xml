@@ -12,5 +12,6 @@
   -->
   <system systemId="http://example.com/entity/ent.xml"
           uri="../documents/real-ent.xml"/>
+  <rewriteSystem systemIdStartString="foo:" rewritePrefix="http://example.com/entity/"/>
 
 </catalog>
