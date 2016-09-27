@@ -649,7 +649,9 @@ public class Catalog {
         String startString = null;
         Element node = null;
         for (Element child : entries(group, "rewriteSystem", null, null, null, null)) {
-            String p = child.getAttribute("uriStartString");
+            // BUG here : attribute is systemIdStartString
+            // String p = child.getAttribute("uriStartString");
+            String p = child.getAttribute("systemIdStartString");
             if (p.length() <= systemId.length() && p.equals(systemId.substring(0, p.length()))) {
                 // Is this the longest prefix?
                 if (startString == null || p.length() > startString.length()) {
