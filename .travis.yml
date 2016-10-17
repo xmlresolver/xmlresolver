@@ -9,8 +9,9 @@ install:
 deploy:
   provider: releases
   api_key:
-    secure: GTHdP9/l8vK7HkE7Olj2T11Ce9vOTtxctWJLli8j23MeOcbpUK++u/OoBETKI/KjLvjRfIz1A6szNoRxS75ItovIX0xvJoUrem0qt3dnPpC3opEmU6WMtcBMWRWHRERpJhZ6Sy/F9L83jEx4AVzZsqAzoR+jCFTTJWTCBj8Txpw=
+    secure: H6NOypPed/orlWgR/VQadEDDHOh/QEW+TTuDazJhimHL6C423C9gcXsgPbPTOordG8kxWm5fGbVoHmPkvBhkPigGoCkCHouhHUfRKldCeh3voq8AM7kIj/EmSnIyor15wP1LRBgORESyzVaapG0K4IRo5TP1gQl2fZorFwwXIVc=
   file: build/distributions/xmlresolver-$TRAVIS_TAG.zip
   on:
     tags: true
+    repo: ndw/xmlresolver
     branch: master
