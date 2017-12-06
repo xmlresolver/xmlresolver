@@ -11,6 +11,7 @@ deploy:
   api_key:
     secure: uejI5wfilzzstTNlbEVredJS4kzKl3ilQFjl27HoSLw9INwqvu66z4OgtRxo+bmMkcB2wgAM6pMNTOJxZWY6JW8Oq7Z9VYiFzxrvxY7tUkuELGXFLSXdSqYOtIXynONNMlHCpkp+HVZO9Np1aHRJsaiUL5CQ0JaH3r5rwccpHFU=
   file: build/distributions/xmlresolver-$TRAVIS_TAG.zip
+  skip_cleanup: true
   on:
     tags: true
     repo: ndw/xmlresolver
