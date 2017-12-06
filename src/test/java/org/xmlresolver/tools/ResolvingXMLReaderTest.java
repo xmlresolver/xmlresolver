@@ -7,13 +7,14 @@
 
 package org.xmlresolver.tools;
 
-import java.io.IOException;
-import junit.framework.*;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import junit.framework.TestCase;
 import org.xml.sax.SAXException;
 import org.xmlresolver.Catalog;
 import org.xmlresolver.Resolver;
+
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
 
 /**
  *
@@ -31,7 +32,7 @@ public class ResolvingXMLReaderTest extends TestCase {
     protected void tearDown() throws Exception {
     }
     
-    public void testReader() throws IOException, SAXException {
+    public void testReader() throws IOException, SAXException, TransformerException {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setNamespaceAware(true);
         spf.setValidating(true);
@@ -44,7 +45,6 @@ public class ResolvingXMLReaderTest extends TestCase {
         String catalogList = catalog.catalogList();
         assert(catalogList.contains("/doesnotexist.xml"));
         assert(catalogList.contains("/picat.xml"));
+        assertNotNull(resolver.resolveEntity("", "pi.dtd"));
     }
-    
-    
 }
