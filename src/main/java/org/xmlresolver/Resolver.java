@@ -9,19 +9,6 @@
 
 package org.xmlresolver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.sax.SAXSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSInput;
@@ -30,6 +17,19 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.sax.SAXSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 /** Implements {@link org.xml.sax.EntityResolver}, {@link javax.xml.transform.URIResolver},
  * and {@link NamespaceResolver}.
@@ -67,8 +67,11 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public Resolver(ResourceResolver resolver) {
         this.resolver = resolver;
     }
-    
-    /** Get the Catalog used by this resolver. */
+
+    /** Get the Catalog used by this resolver.
+     *
+     * @return The underlying catalog.
+     */
     public Catalog getCatalog() {
         return resolver.getCatalog();
     }

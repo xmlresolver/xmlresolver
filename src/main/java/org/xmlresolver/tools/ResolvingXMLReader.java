@@ -9,10 +9,10 @@
 
 package org.xmlresolver.tools;
 
+import org.xmlresolver.Resolver;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.xmlresolver.Catalog;
-import org.xmlresolver.Resolver;
 
 /** An implementation of {@link org.xml.sax.XMLReader} that performs catalog resolution.
  *
@@ -39,7 +39,10 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
         }
     }
 
-    /** Construct an XML Reader with the specified {@link javax.xml.parsers.SAXParserFactory} and default resolver. */
+    /** Construct an XML Reader with the specified {@link javax.xml.parsers.SAXParserFactory} and default resolver.
+     *
+     * @param factory The factory
+     */
     public ResolvingXMLReader(SAXParserFactory factory) {
         super();
         try {
@@ -52,7 +55,9 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
 
     /** Construct an XML Reader with the default {@link javax.xml.parsers.SAXParserFactory} and the specified resolver.
      *
-     * <p>The default parser is configured to be namespace aware and non-validating.</p>
+     * The default parser is configured to be namespace aware and non-validating.
+     *
+     * @param resolver The resolver
      */
     public ResolvingXMLReader(Resolver resolver) {
         super(resolver);
@@ -68,6 +73,9 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
     }
 
     /** Construct an XML Reader with the specified {@link javax.xml.parsers.SAXParserFactory} and resolver.
+     *
+     * @param factory The factory
+     * @param resolver The resolver
      */
     public ResolvingXMLReader(SAXParserFactory factory, Resolver resolver) {
         super(resolver);

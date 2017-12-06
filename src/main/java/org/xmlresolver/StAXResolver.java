@@ -12,11 +12,11 @@ package org.xmlresolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.stream.XMLResolver;
+import javax.xml.stream.XMLStreamException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.xml.stream.XMLResolver;
-import javax.xml.stream.XMLStreamException;
 
 /** Implements {@link javax.xml.stream.XMLResolver}.
  *
@@ -57,8 +57,11 @@ public class StAXResolver implements XMLResolver {
     public StAXResolver(ResourceResolver resolver) {
         this.resolver = resolver;
     }
-    
-    /** Get the Catalog used by this resolver. */
+
+    /** Get the Catalog used by this resolver.
+     *
+     * @return The catalog
+     */
     public Catalog getCatalog() {
         return resolver.getCatalog();
     }

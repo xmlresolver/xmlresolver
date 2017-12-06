@@ -7,23 +7,21 @@
 
 package org.xmlresolver;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
-
-import junit.framework.TestCase;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
 
 /**
  *
  * @author ndw
  */
 public class ResolverTest {
-    /**
-     * Test of resolve method, of class org.xmlresolver.Resolver.
+    /* Test of resolve method, of class org.xmlresolver.Resolver.
      */
     @Test
     public void testResolver1() throws Exception {

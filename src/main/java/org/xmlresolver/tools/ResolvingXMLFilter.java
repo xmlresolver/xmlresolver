@@ -9,19 +9,18 @@
 
 package org.xmlresolver.tools;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.Attributes;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xmlresolver.Catalog;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.helpers.FileURI;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /** An implementation of {@link org.xml.sax.XMLFilter} that performs catalog resolution.
  *
@@ -46,21 +45,30 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     public ResolvingXMLFilter() {
         super();
     }
-    
-    /** Construct an XML filter with the specified resolver. */
+
+    /** Construct an XML filter with the specified resolver.
+     *
+     * @param resolver The resolver
+     */
     public ResolvingXMLFilter(Resolver resolver) {
         super();
         this.resolver = resolver;
     }
 
-    /** Construct an XML filter with the specified parent and resolver. */
+    /** Construct an XML filter with the specified parent and resolver.
+     *
+     * @param parent The parent reader
+     * @param resolver The resolver
+     */
     public ResolvingXMLFilter(XMLReader parent, Resolver resolver) {
         super(parent);
         this.resolver = resolver;
     }
 
     /**
-     * Provide accessto the underlying Catalog.
+     * Provide access to the underlying Catalog.
+     *
+     * @return The underlying resolver
      */
     public Resolver getResolver() {
         return resolver;
@@ -74,7 +82,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * that begins with a slash. For example, the declaration:</p>
      *
      * <pre>
-     * &lt;!DOCTYPE book SYSTEM "/path/to/dtd/on/my/system/docbookx.dtd">
+     * &lt;!DOCTYPE book SYSTEM "/path/to/dtd/on/my/system/docbookx.dtd"&gt;
      * </pre>
      *
      * <p>would cause such an error. As a convenience, this method catches
@@ -116,7 +124,16 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
         return resolver.resolveEntity(publicId, systemId);
     }
 
-    /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface. */
+    /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface.
+     *
+     * @param name The entity name
+     * @param publicId The entity public identifier
+     * @param baseURI The base URI
+     * @param systemId The entity system identifier
+     * @return The resolved entity
+     * @throws SAXException If a SAX error occurs
+     * @throws IOException If an I/O error occurs
+     */
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
         allowXMLCatalogPI = false;
         

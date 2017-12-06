@@ -9,12 +9,7 @@
 
 package org.xmlresolver;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import junit.framework.TestCase;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -22,14 +17,18 @@ import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSResourceResolver;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  *
  * @author ndw
  */
 public class DOMResolverTest {
-    /**
-     * Test of resolve method, of class org.xmlresolver.Resolver.
-     */
+    /* Test of resolve method, of class org.xmlresolver.Resolver. */
     @Test
     public void testResolver() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

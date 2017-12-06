@@ -9,15 +9,15 @@
 
 package org.xmlresolver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
 
 /** Represents the result of a catalog search.
  *
@@ -31,17 +31,23 @@ public class CatalogResult {
     private long cacheTime = -1;
     private ResourceCache cache = null;
     private Element entry = null;
-    
-    /**
-     * Creates a new instance of CatalogResult
+
+    /** Creates a new instance of CatalogResult
+     *
+     * @param origURI The original URI
+     * @param uri The catalog result for the original URI
      */
     public CatalogResult(String origURI, String uri) {
         this.uri = uri;
         this.origURI = origURI;
     }
-    
-    /**
-     * Creates a new instance of CatalogResult
+
+    /** Creates a new instance of CatalogResult
+     *
+     * @param origURI The original URI
+     * @param uri The catalog result for the original URI
+     * @param entry The cagalog entry
+     * @param cache The cache entry
      */
     public CatalogResult(String origURI, String uri, Element entry, ResourceCache cache) {
         this.uri = uri;
@@ -63,7 +69,7 @@ public class CatalogResult {
 
     /** Returns the URI of the catalog result.
      *
-     * <p>This is the absolute URI identified by the matching catalog entry.</p>
+     * This is the absolute URI identified by the matching catalog entry.
      *
      * @return The URI.
      */
@@ -136,5 +142,10 @@ public class CatalogResult {
         }
 
         return cache.expired(origURI, uri, entry);
+    }
+
+    @Override
+    public String toString() {
+       return "CatalogResult(" + origURI + "," + uri + ")";
     }
 }

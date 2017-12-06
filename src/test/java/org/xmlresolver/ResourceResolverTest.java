@@ -8,11 +8,10 @@
 package org.xmlresolver;
 
 
-import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -55,8 +54,7 @@ public class ResourceResolverTest {
         assertNotNull(result);
     }
 
-    /**
-     * Test of resolveNamespaceURI method, of class org.xmlresolver.ResourceResolver.
+    /* Test of resolveNamespaceURI method, of class org.xmlresolver.ResourceResolver.
      */
     @Ignore
     public void testResolveNamespaceURI() throws Exception {

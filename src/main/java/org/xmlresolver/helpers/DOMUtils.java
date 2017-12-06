@@ -9,13 +9,14 @@
 
 package org.xmlresolver.helpers;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Vector;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlresolver.Catalog;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Vector;
 
 /** W3C DOM utility methods.
  *
@@ -31,6 +32,9 @@ public class DOMUtils {
      *
      * <p>Like <code>getFirstChild</code> except that it ignores all node types
      * except element nodes.</p>
+     *
+     * @param parent The parent
+     * @return The first child element
      */
     public static Element getFirstElement(Element parent) {
         Node child = parent.getFirstChild();
@@ -44,6 +48,9 @@ public class DOMUtils {
      *
      * <p>Like <code>getNextSibling</code> except that it ignores all node types
      * except element nodes.</p>
+     *
+     * @param current The current node
+     * @return The next sibling
      */
     public static Element getNextElement(Element current) {
         Node child = current.getNextSibling();
@@ -55,10 +62,14 @@ public class DOMUtils {
 
     /** Performs xml:base calculations on a URI.
      *
-     * <p>The initial <code>uriString</code> is made absolut with respect to any ancestor
+     * <p>The initial <code>uriString</code> is made absolute with respect to any ancestor
      * base URIs, including those introduced by <code>xml:base</code> attriblutes. The base
      * URI of the document that contains the <code>node</code> is used as the absolute base URI
      * if no intervening absolute <code>xml:base</code> attributes are found.</p>
+     *
+     * @param node The node
+     * @param uriString The URI to make absolute
+     * @return The absolute URI
      */
     public static String makeAbsolute(Element node, String uriString) {
         Document doc = node.getOwnerDocument();
@@ -67,8 +78,13 @@ public class DOMUtils {
     
     /** Performs xml:base calculations on a URI.
      *
-     * <p>The initial <code>uriString</code> is made absolut with respect to any ancestor
+     * <p>The initial <code>uriString</code> is made absolute with respect to any ancestor
      * base URIs, including those introduced by <code>xml:base</code> attriblutes.</p>
+     *
+     * @param node The node
+     * @param uriString The URI to make absolute
+     * @param documentBaseURI The document base URI
+     * @return The absolute URI
      */
     public static String makeAbsolute(Element node, String uriString, String documentBaseURI) {
         try {
@@ -138,6 +154,10 @@ public class DOMUtils {
     }
 
     /** Returns true if and only if the node is an OASIS XML Catalog element named <code>localName</code>.
+     *
+     * @param node The node to test
+     * @param localName The local name
+     * @return True if the node has the specified local name in the catalog namespace
      */
     public static boolean catalogElement(Node node, String localName) {
         return (node.getNodeType() == Element.ELEMENT_NODE

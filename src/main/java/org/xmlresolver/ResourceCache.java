@@ -9,6 +9,19 @@
 
 package org.xmlresolver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.SAXException;
+import org.xmlresolver.helpers.DOMUtils;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,19 +38,6 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.Vector;
 import java.util.regex.Pattern;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
-import org.xml.sax.SAXException;
-import org.xmlresolver.helpers.DOMUtils;
 
 /** Implements a cache for web resources.
  * 
@@ -90,12 +90,12 @@ import org.xmlresolver.helpers.DOMUtils;
  * 
  * <pre>&lt;cache-control xmlns="http://xmlresolver.org/ns/cache"
  * 	       max-age="86400" delete-wait="86400"
- * 	       size="1500" space="10m">
- * &lt;cache uri="http://www.w3.org/" max-age="172800" space="500k"/>
- * &lt;no-cache uri="http://localhost/"/>
- * &lt;cache uri="http://www.flickr.com/" max-age="0"/>
- * &lt;cache uri="http://flickr.com/" max-age="0"/>
- * &lt;/cache-control></pre>
+ * 	       size="1500" space="10m"&gt;
+ * &lt;cache uri="http://www.w3.org/" max-age="172800" space="500k"/&gt;
+ * &lt;no-cache uri="http://localhost/"/&gt;
+ * &lt;cache uri="http://www.flickr.com/" max-age="0"/&gt;
+ * &lt;cache uri="http://flickr.com/" max-age="0"/&gt;
+ * &lt;/cache-control&gt;</pre>
  *
  * <p>If definitive information about the age of a resource cannot be
  * determined and it is older than "max-age", it will be treated as
@@ -289,7 +289,10 @@ public class ResourceCache {
         }
     }
 
-    /** Returns an OASIS XML Catalog document for the resources in the cache. */
+    /** Returns an OASIS XML Catalog document for the resources in the cache.
+     *
+     * @return The catalog
+     */
     public synchronized Element catalog() {
         if (!cacheDir.exists() || !cacheDir.isDirectory()) {
             return null;
@@ -449,8 +452,8 @@ public class ResourceCache {
      * of the local file where that body may be retrieved.</p>
      *
      * @param connection The connection.
-     *
      * @return The filename of the cached resource.
+     * @throws IOException if an I/O error occurs
      */
     public String addURI(ResourceConnection connection) throws IOException {
         logger.info("Caching URI: " + connection.getURI());
@@ -465,8 +468,8 @@ public class ResourceCache {
      * @param connection The URL connection.
      * @param nature The RDDL nature of the resource.
      * @param purpose the RDDL purpose of the resource.
-     *
      * @return The filename of the cached resource.
+     * @throws IOException if an I/O error occurs
      */
     public synchronized String addNamespaceURI(ResourceConnection connection, String nature, String purpose) throws IOException {
         String name = connection.getURI();
@@ -605,8 +608,8 @@ public class ResourceCache {
      *
      * @param connection The URL connection.
      * @param publicId The public identifier associated with the resource.
-     *
      * @return The filename of the cached resource.
+     * @throws IOException if an I/O error occurs
      */
     public String addSystem(ResourceConnection connection, String publicId) throws IOException {
         if (cache == null) {
@@ -741,6 +744,9 @@ public class ResourceCache {
     }
 
     /** Returns true if the specified absolute URI should be cached.
+     *
+     * @param uri The URI
+     * @return Its cache entry
      */
     public boolean cacheURI(String uri) {
         // Find the cache info record for this entry
@@ -775,7 +781,6 @@ public class ResourceCache {
      * @param origURI The original URI.
      * @param uri The URI of the local resource.
      * @param entry The catalog entry that was the source of the URI.
-     *
      * @return True if and only if the resource is expired.
      */
     public boolean expired(String origURI, String uri, Element entry) {

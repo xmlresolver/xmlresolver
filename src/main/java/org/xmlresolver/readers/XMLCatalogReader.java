@@ -9,7 +9,11 @@
 
 package org.xmlresolver.readers;
 
-import java.io.IOException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,10 +22,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamSource;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
+import java.io.IOException;
 
 /** Reads OASIS XML Catalog files.
  *
@@ -33,7 +34,11 @@ public class XMLCatalogReader {
     public XMLCatalogReader() {
     }
 
-    /** Read a catalog from a source. */
+    /** Read a catalog from a source.
+     *
+     * @param source The catalog source
+     * @return The parsed catalog or null if an error occurs
+     */
     public Element readCatalog(Source source) {
         Element root = null;
         

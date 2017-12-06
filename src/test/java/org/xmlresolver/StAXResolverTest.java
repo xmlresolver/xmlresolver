@@ -7,22 +7,20 @@
 
 package org.xmlresolver;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
-import java.io.FileInputStream;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.io.FileInputStream;
 
 /**
  *
  * @author ndw
  */
 public class StAXResolverTest {
-    /**
-     * Test of resolve method, of class org.xmlresolver.Resolver.
+    /* Test of resolve method, of class org.xmlresolver.Resolver.
      */
     @Test
     public void testResolver() throws Exception {

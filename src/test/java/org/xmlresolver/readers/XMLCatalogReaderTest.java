@@ -7,16 +7,17 @@
 
 package org.xmlresolver.readers;
 
-import java.io.ByteArrayInputStream;
-import junit.framework.*;
-import java.io.IOException;
+import junit.framework.TestCase;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 /**
  *
@@ -34,7 +35,7 @@ public class XMLCatalogReaderTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    /**
+    /*
      * Test of readCatalog method, of class org.xmlresolver.readers.XMLCatalogReader.
      */
     public void testReadCatalog() throws ParserConfigurationException, SAXException, IOException {

@@ -21,14 +21,23 @@ public class Resource {
     private InputStream stream = null;
     private String uri = null;
     private String contentType = null;
-    
-    /** Creates a new instance of Resource. */
+
+    /** Creates a new instance of Resource.
+     *
+     * @param stream The stream from which the resource can be read
+     * @param uri The URI
+     */
     public Resource(InputStream stream, String uri) {
         this.stream = stream;
         this.uri = uri;
     }
 
-    /** Creates a new instance of Resource. */
+    /** Creates a new instance of Resource.
+     *
+     * @param stream The stream from which the resource can be read
+     * @param uri The URI
+     * @param contentType The content type
+     */
     public Resource(InputStream stream, String uri, String contentType) {
         this.stream = stream;
         this.uri = uri;
@@ -39,17 +48,25 @@ public class Resource {
      *
      * <p>The stream returned is the actual stream used when creating the resource. Reading from this
      * stream changes the resource.</p>
+     *
+     * @return The stream
      */
     public InputStream body() {
         return stream;
     }
 
-    /** Return the URI associated with the resource. */
+    /** Return the URI associated with the resource.
+     *
+     * @return The URI
+     */
     public String uri() {
         return uri;
     }
-    
-    /** Return the MIME content type associated with the resource. */
+
+    /** Return the MIME content type associated with the resource.
+     *
+     * @return The content type
+     */
     public String contentType() {
         return contentType;
     }

@@ -9,16 +9,15 @@
 
 package org.xmlresolver;
 
-import java.util.Vector;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlresolver.helpers.DOMUtils;
 import org.xmlresolver.helpers.PublicId;
 import org.xmlresolver.helpers.URIUtils;
+
+import java.util.Vector;
 
 /**
  *Implements the OASIS XML Catalog Standard.
@@ -179,7 +178,10 @@ public class Catalog {
         return list;
     }
 
-    /** Returns the resource cache associated with this catalog, if there is one. */
+    /** Returns the resource cache associated with this catalog, if there is one.
+     *
+     * @return The underlying cache object
+     */
     public ResourceCache cache() {
         return cache;
     }

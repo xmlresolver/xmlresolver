@@ -27,8 +27,8 @@ public interface NamespaceResolver {
      * @param uri The namespace URI.
      * @param nature The RDDL nature of the resource.
      * @param purpose The RDDL purpose of the resource.
-     *
      * @return A Source.
+     * @throws TransformerException If an error occurs
      */
     public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException;
 }

@@ -9,17 +9,6 @@
 
 package org.xmlresolver;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -28,6 +17,17 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
 import org.xmlresolver.helpers.DOMUtils;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /** Resolves resources in the catalog.
  *
@@ -100,7 +100,10 @@ public class ResourceResolver {
         cache = catalog.cache();
     }
 
-    /** Returns the {@link Catalog} used by this ResourceResolver. */
+    /** Returns the {@link Catalog} used by this ResourceResolver.
+     *
+     * @return The catalog
+     */
     public Catalog getCatalog() {
         return catalog;
     }
