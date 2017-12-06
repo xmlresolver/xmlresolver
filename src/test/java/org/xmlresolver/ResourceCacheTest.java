@@ -7,12 +7,11 @@
 
 package org.xmlresolver;
 
-import java.net.MalformedURLException;
-import java.io.IOException;
-
-import junit.framework.TestCase;
 import org.junit.Test;
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 /**
  *
@@ -21,8 +20,8 @@ import org.w3c.dom.Document;
 public class ResourceCacheTest {
     @Test
     public void testInit() {
-        ResourceCache cache = new ResourceCache("src/test/resources/catalogs/cache");
-        Document catalog = cache.catalog();
+        ResourceCache cache = new ResourceCache("catalogs/cache");
+        Element catalog = cache.catalog();
     }
 
     @Test

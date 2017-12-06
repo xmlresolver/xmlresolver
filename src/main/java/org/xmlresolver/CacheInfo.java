@@ -47,7 +47,7 @@ public class CacheInfo {
 
     public void run(String dir) {
         ResourceCache cache = new ResourceCache(dir);
-        Document catalog = cache.catalog();
+        Element catalog = cache.catalog();
         Vector<String> expired = new Vector<String> ();
         Vector<String> uptodate = new Vector<String> ();
 
@@ -57,7 +57,7 @@ public class CacheInfo {
         }
 
         int count = 0;
-        Element entry = DOMUtils.getFirstElement(catalog.getDocumentElement());
+        Element entry = DOMUtils.getFirstElement(catalog);
         while (entry != null) {
             String uri = null;
             if ("uri".equals(entry.getLocalName())) {
@@ -70,7 +70,7 @@ public class CacheInfo {
         
         System.out.println("Cache contains " + count + " entries.");
         
-        entry = DOMUtils.getFirstElement(catalog.getDocumentElement());
+        entry = DOMUtils.getFirstElement(catalog);
         while (entry != null) {
             if ("uri".equals(entry.getLocalName())) {
                 System.out.println("URI:    " + entry.getAttribute("name"));

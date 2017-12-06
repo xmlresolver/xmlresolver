@@ -3,17 +3,16 @@ package org.xmlresolver.tools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xmlresolver.Catalog;
 import org.xmlresolver.CatalogResult;
 import org.xmlresolver.CatalogSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.net.URL;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by ndw on 5/19/15.
@@ -37,7 +36,7 @@ public class CatalogReaderTest {
         is.setSystemId(catstr);
 
         CatalogSource cat = new CatalogSource.InputSourceCatalogSource(is);
-        Document doc = cat.parse();
+        Element doc = cat.parse();
         assertNotNull(doc);
 
         url = new URL(catstr);
