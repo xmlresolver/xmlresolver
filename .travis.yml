@@ -9,7 +9,7 @@ install:
 deploy:
   provider: releases
   api_key:
-    secure: H6NOypPed/orlWgR/VQadEDDHOh/QEW+TTuDazJhimHL6C423C9gcXsgPbPTOordG8kxWm5fGbVoHmPkvBhkPigGoCkCHouhHUfRKldCeh3voq8AM7kIj/EmSnIyor15wP1LRBgORESyzVaapG0K4IRo5TP1gQl2fZorFwwXIVc=
+    secure: uejI5wfilzzstTNlbEVredJS4kzKl3ilQFjl27HoSLw9INwqvu66z4OgtRxo+bmMkcB2wgAM6pMNTOJxZWY6JW8Oq7Z9VYiFzxrvxY7tUkuELGXFLSXdSqYOtIXynONNMlHCpkp+HVZO9Np1aHRJsaiUL5CQ0JaH3r5rwccpHFU=
   file: build/distributions/xmlresolver-$TRAVIS_TAG.zip
   on:
     tags: true
