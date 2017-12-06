@@ -103,7 +103,7 @@ public class Catalog {
     private Configuration conf;
     
     private Vector<CatalogSource> catalogList = new Vector<CatalogSource>();
-    private Vector<Document> documentList = new Vector<Document>();
+    private Vector<Element> documentList = new Vector<Element>();
     private ResourceCache cache = null;
 
     /** Creates a catalog using properties read from the default property file.
@@ -200,26 +200,25 @@ public class Catalog {
       return conf.queryCacheSchemeURI(scheme);
     }
 
-    private synchronized Document loadCatalog(int index) {
+    private synchronized Element loadCatalog(int index) {
         if (index < documentList.size()) {
             return documentList.get(index);
         }
         
         CatalogSource catalog = catalogList.get(index);
 
-        Document doc = catalog.parse();
+        Element docRoot = catalog.parse();
         
         while (documentList.size() <= index) {
             documentList.add(null);
         }
-        documentList.set(index, doc);
+        documentList.set(index, docRoot);
 
         int offset = 1;
-        if (doc != null) {
-            Element root = doc.getDocumentElement();
+        if (docRoot != null) {
                         
-            if (catalogElement(root, "catalog")) {
-                Element child = DOMUtils.getFirstElement(root);
+            if (catalogElement(docRoot, "catalog")) {
+                Element child = DOMUtils.getFirstElement(docRoot);
                 while (child != null) {
                     if (catalogElement(child, "nextCatalog")) {
                         Element nextCat = (Element) child;
@@ -238,7 +237,7 @@ public class Catalog {
             }
         }
         
-        return doc;
+        return docRoot;
     }
 
     private boolean catalogElement(Node node, String localName) {
@@ -319,44 +318,76 @@ public class Catalog {
         logger.trace("lookupNamespaceURI(" + uri + "," + nature + "," + purpose + ")");
         return _lookupNamespaceURI(uri, nature, purpose);
     }
-
-    private CatalogResult _lookupNamespaceURI(String uri, String nature, String purpose) {
-        if (uri == null) {
-            throw new NullPointerException("Null uri passed to Catalog.");
-        }
-
-        uri = URIUtils.normalizeURI(uri);
-
-        if (uri.startsWith("urn:publicid:")) {
-            return lookupPublic(PublicId.decodeURN(uri), null);
-        }
-
-        int index = 0;
-        while (index < catalogList.size()) {
-            loadCatalog(index);
-            Document doc = documentList.get(index);
-            if (doc != null) {
-                logger.trace("  Looking in catalog: " + doc.getBaseURI());
-                CatalogResult resolved = lookupURI(doc.getDocumentElement(), uri, nature, purpose);
-                if (resolved != null) {
-                    logger.trace("  Found: " + resolved);
-                    return resolved;
-                }
-            }
-            index++;
-        }
-
-        if (cache != null && cache.catalog() != null) {
-            logger.trace("  Looking in cache: " + cache.catalog().getBaseURI());
-            CatalogResult resolved = lookupURI(cache.catalog().getDocumentElement(), uri, nature, purpose);
+    
+    private static CatalogResult lookupInDoc(LookupFunction aFunction, Element aDocRoot) {
+        if (aDocRoot != null) {
+            logger.trace("  Looking in " + aDocRoot.getBaseURI());
+            CatalogResult resolved = aFunction.apply(aDocRoot);
             if (resolved != null) {
                 logger.trace("  Found: " + resolved);
                 return resolved;
             }
         }
-        
-        logger.trace("  Not found");
         return null;
+    }
+
+    private CatalogResult lookupInDocs(LookupFunction aFunction) {
+        int index = 0;
+        while (index < catalogList.size()) {
+            loadCatalog(index);
+            Element docRoot = documentList.get(index);
+            CatalogResult resolved = lookupInDoc(aFunction, docRoot);
+            if (resolved != null) return resolved;
+            index++;
+        }
+        return null;
+    }
+    
+    private CatalogResult lookupInCache(LookupFunction aFunction) {
+        if (cache != null) {
+            return lookupInDoc(aFunction, cache.catalog());
+        } else {
+            return null;
+        }
+    }
+    
+    private CatalogResult lookupInDocsOnly(LookupFunction aFunction) {
+      CatalogResult r1 = lookupInDocs(aFunction);
+      if (r1 == null) {
+          logger.trace("  Not found");
+      }
+      return r1;
+    }
+    
+    private CatalogResult lookupInDocsOrCache(LookupFunction aFunction) {
+      CatalogResult r1 = lookupInDocs(aFunction);
+      CatalogResult r2 = r1 != null ? r1: lookupInCache(aFunction);
+      if (r2 == null) {
+          logger.trace("  Not found");
+      }
+      return r2;
+    }
+    
+    private interface LookupFunction {
+        CatalogResult apply(Element docElem);
+    }
+    
+    private CatalogResult _lookupNamespaceURI(String anUri, final String nature, final String purpose) {
+        if (anUri == null) {
+            throw new NullPointerException("Null uri passed to Catalog.");
+        }
+
+        final String uri = URIUtils.normalizeURI(anUri);
+
+        if (uri.startsWith("urn:publicid:")) {
+            return lookupPublic(PublicId.decodeURN(uri), null);
+        }
+
+        return lookupInDocsOrCache(new LookupFunction() {
+            public CatalogResult apply(Element docElem) {
+                return lookupURI(docElem, uri, nature, purpose);
+            }
+        });
     }
 
     protected CatalogResult lookupURI(Element group, String uri, String nature, String purpose) {
@@ -435,6 +466,35 @@ public class Catalog {
         return null;
     }
     
+    private static class ProcessedIds {
+        private final String systemId, publicId;
+        private ProcessedIds(String aSystemId, String aPublicId) {
+            systemId = aSystemId;
+            publicId = aPublicId;
+        }
+    }
+    
+    private static ProcessedIds processIds(String systemId, String publicId) {
+        if (systemId != null) {
+            systemId = URIUtils.normalizeURI(systemId);
+        }
+
+        if (publicId != null && publicId.startsWith("urn:publicid:")) {
+            publicId = PublicId.decodeURN(publicId);
+        }
+
+        if (systemId != null && systemId.startsWith("urn:publicid:")) {
+            String decodedSysId = PublicId.decodeURN(systemId);
+            if (publicId != null && !publicId.equals(decodedSysId)) {
+                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
+            } else {
+                publicId = decodedSysId;
+            }
+            systemId = null;
+        }
+        return new ProcessedIds(systemId, publicId);
+    }
+    
     /**
      * Lookup the specified system and public identifiers in the catalog.
      *
@@ -455,53 +515,13 @@ public class Catalog {
      */
     public CatalogResult lookupPublic(String systemId, String publicId) {
         logger.trace("lookupPublic(" + systemId + "," + publicId + ")");
-
-        if (systemId != null) {
-            systemId = URIUtils.normalizeURI(systemId);
-        }
-
-        if (publicId != null && publicId.startsWith("urn:publicid:")) {
-            publicId = PublicId.decodeURN(publicId);
-        }
-
-        if (systemId != null && systemId.startsWith("urn:publicid:")) {
-            systemId = PublicId.decodeURN(systemId);
-            if (publicId != null && !publicId.equals(systemId)) {
-                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
-                systemId = null;
-            } else {
-                publicId = systemId;
-                systemId = null;
+        final ProcessedIds processedIds = processIds(systemId, publicId);
+        return lookupInDocsOrCache(new LookupFunction() {
+            public CatalogResult apply(Element docElem) {
+              return lookupPublic(docElem, processedIds.systemId, processedIds.publicId);
             }
-        }
-
-        int index = 0;
-        while (index < catalogList.size()) {
-            loadCatalog(index);
-            Document doc = documentList.get(index);
-            if (doc != null) {
-                logger.trace("  Looking in " + doc.getBaseURI());
-                CatalogResult resolved = lookupPublic(doc.getDocumentElement(), systemId, publicId);
-                if (resolved != null) {
-                    logger.trace("  Found: " + resolved);
-                    return resolved;
-                }
-            }
-            index++;
-        }
-
-        if (cache != null && cache.catalog() != null) {
-            logger.trace("  Looking in " + cache.catalog().getBaseURI());
-            CatalogResult resolved = lookupPublic(cache.catalog().getDocumentElement(), systemId, publicId);
-            if (resolved != null) {
-                logger.trace("  Found: " + resolved);
-                return resolved;
-            }
-        }
-        
-        logger.trace("  Not found");
-        return null;
-    }        
+        });
+    }
         
     protected CatalogResult lookupPublic(Element group, String systemId, String publicId) {
         if (catalogElement(group,"group") || catalogElement(group, "catalog")) {
@@ -592,45 +612,24 @@ public class Catalog {
      * the system identifier provided and the SYSTEM entries in the
      * Catalog is case-insensitive.</p>
      *
-     * @param systemId The system identifier to locate in the catalog.
+     * @param aSystemId The system identifier to locate in the catalog.
      *
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
-    public CatalogResult lookupSystem(String systemId) {
-        logger.trace("lookupSystem(" + systemId + ")");
+    public CatalogResult lookupSystem(String aSystemId) {
+        logger.trace("lookupSystem(" + aSystemId + ")");
 
-        systemId = URIUtils.normalizeURI(systemId);
+        final String systemId = URIUtils.normalizeURI(aSystemId);
 
         if (systemId != null && systemId.startsWith("urn:publicid:")) {
             return lookupPublic(PublicId.decodeURN(systemId), null);
         }
 
-        int index = 0;
-        while (index < catalogList.size()) {
-            loadCatalog(index);
-            Document doc = documentList.get(index);
-            if (doc != null) {
-                logger.trace("  Looking in " + doc.getBaseURI());
-                CatalogResult resolved = lookupLocalSystem(doc.getDocumentElement(), systemId);
-                if (resolved != null) {
-                    logger.trace("  Found: " + resolved);
-                    return resolved;
-                }
+        return lookupInDocsOrCache(new LookupFunction() {
+            public CatalogResult apply(Element docElem) {
+              return lookupLocalSystem(docElem, systemId);
             }
-            index++;
-        }
-
-        if (cache != null && cache.catalog() != null) {
-            logger.trace("  Looking in " + cache.catalog().getBaseURI());
-            CatalogResult resolved = lookupLocalSystem(cache.catalog().getDocumentElement(), systemId);
-            if (resolved != null) {
-                logger.trace("  Found: " + resolved);
-                return resolved;
-            }
-        }
-
-        logger.trace("  Not found");
-        return null;
+        });
     }
     
     protected CatalogResult lookupLocalSystem(Element group, String systemId) {
@@ -721,43 +720,15 @@ public class Catalog {
      *
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
-    public CatalogResult lookupDoctype(String entityName, String systemId, String publicId) {
+    public CatalogResult lookupDoctype(final String entityName, String systemId, String publicId) {
         logger.trace("lookupDoctype(" + entityName + "," + publicId + "," + systemId + ")");
-  
-        systemId = URIUtils.normalizeURI(systemId);
-
-        if (publicId != null && publicId.startsWith("urn:publicid:")) {
-            publicId = PublicId.decodeURN(publicId);
-        }
-
-        if (systemId != null && systemId.startsWith("urn:publicid:")) {
-            systemId = PublicId.decodeURN(systemId);
-            if (publicId != null && !publicId.equals(systemId)) {
-                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
-                systemId = null;
-            } else {
-                publicId = systemId;
-                systemId = null;
+        final ProcessedIds processedIds = processIds(systemId, publicId);
+        // Maybe lookupInDocsOrCache should be used here too.
+        return lookupInDocsOnly(new LookupFunction() {
+            public CatalogResult apply(Element docElem) {
+                return lookupDoctype(docElem, entityName, processedIds.systemId, processedIds.publicId);
             }
-        }
-
-        int index = 0;
-        while (index < catalogList.size()) {
-            loadCatalog(index);
-            Document doc = documentList.get(index);
-            if (doc != null) {
-                logger.trace("  Looking in " + doc.getBaseURI());
-                CatalogResult resolved = lookupDoctype(doc.getDocumentElement(), entityName, systemId, publicId);
-                if (resolved != null) {
-                    logger.trace("  Found: " + resolved);
-                    return resolved;
-                }
-            }
-            index++;
-        }
-
-        logger.trace("  Not found");
-        return null;
+        });
     }
   
     protected CatalogResult lookupDoctype(Element group, String entityName, String systemId, String publicId) {
@@ -817,23 +788,11 @@ public class Catalog {
      */
     public CatalogResult lookupDocument() {
         logger.trace("lookupDocument()");
-        int index = 0;
-        while (index < catalogList.size()) {
-            loadCatalog(index);
-            Document doc = documentList.get(index);
-            if (doc != null) {
-                logger.trace("  Looking in " + doc.getBaseURI());
-                CatalogResult resolved = lookupDocument(doc.getDocumentElement());
-                if (resolved != null) {
-                    logger.trace("  Found: " + resolved);
-                    return resolved;
-                }
+        return lookupInDocsOnly(new LookupFunction() {
+            public CatalogResult apply(Element docElem) {
+              return lookupDocument(docElem);
             }
-            index++;
-        }
-
-        logger.trace("  Not found");
-        return null;
+        });
     }
 
     protected CatalogResult lookupDocument(Element group) {
@@ -858,43 +817,14 @@ public class Catalog {
      *
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
-    public CatalogResult lookupEntity(String entityName, String systemId, String publicId) {
+    public CatalogResult lookupEntity(final String entityName, String systemId, String publicId) {
         logger.trace("lookupEntity(" + entityName + "," + publicId + "," + systemId + ")");
-
-        systemId = URIUtils.normalizeURI(systemId);
-
-        if (publicId != null && publicId.startsWith("urn:publicid:")) {
-            publicId = PublicId.decodeURN(publicId);
-        }
-
-        if (systemId != null && systemId.startsWith("urn:publicid:")) {
-            systemId = PublicId.decodeURN(systemId);
-            if (publicId != null && !publicId.equals(systemId)) {
-                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
-                systemId = null;
-            } else {
-                publicId = systemId;
-                systemId = null;
+        final ProcessedIds processedIds = processIds(systemId, publicId);
+        return lookupInDocsOnly(new LookupFunction() {
+            public CatalogResult apply(Element docElem) {
+              return lookupEntity(docElem, entityName, processedIds.systemId, processedIds.publicId);
             }
-        }
-
-        int index = 0;
-        while (index < catalogList.size()) {
-            loadCatalog(index);
-            Document doc = documentList.get(index);
-            if (doc != null) {
-                logger.trace("  Looking in " + doc.getBaseURI());
-                CatalogResult resolved = lookupEntity(doc.getDocumentElement(), entityName, systemId, publicId);
-                if (resolved != null) {
-                    logger.trace("  Found: " + resolved);
-                    return resolved;
-                }
-            }
-            index++;
-        }
-
-        logger.trace("  Not found");
-        return null;
+        });
     }
   
     protected CatalogResult lookupEntity(Element group, String entityName, String systemId, String publicId) {
@@ -957,43 +887,14 @@ public class Catalog {
      *
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
-    public CatalogResult lookupNotation(String notName, String systemId, String publicId) {
+    public CatalogResult lookupNotation(final String notName, String systemId, String publicId) {
         logger.trace("lookupNotation(" + notName + "," + publicId + "," + systemId + ")");
-
-        systemId = URIUtils.normalizeURI(systemId);
-
-        if (publicId != null && publicId.startsWith("urn:publicid:")) {
-            publicId = PublicId.decodeURN(publicId);
-        }
-
-        if (systemId != null && systemId.startsWith("urn:publicid:")) {
-            systemId = PublicId.decodeURN(systemId);
-            if (publicId != null && !publicId.equals(systemId)) {
-                logger.warn("urn:publicid: system identifier differs from public identifier; using public identifier");
-                systemId = null;
-            } else {
-                publicId = systemId;
-                systemId = null;
+        final ProcessedIds processedIds = processIds(systemId, publicId);
+        return lookupInDocsOnly(new LookupFunction() {
+            public CatalogResult apply(Element docElem) {
+                return lookupNotation(docElem, notName, processedIds.systemId, processedIds.publicId);
             }
-        }
-
-        int index = 0;
-        while (index < catalogList.size()) {
-            loadCatalog(index);
-            Document doc = documentList.get(index);
-            if (doc != null) {
-                logger.trace("  Looking in " + doc.getBaseURI());
-                CatalogResult resolved = lookupNotation(doc.getDocumentElement(), notName, systemId, publicId);
-                if (resolved != null) {
-                    logger.trace("  Found: " + resolved);
-                    return resolved;
-                }
-            }
-            index++;
-        }
-
-        logger.trace("  Not found");
-        return null;
+        });
     }
   
     protected CatalogResult lookupNotation(Element group, String notName, String systemId, String publicId) {

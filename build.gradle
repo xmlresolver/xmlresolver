@@ -119,8 +119,10 @@ task copyDocs(dependsOn: [copyLicense, copyReadme]) {
   // nop
 }
 
-task makeDist(dependsOn: [ build, copyJar, copyDocs ]) << {
-  println "Created distribution in build/dist"
+task makeDist(dependsOn: [ build, copyJar, copyDocs ]) {
+  doLast {
+    println "Created distribution in build/dist"
+  }
 }
 
 task zipDist(dependsOn: makeDist, type: Zip) {
