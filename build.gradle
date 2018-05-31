@@ -30,6 +30,14 @@ dependencies {
   )
 }
 
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
+
+// Adding the bootClasspath would remove this warning:
+//   warning: [options] bootstrap class path not set in conjunction with -source 1.7
+// but I have no idea how to make it portable...
+// compileJava.options.bootClasspath = "/usr/lib/jvm/jdk1.7.0_80/jre/lib/rt.jar"
+
 jar {
   archiveName "xmlresolver-" + version + ".jar"
 }
