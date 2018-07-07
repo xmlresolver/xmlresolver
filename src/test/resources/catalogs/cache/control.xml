@@ -1,9 +1,0 @@
-<cache-control xmlns="http://xmlresolver.org/ns/cache"
-	       max-age="86400" delete-wait="86400"
-	       size="1500" space="10m">
-<cache uri="http://www.w3.org/" max-age="172800" space="500k"/>
-<no-cache uri="http://www.flickr.com/"/>
-<no-cache uri="http://flickr.com/"/>
-</cache-control>
-
-
