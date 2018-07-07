@@ -1,0 +1,47 @@
+dependencies {
+  compile (
+    project(":core")
+  )
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
+
+// Avoid warnings about annoation processors and, optionally, the -source 1.7
+// classpath. To avoid the class path warning, set JDK7LIB as described in
+// gradle.properties
+
+compileJava {
+    options.compilerArgs += ['-proc:none', '-Xlint:deprecation']
+    if (project.hasProperty("JDK7LIB")) {
+        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("rt.jar")
+    }
+}
+
+compileTestJava {
+    options.compilerArgs += '-proc:none'
+    if (project.hasProperty("JDK7LIB")) {
+        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("rt.jar")
+    }
+}
+
+jar {
+    baseName "xmlresolver-apps"
+    version version
+}
+jar.dependsOn 'javadocJar'
+jar.dependsOn 'sourcesJar'
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    baseName "xmlresolver-apps"
+    version version
+    classifier = 'javadoc'
+    from tasks.javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    baseName "xmlresolver-apps"
+    version version
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}

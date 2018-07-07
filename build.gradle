@@ -1,112 +1,20 @@
-buildscript {
-  repositories {
-    mavenCentral()
-  }
-}
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
 
-plugins {
-  id "java"
-  id "maven"
-  id "signing"
-}
-
-dependencies {
-  compile (
-    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
-  )
-  testImplementation (
-    [group: 'junit', name: 'junit', version: '4.12'],
-    [group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.1'],
-    [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'],
-    [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1']
-  )
-}
-
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
-
-repositories {
-  mavenLocal()
-  mavenCentral()
-  maven { url "https://maven.restlet.com" }
-}
-
-// Avoid warnings about annoation processors and, optionally, the -source 1.7
-// classpath. To avoid the class path warning, set JDK7LIB as described in
-// gradle.properties
-
-compileJava {
-    options.compilerArgs += ['-proc:none', '-Xlint:deprecation']
-    if (project.hasProperty("JDK7LIB")) {
-        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("rt.jar")
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://maven.restlet.com" }
     }
 }
 
-compileTestJava {
-    options.compilerArgs += '-proc:none'
-    if (project.hasProperty("JDK7LIB")) {
-        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("rt.jar")
-    }
-}
-
-jar {
-  archiveName "xmlresolver-" + version + ".jar"
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from tasks.javadoc.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-task copyJar(dependsOn: jar, type: Copy) {
-  from "build/libs/xmlresolver-" + version + ".jar"
-  into "build/dist"
-}
-
-task copyJavaDoc(dependsOn: javadoc, type: Copy) {
-  from "build/docs"
-  into "build/dist/docs"
-}
-
-task copyLicense(dependsOn: copyJavaDoc, type: Copy) {
-  from "LICENSE.md"
-  into "build/dist/docs"
-}
-
-task copyReadme(dependsOn: copyJavaDoc, type: Copy) {
-  from "README.md"
-  into "build/dist/docs"
-}
-
-task copyDocs(dependsOn: [copyLicense, copyReadme]) {
-  // nop
-}
-
-task makeDist(dependsOn: [ build, copyJar, copyDocs ]) {
-  doLast {
-    println "Created distribution in build/dist"
-  }
-}
-
-task zipDist(dependsOn: makeDist, type: Zip) {
-  from('build/dist')
+task dist(dependsOn: [ "core:build", "apps:build" ], type: Zip) {
+  from('core/build/libs')
+  from('apps/build/libs')
   into 'xmlresolver-' + version
   archiveName 'xmlresolver-' + version + ".zip"
-}
-
-task dist(dependsOn: zipDist) {
-  // nop
-}
-
-artifacts {
-  archives javadocJar
-  archives sourcesJar
 }
 
 signing {
