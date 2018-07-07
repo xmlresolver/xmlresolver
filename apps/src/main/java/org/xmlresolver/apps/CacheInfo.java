@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.xmlresolver;
+package org.xmlresolver.apps;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,8 +18,11 @@ import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-import org.w3c.dom.Document;
+
 import org.w3c.dom.Element;
+import org.xmlresolver.Catalog;
+import org.xmlresolver.ResourceCache;
+import org.xmlresolver.ResourceConnection;
 import org.xmlresolver.helpers.DOMUtils;
 
 /** An application to display information about items in the cache.
@@ -72,72 +75,37 @@ public class CacheInfo {
         
         entry = DOMUtils.getFirstElement(catalog);
         while (entry != null) {
+            Long cacheTime = -1L;
+            String timestr = DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "time");
+            if (timestr != null) {
+                cacheTime = Long.parseLong(timestr);
+            }
+            String etag = DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "etag");
+
             if ("uri".equals(entry.getLocalName())) {
                 System.out.println("URI:    " + entry.getAttribute("name"));
                 showLocalFile(entry.getAttribute("uri"));
-                Long cacheTime = Long.parseLong(DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "oTime"));
-                Long checkTime = Long.parseLong(DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "time"));
-                if (cacheTime == checkTime) {
-                    System.out.println("\tCached on " + showTime(cacheTime));
-                } else {
-                    System.out.println("\tCached on " + showTime(cacheTime) + " (last checked " + showTime(checkTime) + ")");
+                System.out.println("\tCached on " + showTime(cacheTime));
+                checkLastModified(entry.getAttribute("name"), cacheTime, etag);
+                if (cache.expired(entry.getAttribute("name"), entry.getAttribute("uri"), entry)) {
+                    System.out.println("\tEXPIRED");
                 }
-                checkLastModified(entry.getAttribute("name"), cacheTime);
             } else if ("system".equals(entry.getLocalName())) {
                 System.out.println("SYSTEM: " + entry.getAttribute("systemId"));
                 showLocalFile(entry.getAttribute("uri"));
-                Long cacheTime = Long.parseLong(DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "oTime"));
-                Long checkTime = Long.parseLong(DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "time"));
-                if (cacheTime == checkTime) {
-                    System.out.println("\tCached on " + showTime(cacheTime));
-                } else {
-                    System.out.println("\tCached on " + showTime(cacheTime) + " (last checked " + showTime(checkTime) + ")");
+                System.out.println("\tCached on " + showTime(cacheTime));
+                checkLastModified(entry.getAttribute("systemId"), cacheTime, etag);
+                if (cache.expired(entry.getAttribute("systemId"), entry.getAttribute("uri"), entry)) {
+                    System.out.println("\tEXPIRED");
                 }
-                checkLastModified(entry.getAttribute("systemId"), cacheTime);
             } else if ("public".equals(entry.getLocalName())) {
                 System.out.println("PUBLIC: " + entry.getAttribute("publicId"));
                 showLocalFile(entry.getAttribute("uri"));
             } else {
                 System.out.println("UNEXPECTED ENTRY TYPE!");
                 showLocalFile(entry.getAttribute("uri"));
-                Long cacheTime = Long.parseLong(DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "oTime"));
-                Long checkTime = Long.parseLong(DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "time"));
-                if (cacheTime == checkTime) {
-                    System.out.println("\tCached on " + showTime(cacheTime));
-                } else {
-                    System.out.println("\tCached on " + showTime(cacheTime) + " (last checked " + showTime(checkTime) + ")");
-                }
+                System.out.println("\tCached on " + showTime(cacheTime));
             }
-
-            /*
-            String uri = null;
-            if ("uri".equals(entry.getLocalName())) {
-                uri = entry.getAttribute("name");
-            } else if ("system".equals(entry.getLocalName())) {
-                uri = entry.getAttribute("systemId");
-            }
-
-            if (uri != null) {
-                long cacheTime = -1;
-                String timeString = DOMUtils.attr(entry, Catalog.NS_XMLRESOURCE_EXT, "time");
-                try {
-                    cacheTime = Long.parseLong(timeString);
-                } catch (NumberFormatException nfe) {
-                    System.err.println(entry.getAttribute("uri") + ":");
-                    System.err.println("\t" + uri);
-                    System.err.println("\tInvalid cache time: " + timeString + "!?");
-                }
-
-                if (cache.expired(uri, entry.getAttribute("uri"), entry)) {
-                    expCount++;
-                    expired.add(uri);
-                } else {
-                    okCount++;
-                    uptodate.add(uri);
-                }
-            }
-             */
-
             entry = DOMUtils.getNextElement(entry);
         }
     }
@@ -166,34 +134,31 @@ public class CacheInfo {
         return result;
     }
     
-    private void checkLastModified(String origURI, long cacheTime) {
-        if (origURI == null || !origURI.startsWith("http:")) {
+    private void checkLastModified(String origURI, long cacheTime, String cachedEtag) {
+        if (origURI == null || ! (origURI.startsWith("http:") || origURI.startsWith("https:"))) {
             System.out.println("\tCan't check age of actual resource.");
         }
-        
-        long lastModified = -1;
-        try {
-            URL url = new URL(origURI);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            if (conn.getResponseCode() != 200) {
-                System.out.println("\tHTTP returned " + conn.getResponseCode());
-            }
-            lastModified = conn.getLastModified();
-        } catch (MalformedURLException mue) {
-            System.out.println("\tMalformed URL: " + origURI);
-            return;
-        } catch (UnknownHostException uhe) {
-            System.out.println("\tUnknown host exception: " + uhe.getMessage());
-            return;
-        } catch (IOException ioe) {
-            System.out.println("\tI/O Exception: " + ioe.getMessage());
-            return;
+
+        ResourceConnection rconn = new ResourceConnection(origURI);
+        rconn.close();
+        long lastModified = rconn.getLastModified();
+        String etag = rconn.getEtag();
+        if (rconn.getStatusCode() != 200) {
+            System.out.println("\tHTTP returned " + rconn.getStatusCode());
         }
 
-        if (lastModified < 0) {
+        if (lastModified <= 0) {
             System.out.println("\tServer did not report last-modified");
         } else {
-            System.out.println("\tLast modified " + showTime(lastModified));
+            System.out.println("\tLast modified on " + showTime(lastModified));
+        }
+
+        if (etag != null && cachedEtag != null) {
+            if (etag.equals(cachedEtag)) {
+                System.out.println("\tEtags match: " + etag);
+            } else {
+                System.out.println("\tEtags don't match: " + cachedEtag + " =/= " + etag);
+            }
         }
 
         if (lastModified > cacheTime) {

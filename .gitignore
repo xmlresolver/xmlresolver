@@ -1,8 +1,5 @@
-*~
 /build/
-/xmlresolver.iml
+/core/build/
+/apps/build/
 /.idea/
 /.gradle/
-/src/test/resources/catalogs/cache/data/
-/src/test/resources/catalogs/cache/entry/
-/src/test/resources/catalogs/cache/lock

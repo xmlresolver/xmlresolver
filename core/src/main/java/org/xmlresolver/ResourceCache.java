@@ -24,14 +24,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.GregorianCalendar;
@@ -118,9 +115,9 @@ public class ResourceCache {
     public static final String NS_CACHE = "http://xmlresolver.org/ns/cache";
 
     private static Logger logger = LoggerFactory.getLogger(ResourceCache.class);
-    private static GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-    private static GregorianCalendar now = new GregorianCalendar();
-    private static DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+    private static final GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+    private static final GregorianCalendar now = new GregorianCalendar();
+    private static final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
     private static DocumentBuilder builder = null;
     
     private Document cache = null;
@@ -133,7 +130,7 @@ public class ResourceCache {
     private Vector<CacheInfo> cacheInfo = new Vector<CacheInfo> ();
     private long deleteWait = 60*60*24*7; // 1 week
     private long cacheSize = 1000;
-    private long cacheSpace = 10240;
+    private long cacheSpace = 1024 * 1000 * 10; // 10Mb
     private long maxAge = -1;
     
     /** Creates a new instance of ResourceCache.
@@ -197,11 +194,7 @@ public class ResourceCache {
                     child = DOMUtils.getNextElement(child);
                 }
             }
-        } catch (SAXException ex) {
-            // nop;
-        } catch (FileNotFoundException ex) {
-            // nop;
-        } catch (IOException ex) {
+        } catch (SAXException | IOException ex) {
             // nop;
         }
         
@@ -209,7 +202,15 @@ public class ResourceCache {
         try {
             cacheDir = fDir.getCanonicalFile();
             logger.trace("Cache: " + cacheDir);
+            if (!cacheDir.exists()) {
+                cacheDir.mkdir();
+            }
+            if (!cacheDir.exists()) {
+                logger.trace("Cache directory does not exist/cannot be created");
+                cacheDir = null;
+            }
         } catch (IOException ioe) {
+            logger.trace("IOException getting cache directory: " + dir);
             cacheDir = null;
         }
 
@@ -246,14 +247,8 @@ public class ResourceCache {
             units = 1024*1000*1000;
             longStr = longStr.substring(0,longStr.length()-1);
         }
-        
-        try {
-            long val = Long.parseLong(longStr);
-            return val * units;
-        } catch (NumberFormatException nfe) {
-            logger.warn("Bad numeric value in cache control file: " + longStr);
-            return defVal;
-        }
+
+        return parseLong(longStr, units, defVal);
     }
 
     private long parseTimeLong(Element node, String attr, long defVal) {
@@ -280,6 +275,10 @@ public class ResourceCache {
             longStr = longStr.substring(0,longStr.length()-1);
         }
 
+        return parseLong(longStr, units, defVal);
+    }
+
+    private long parseLong(String longStr, long units, long defVal) {
         try {
             long val = Long.parseLong(longStr);
             return val * units;
@@ -402,9 +401,7 @@ public class ResourceCache {
                             Element entry = (Element) cache.importNode(root, true);
                             insertSorted(catalog, entry);
                         }
-                    } catch (SAXException se) {
-                        // nop;
-                    } catch (IOException ioe) {
+                    } catch (SAXException | IOException err) {
                         // nop;
                     }
                 }
@@ -456,7 +453,6 @@ public class ResourceCache {
      * @throws IOException if an I/O error occurs
      */
     public String addURI(ResourceConnection connection) throws IOException {
-        logger.info("Caching URI: " + connection.getURI());
         return _addNamespaceURI(connection, null, null);
     }
 
@@ -488,8 +484,9 @@ public class ResourceCache {
         String name = connection.getURI();
         String contentType = connection.getContentType();
         InputStream resource = connection.getStream();
-        
-        logger.info("Caching uri: " + name);
+
+
+        logger.info("Caching URI: " + name);
 
         DirectoryLock lock = new DirectoryLock();
         if (!lock.locked()) {
@@ -754,7 +751,7 @@ public class ResourceCache {
         CacheInfo info = null;
         for (int count = 0; info == null && count < cacheInfo.size(); count++) {
             CacheInfo chk = cacheInfo.get(count);
-            if (Pattern.matches(chk.pattern() + ".*", uri)) {
+            if (Pattern.matches(chk.pattern + ".*", uri)) {
                 info = chk;
             }
         }
@@ -763,16 +760,18 @@ public class ResourceCache {
             info = defaultCacheInfo;
         }
          
-        if (!info.cache()) {
+        if (!info.cache) {
             logger.info("Not caching: " + uri);
         }
-        return info.cache();
+        return info.cache;
     }
 
     /** Attempts to determine if the local copy is out of date.
      *
+     * N.B. Calling this function will remove expired entries from the cache!
+     *
      * <p>If the URI is an <code>http:</code> URI, a HEAD request is made and the
-     * <code>cachedTime()</code> is compared to the last modified time. If the resource
+     * <code>cachedTime()</code> and <code>etag</code> are compared. If the resource
      * on the web is more recent, <code>true</code> is returned.</p>
      *
      * <p>If the resource isn't cached, isn't an <code>http:</code> URI, or an error
@@ -796,7 +795,7 @@ public class ResourceCache {
         CacheInfo info = null;
         for (int count = 0; info == null && count < cacheInfo.size(); count++) {
             CacheInfo chk = cacheInfo.get(count);
-            if (Pattern.matches(chk.pattern() + ".*", origURI)) {
+            if (Pattern.matches(chk.pattern + ".*", origURI)) {
                 info = chk;
             }
         }
@@ -806,23 +805,23 @@ public class ResourceCache {
         }
 
         // If this entry isn't supposed to be cached, then it's definitely expired.
-        if (!info.cache()) {
+        if (!info.cache) {
             return true;
         }
 
         // Find out how many matching entries are in the cache and how much space they occupy
-        Pattern uriPattern = Pattern.compile(info.pattern() + ".*");
+        Pattern uriPattern = Pattern.compile(info.pattern + ".*");
         int cacheCount = 0;
         long cacheSize = 0;
-        long cacheTime = -1;
         String cachedEtag = null;
         boolean found = false;
         Element node = DOMUtils.getFirstElement(catalog);
         while (node != null) {
             found = found || (node == entry);
             String srcuri = null;
-            if (node.hasAttribute("publicId")) {
+            if (node.hasAttribute("publicId") || "true".equals(node.getAttribute("expired"))) {
                 // They must also have a system entry; skip the public one so we don't count it twice
+                // Also: if we already expired it last time around, don't bother expiring it again.
                 node = DOMUtils.getNextElement(node);
                 continue;
             }
@@ -847,11 +846,16 @@ public class ResourceCache {
         }
 
         // Flush oldest entries...
-        if (cacheCount > info.cacheSize() || cacheSize > info.cacheSpace()) {
-            flushCache(uriPattern, info.cacheSize(), info.cacheSpace());
+        if (cacheCount > info.cacheSize || cacheSize > info.cacheSpace) {
+            logger.trace("Too many cache entries, or cache size too large: expiring oldest entries");
+            flushCache(uriPattern, info.cacheSize, info.cacheSpace);
+        }
+
+        if ("true".equals(entry.getAttribute("expired"))) {
+            return true;
         }
         
-        cacheTime = -1;
+        long cacheTime = -1;
         if (entry.hasAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "time")) {
             cacheTime = Long.parseLong(entry.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "time"));
         }
@@ -860,44 +864,40 @@ public class ResourceCache {
             cachedEtag = entry.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "etag");
         }
 
-        String etag = null;
-        long lastModified = 0;
-        try {
-            URL url = new URL(origURI);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            lastModified = conn.getLastModified();
-            etag = conn.getHeaderField("etag");
-            if (etag != null && "".equals(etag)) { etag = null; }
-            if (lastModified == 0 && (etag == null || cachedEtag == null)) {
-                // Hmm. We're not sure when it was last modified?
-                long maxAge = info.maxAge();
-                if (maxAge >= 0) {
-                    long oldest = now.getTimeInMillis() - (maxAge * 1000);
-                    if (maxAge == 0 || cacheTime < oldest) {
-                        return true;
-                    }
+        ResourceConnection rconn = new ResourceConnection(origURI);
+        rconn.close();
+        String etag = rconn.getEtag();
+        long lastModified = rconn.getLastModified();
+        if ("".equals(etag)) {
+            etag = null;
+        }
+        if (lastModified < 0 && (etag == null || cachedEtag == null)) {
+            // Hmm. We're not sure when it was last modified?
+            long maxAge = info.maxAge;
+            if (maxAge >= 0) {
+                long oldest = now.getTimeInMillis() - (maxAge * 1000);
+                if (maxAge == 0 || cacheTime < oldest) {
+                    return true;
                 }
+            }
+            lastModified = rconn.getDate();
+        }
 
-                lastModified = conn.getDate();
-            }
-            
-            if (conn.getResponseCode() != 200) {
-                logger.trace("Not expired: " + origURI + " (HTTP " + conn.getResponseCode() + ")");
-                return false;
-            }
-        } catch (MalformedURLException mue) {
-            logger.trace("Not expired: " + origURI + " (MalformedURLException)");
-            return false;
-        } catch (IOException ioe) {
-            logger.trace("Not expired: " + origURI + " (IOException)");
+        if (rconn.getStatusCode() != 200) {
+            logger.trace("Not expired: " + origURI + " (HTTP " + rconn.getStatusCode() + ")");
             return false;
         }
 
         boolean etagsDiffer = (etag != null && cachedEtag != null && !etag.equals(cachedEtag));
         
-        if (lastModified == 0) {
-            logger.trace("Expired: " + origURI + " (no last-modified header)");
-            return true;
+        if (lastModified < 0) {
+            if (etagsDiffer) {
+                logger.trace("Expired: " + origURI + " (no last-modified header, etags differ)");
+                return true;
+            } else {
+                logger.trace("Not expired: " + origURI + " (no last-modified header, etags identical)");
+                return false;
+            }
         } else if (lastModified > cacheTime || etagsDiffer) {
             logger.trace("Expired: " + origURI);
             expire(uri);
@@ -934,9 +934,11 @@ public class ResourceCache {
                 cacheCount++;
                 File lclFile = new File(node.getAttribute("uri"));
                 cacheSize += lclFile.length();
+                boolean alreadyExpired = "true".equals(node.getAttribute("expired"));
 
-                if (cacheCount > maxCount || cacheSize > maxSize) {
+                if (!alreadyExpired && (cacheCount > maxCount || cacheSize > maxSize)) {
                     expired.add(node.getAttribute("uri"));
+                    node.setAttribute("expired", "true");
                 }
             }
             node = DOMUtils.getNextElement(node);
@@ -1005,14 +1007,14 @@ public class ResourceCache {
         return ".bin";
     }
     
-    class DirectoryLock {
+    private class DirectoryLock {
         private File lockF = null;
         private RandomAccessFile lockFile = null;
         private FileChannel lockChannel = null;
         private FileLock lock = null;
         private boolean locked = false;
         
-        public DirectoryLock() {
+        DirectoryLock() {
             try {
                 lockF = new File(cacheDir.toString()+"/lock");
                 lockFile = new RandomAccessFile(lockF, "rw");
@@ -1024,11 +1026,11 @@ public class ResourceCache {
             }
         }
 
-        public boolean locked() {
+        boolean locked() {
             return locked;
         }
 
-        public void unlock() {
+        void unlock() {
             try {
                 lock.release();
                 locked = false;
@@ -1039,7 +1041,7 @@ public class ResourceCache {
         }
     }
     
-    class CacheInfo {
+    private class CacheInfo {
         private boolean cache = true;
         private String pattern = "";
         private long deleteWait = -1;
@@ -1047,37 +1049,13 @@ public class ResourceCache {
         private long cacheSpace = -1;
         private long maxAge = -1;
 
-        public CacheInfo(String uriPattern, boolean cache, long deleteWait, long cacheSize, long cacheSpace, long maxAge) {
+        CacheInfo(String uriPattern, boolean cache, long deleteWait, long cacheSize, long cacheSpace, long maxAge) {
             this.pattern = uriPattern;
             this.cache = cache;
             this.deleteWait = deleteWait;
             this.cacheSize = cacheSize;
             this.cacheSpace = cacheSpace;
             this.maxAge = maxAge;
-        }
-        
-        public String pattern() {
-            return pattern;
-        }
-
-        public boolean cache() {
-            return cache;
-        }
-        
-        public long deleteWait() {
-            return deleteWait;
-        }
-        
-        public long cacheSize() {
-            return cacheSize;
-        }
-
-        public long cacheSpace() {
-            return cacheSpace;
-        }
-        
-        public long maxAge() {
-            return maxAge;
         }
     }
 }

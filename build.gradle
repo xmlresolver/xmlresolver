@@ -1,143 +1,19 @@
-import groovy.swing.SwingBuilder
-import java.awt.Point
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
 
-buildscript {
-  repositories {
-    mavenCentral()
-  }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://maven.restlet.com" }
+    }
 }
 
-plugins {
-  id "java"
-  id "maven"
-  id "signing"
-}
-
-repositories {
-  mavenCentral()
-  maven { url "http://maven.restlet.org" }
-}
-
-dependencies {
-  compile (
-    [group: 'junit', name: 'junit', version: '4.12'],
-    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5'],
-    [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'],
-    [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'],
-    [group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.1'],
-    [group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.10'],
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.10'],
-  )
-}
-
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
-
-// Adding the bootClasspath would remove this warning:
-//   warning: [options] bootstrap class path not set in conjunction with -source 1.7
-// but I have no idea how to make it portable...
-// compileJava.options.bootClasspath = "/usr/lib/jvm/jdk1.7.0_80/jre/lib/rt.jar"
-
-jar {
-  archiveName "xmlresolver-" + version + ".jar"
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from tasks.javadoc.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-task copyJar(dependsOn: jar, type: Copy) {
-  from "build/libs/xmlresolver-" + version + ".jar"
-  into "build/dist"
-}
-
-task copyJavaDoc(dependsOn: javadoc, type: Copy) {
-  from "build/docs"
-  into "build/dist/docs"
-}
-
-task copyLicense(dependsOn: copyJavaDoc, type: Copy) {
-  from "LICENSE.md"
-  into "build/dist/docs"
-}
-
-task copyReadme(dependsOn: copyJavaDoc, type: Copy) {
-  from "README.md"
-  into "build/dist/docs"
-}
-
-task copyDocs(dependsOn: [copyLicense, copyReadme]) {
-  // nop
-}
-
-task makeDist(dependsOn: [ build, copyJar, copyDocs ]) {
-  doLast {
-    println "Created distribution in build/dist"
-  }
-}
-
-task zipDist(dependsOn: makeDist, type: Zip) {
-  from('build/dist')
+task dist(dependsOn: [ "core:build", "apps:build" ], type: Zip) {
+  from('core/build/libs')
+  from('apps/build/libs')
   into 'xmlresolver-' + version
   archiveName 'xmlresolver-' + version + ".zip"
 }
 
-task dist(dependsOn: zipDist) {
-  // nop
-}
-
-artifacts {
-  archives javadocJar
-  archives sourcesJar
-}
-
-signing {
-  required { gradle.taskGraph.hasTask("uploadArchives") }
-  sign configurations.archives
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-              authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-
-            pom.project {
-               name 'XML Resolver'
-               packaging 'jar'
-               description 'An XML entity/uri resolver'
-               url 'https://github.com/ndw/xmlresolver'
-
-               scm {
-                   url 'scm:git@github.com:ndw/xmlresolver.git'
-                   connection 'scm:git@github.com:ndw/xmlresolver.git'
-                   developerConnection 'scm:git@github.com:ndw/xmlresolver.git'
-               }
-
-               licenses {
-                   license {
-                       name 'The Apache Software License, Version 2.0'
-                       url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                       distribution 'repo'
-                   }
-               }
-
-               developers {
-                   developer {
-                       id 'ndw'
-                       name 'Norman Walsh'
-                   }
-               }
-           }
-        }
-    }
-}

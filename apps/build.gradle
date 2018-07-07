@@ -1,0 +1,105 @@
+dependencies {
+  compile (
+    project(":core")
+  )
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
+
+// Avoid warnings about annoation processors and, optionally, the -source 1.7
+// classpath. To avoid the class path warning, set JDK7LIB as described in
+// gradle.properties
+
+compileJava {
+    options.compilerArgs += ['-proc:none', '-Xlint:deprecation']
+    if (project.hasProperty("JDK7LIB")) {
+        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("*.jar")
+    }
+}
+
+compileTestJava {
+    options.compilerArgs += '-proc:none'
+    if (project.hasProperty("JDK7LIB")) {
+        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("*.jar")
+    }
+}
+
+jar {
+    baseName "xmlresolver-apps"
+    version version
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    baseName "xmlresolver-apps"
+    version version
+    classifier = 'javadoc'
+    from tasks.javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    baseName "xmlresolver-apps"
+    version version
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+  archives javadocJar
+  archives sourcesJar
+}
+
+signing {
+  required { gradle.taskGraph.hasTask("uploadArchives") }
+  sign configurations.archives
+}
+
+def mavenPom = {
+  name 'XML Resolver Example Apps'
+  packaging 'jar'
+  description 'An XML entity/uri resolver example applications'
+  url 'https://github.com/ndw/xmlresolver'
+
+  scm {
+       url 'scm:git@github.com:ndw/xmlresolver.git'
+       connection 'scm:git@github.com:ndw/xmlresolver.git'
+       developerConnection 'scm:git@github.com:ndw/xmlresolver.git'
+   }
+
+   licenses {
+       license {
+           name 'The Apache Software License, Version 2.0'
+           url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+           distribution 'repo'
+       }
+   }
+
+   developers {
+       developer {
+           id 'ndw'
+           name 'Norman Walsh'
+       }
+   }
+}
+
+install {
+  repositories {
+    mavenInstaller {
+      pom.project(mavenPom)
+    }
+  }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+              authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project(mavenPom)
+        }
+    }
+}

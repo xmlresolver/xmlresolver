@@ -1,8 +1,8 @@
 # XMLResolver: An enhanced XML resolver with XML Catalog support
 
 The xmlresolver project provides an advanced implementation of the SAX
-EntityResolver, the Transformer URIResolver, and a new
-NamespaceResolver. The implementation uses the OASIS XML Catalogs V1.1
+`EntityResolver`, the Transformer `URIResolver`, and a new
+`NamespaceResolver`. The implementation uses the OASIS XML Catalogs V1.1
 Standard to provide a mapping from public identifiers to local
 resources.
 
@@ -16,6 +16,27 @@ of a set of convenience classes to access parsers that automatically
 implement these resolvers.
 
 The goal of this project is to produce a clean, reasonably simple API
-and a robust, thread-safe implementation. At this time, the code is
-probably neither completely baked nor entirely robust. Please consider
-it "beta" for the time being.
+and a robust, thread-safe implementation.
+
+## Release notes
+
+### 0.14.0, 7 July 2018
+
+This is mostly a cleanup release:
+
+* The build scripts have been retooled to facilitate separating
+  the core library from ancillary applications.
+* Updated `org.apache.httpcomponents.httpclient` to version 4.5.5.
+* Updated `org.slf4j.slf4j-api` to version 1.7.25.
+* The way cache expiration is computed was reworked.
+* The `Parse` sample application and the `CacheInfo` utility have
+  been moved into a separate jar file, `xmlresolver-apps-[version].jar`.
+* The core library is `xmlresolver-[version].jar`.
+  There are no static `main()` methods in the core library.
+* The core library no longer claims dependencies on logging
+  frameworks beyond the SLF4J API. You may need to update your class
+  path to provide the frameworks.
+* The `log4j2.xml` configuration file is no longer in the core library jar.
+
+If this release goes smoothly, I plan to release this library as version
+“1.0.0” sometime this year.
