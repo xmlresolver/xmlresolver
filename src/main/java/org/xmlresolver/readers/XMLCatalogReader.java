@@ -55,15 +55,9 @@ public class XMLCatalogReader {
             } else {
                 return null;
             }
-        } catch (ParserConfigurationException pce) {
-            return null;
-        } catch (SAXException se) {
-            return null;
-        } catch (IOException ioe) {
+        } catch (ParserConfigurationException | SAXException | IOException pce) {
             return null;
         }
-        
-        System.out.println("Name: {" + root.getNamespaceURI() + "}" + root.getNodeName());
         
         if ("catalog".equals(root.getNodeName())
             && "urn:oasis:names:tc:entity:xmlns:xml:catalog".equals(root.getNamespaceURI())) {

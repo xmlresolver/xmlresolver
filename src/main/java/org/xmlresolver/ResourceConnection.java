@@ -1,19 +1,13 @@
 package org.xmlresolver;
 
 import org.apache.http.Header;
-import org.apache.http.HeaderElement;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
-import org.apache.http.impl.client.SystemDefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.utils.URIUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +15,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,6 +34,9 @@ public class ResourceConnection {
     private int statusCode = -1;
     private String contentType = null;
     private String etag = null;
+    private Long lastModified = -1L;
+    private Long date = -1L;
+    private CloseableHttpClient httpclient = null;
     
     public ResourceConnection(String resolved) {
         try {
@@ -46,28 +47,40 @@ public class ResourceConnection {
 
             if (absuri.startsWith("http:") || absuri.startsWith("https:")) {
                 // Use Apache HttpClient so that we can follow the redirect
-                SystemDefaultHttpClient client = new SystemDefaultHttpClient();
-                client.setHttpRequestRetryHandler(new StandardHttpRequestRetryHandler(3, false));
-
-                HttpParams params = new BasicHttpParams();
-                HttpContext localContext = new BasicHttpContext();
-
-                HttpUriRequest httpRequest = new HttpGet(absuri);
-                httpRequest.setParams(params);
-
-                HttpResponse httpResponse = client.execute(httpRequest, localContext);
+                httpclient = HttpClients.createDefault();
+                HttpClientContext context = HttpClientContext.create();
+                HttpGet httpget = new HttpGet(absuri);
+                HttpResponse httpResponse = httpclient.execute(httpget, context);
+                HttpHost target = context.getTargetHost();
+                List<URI> redirectLocations = context.getRedirectLocations();
+                URI location = URIUtils.resolve(httpget.getURI(), target, redirectLocations);
+                redirect = location.toASCIIString();
+                if (absuri.equals(redirect)) {
+                    redirect = null;
+                }
+                stream = httpResponse.getEntity().getContent();
                 statusCode = httpResponse.getStatusLine().getStatusCode();
                 contentType = getHeader(httpResponse, "Content-Type", "application/octet-stream");
                 etag = getHeader(httpResponse, "Etag", null);
-                
-                if (statusCode == 200) {
-                    stream = httpResponse.getEntity().getContent();
 
-                    HttpHost host = (HttpHost) localContext.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
-                    HttpUriRequest req = (HttpUriRequest) localContext.getAttribute(ExecutionContext.HTTP_REQUEST);
-                    redirect = (req.getURI().isAbsolute()) ? req.getURI().toString() : (host.toURI() + req.getURI());
-                    if (absuri.equals(redirect)) {
-                        redirect = null;
+                SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+                String dateString = getHeader(httpResponse, "Last-Modified", null);
+                if (dateString != null) {
+                    try {
+                        Date d = format.parse(dateString);
+                        lastModified = d.getTime();
+                    } catch (ParseException e) {
+                        // nop
+                    }
+                }
+
+                dateString = getHeader(httpResponse, "Date", null);
+                if (dateString != null) {
+                    try {
+                        Date d = format.parse(dateString);
+                        date = d.getTime();
+                    } catch (ParseException e) {
+                        // nop
                     }
                 }
             } else {
@@ -75,12 +88,12 @@ public class ResourceConnection {
                 connection.connect();
                 stream = connection.getInputStream();
                 contentType = null; // No point if it's not http
-                etag = connection.getHeaderField("etag");
+                etag = connection.getHeaderField("Etag");
+                lastModified = connection.getLastModified();
+                date = connection.getDate();
                 statusCode = 200;
             }
-        } catch (URISyntaxException use) {
-            // nop
-        } catch (IOException ioe) {
+        } catch (URISyntaxException | IOException use) {
             // nop
         }
     }
@@ -108,7 +121,25 @@ public class ResourceConnection {
     public int getStatusCode() {
         return statusCode;
     }
-    
+
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public void close() {
+        if (httpclient != null) {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+                // nop
+            }
+        }
+    }
+
     private String getHeader(HttpResponse resp, String name, String def) {
         Header[] headers = resp.getHeaders(name);
 
@@ -116,7 +147,7 @@ public class ResourceConnection {
             return def;
         }
 
-        if (headers == null || headers.length == 0) {
+        if (headers.length == 0) {
             // This should never happen
             return def;
         } else {
