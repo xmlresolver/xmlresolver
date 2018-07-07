@@ -4,6 +4,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -25,7 +27,6 @@ import java.util.List;
  * User: ndw
  * Date: 2/8/12
  * Time: 9:15 PM
- * To change this template use File | Settings | File Templates.
  */
 public class ResourceConnection {
     private InputStream stream = null;
@@ -37,8 +38,16 @@ public class ResourceConnection {
     private Long lastModified = -1L;
     private Long date = -1L;
     private CloseableHttpClient httpclient = null;
-    
+
+    // The headOnly parameter is a bit of a hack, but it's convenient to reuse the
+    // ResourceConnection logic in multiple places. To check properties, I only
+    // want to make a HEAD request, so ...
+
     public ResourceConnection(String resolved) {
+        this(resolved, false);
+    }
+
+    public ResourceConnection(String resolved, boolean headOnly) {
         try {
             URI uri = new URI(resolved);
             URL url = uri.toURL();
@@ -49,19 +58,29 @@ public class ResourceConnection {
                 // Use Apache HttpClient so that we can follow the redirect
                 httpclient = HttpClients.createDefault();
                 HttpClientContext context = HttpClientContext.create();
-                HttpGet httpget = new HttpGet(absuri);
-                HttpResponse httpResponse = httpclient.execute(httpget, context);
+
+                HttpRequestBase httpreq = null;
+                if (headOnly) {
+                    httpreq = new HttpHead(absuri);
+                } else {
+                    httpreq = new HttpGet(absuri);
+                }
+
+                HttpResponse httpResponse = httpclient.execute(httpreq, context);
                 HttpHost target = context.getTargetHost();
                 List<URI> redirectLocations = context.getRedirectLocations();
-                URI location = URIUtils.resolve(httpget.getURI(), target, redirectLocations);
+                URI location = URIUtils.resolve(httpreq.getURI(), target, redirectLocations);
                 redirect = location.toASCIIString();
                 if (absuri.equals(redirect)) {
                     redirect = null;
                 }
-                stream = httpResponse.getEntity().getContent();
+
                 statusCode = httpResponse.getStatusLine().getStatusCode();
                 contentType = getHeader(httpResponse, "Content-Type", "application/octet-stream");
                 etag = getHeader(httpResponse, "Etag", null);
+                if (!headOnly) {
+                    stream = httpResponse.getEntity().getContent();
+                }
 
                 SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
                 String dateString = getHeader(httpResponse, "Last-Modified", null);
@@ -86,7 +105,13 @@ public class ResourceConnection {
             } else {
                 URLConnection connection = url.openConnection();
                 connection.connect();
-                stream = connection.getInputStream();
+
+                if (headOnly) {
+                    connection.getInputStream().close();
+                } else {
+                    stream = connection.getInputStream();
+                }
+
                 contentType = null; // No point if it's not http
                 etag = connection.getHeaderField("Etag");
                 lastModified = connection.getLastModified();
