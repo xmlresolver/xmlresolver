@@ -864,7 +864,7 @@ public class ResourceCache {
             cachedEtag = entry.getAttributeNS(Catalog.NS_XMLRESOURCE_EXT, "etag");
         }
 
-        ResourceConnection rconn = new ResourceConnection(origURI);
+        ResourceConnection rconn = new ResourceConnection(origURI, true);
         rconn.close();
         String etag = rconn.getEtag();
         long lastModified = rconn.getLastModified();
