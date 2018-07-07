@@ -21,14 +21,14 @@ targetCompatibility = "1.7"
 compileJava {
     options.compilerArgs += ['-proc:none', '-Xlint:deprecation']
     if (project.hasProperty("JDK7LIB")) {
-        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("rt.jar")
+        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("*.jar")
     }
 }
 
 compileTestJava {
     options.compilerArgs += '-proc:none'
     if (project.hasProperty("JDK7LIB")) {
-        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("rt.jar")
+        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("*.jar")
     }
 }
 
