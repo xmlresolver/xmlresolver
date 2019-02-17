@@ -1,0 +1,124 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:ex="http://example.org/ns/document"
+           elementFormDefault="qualified"
+           targetNamespace="http://example.org/ns/document">
+
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+             schemaLocation="http://example.org/schema/xml.xsd"/>
+
+  <xs:attributeGroup name="common.attributes">
+    <xs:attribute ref="xml:id"/>
+    <xs:attribute ref="xml:lang"/>
+    <xs:attribute ref="xml:base"/>
+  </xs:attributeGroup>
+
+  <xs:group name="all.inlines">
+    <xs:choice>
+      <xs:group ref="ex:ubiq.inlines"/>
+      <xs:group ref="ex:general.inlines"/>
+      <xs:group ref="ex:domain.inlines"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="ubiq.inlines">
+    <xs:choice>
+      <xs:element ref="ex:phrase"/>
+      <xs:element ref="ex:superscript"/>
+      <xs:element ref="ex:subscript"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="general.inlines">
+    <xs:choice>
+      <xs:element ref="ex:abbrev"/>
+      <xs:element ref="ex:emphasis"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="domain.inlines">
+    <xs:choice>
+      <xs:element ref="ex:property"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="all.blocks">
+    <xs:choice>
+      <xs:group ref="ex:para.blocks"/>
+      <xs:group ref="ex:non-para.blocks"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="para.blocks">
+    <xs:choice>
+      <xs:element ref="ex:p"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="non-para.blocks">
+    <xs:choice>
+      <xs:element ref="ex:blockquote"/>
+    </xs:choice>
+  </xs:group>
+
+  <!-- ============================================================ -->
+
+  <xs:complexType name="inline.type" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:group ref="ex:all.inlines"/>
+    </xs:choice>
+    <xs:attribute name="role"/>
+    <xs:attributeGroup ref="ex:common.attributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="para.type" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:group ref="ex:all.inlines"/>
+      <xs:group ref="ex:non-para.blocks"/>
+    </xs:choice>
+    <xs:attribute name="role"/>
+    <xs:attributeGroup ref="ex:common.attributes"/>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+
+  <xs:element name="doc">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ex:title"/>
+        <xs:element ref="ex:xsdextra" minOccurs="0" maxOccurs="1"/>
+        <xs:group ref="ex:all.blocks" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="role"/>
+      <xs:attributeGroup ref="ex:common.attributes"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="xsdextra">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:restriction base="xs:anyType"/>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="title" type="ex:inline.type"/>
+  <xs:element name="p" type="ex:para.type"/>
+
+  <xs:element name="blockquote">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ex:title" minOccurs="0"/>
+        <xs:element ref="ex:p"/>
+      </xs:sequence>
+      <xs:attribute name="role"/>
+      <xs:attributeGroup ref="ex:common.attributes"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="phrase" type="ex:inline.type"/>
+  <xs:element name="emphasis" type="ex:inline.type"/>
+  <xs:element name="superscript" type="ex:inline.type"/>
+  <xs:element name="subscript" type="ex:inline.type"/>
+  <xs:element name="abbrev" type="ex:inline.type"/>
+  <xs:element name="property" type="ex:inline.type"/>
+</xs:schema>
