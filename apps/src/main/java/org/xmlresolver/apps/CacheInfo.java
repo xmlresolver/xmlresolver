@@ -36,6 +36,7 @@ public class CacheInfo {
     /** Creates a new instance of CacheInfo */
     public CacheInfo() {
     }
+
     public static void main(String[] args) {
         CacheInfo cache = new CacheInfo();
 
@@ -43,9 +44,8 @@ public class CacheInfo {
             System.err.println(usage);
             System.exit(1);
         }
+
         cache.run(args[0]);
-        
-        //cache.run("/projects/src/xmlresolver/catalogs/cache");
     }
 
     public void run(String dir) {
