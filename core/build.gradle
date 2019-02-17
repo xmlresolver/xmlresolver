@@ -1,3 +1,35 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0"
+    classpath 'gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8'
+  }
+}
+
+plugins {
+  id "java"
+  id "maven"
+  id 'de.fuerstenau.buildconfig' version '1.1.8'
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: "biz.aQute.bnd.builder"
+apply plugin: 'idea'
+
+import aQute.bnd.gradle.Bundle
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven { url "https://maven.restlet.com" }
+}
+
 dependencies {
   compile (
     [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
@@ -11,25 +43,23 @@ dependencies {
   )
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+buildConfig {
+    appName = "org.xmlresolver"
+    version = project.version
+    clsName = 'BuildConfig'
+    packageName = "org.xmlresolver"
+    charset = 'UTF-8'
+}
 
 // Avoid warnings about annoation processors and, optionally, the -source 1.7
 // classpath. To avoid the class path warning, set JDK7LIB as described in
 // gradle.properties
-
 compileJava {
     options.compilerArgs += ['-proc:none', '-Xlint:deprecation']
-    if (project.hasProperty("JDK7LIB")) {
-        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("*.jar")
-    }
 }
 
 compileTestJava {
     options.compilerArgs += '-proc:none'
-    if (project.hasProperty("JDK7LIB")) {
-        options.bootstrapClasspath = fileTree(dir: project.ext.JDK7LIB).include("*.jar")
-    }
 }
 
 jar {

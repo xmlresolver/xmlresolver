@@ -1,0 +1,14 @@
+<!ELEMENT doc (title, dtdextra?, p+)>
+<!ATTLIST doc
+          xmlns                        CDATA   #FIXED "http://example.org/ns/document"
+          xmlns:xsi                  CDATA   #IMPLIED
+          xsi:schemaLocation    CDATA   #IMPLIED
+>
+
+<!ELEMENT title (#PCDATA|emphasis)*>
+
+<!ELEMENT dtdextra EMPTY>
+
+<!ELEMENT p (#PCDATA|emphasis)*>
+
+<!ELEMENT emphasis (#PCDATA|emphasis)*>

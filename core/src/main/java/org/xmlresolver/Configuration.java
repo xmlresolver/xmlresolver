@@ -44,19 +44,50 @@ public class Configuration {
       }
     }
 
-    URL propurl = Catalog.class.getResource("/xmlresolver.properties");
+    Configuration config = fromFilename(System.getProperty("xmlresolver.properties"));
+    if (config == null) {
+      config = fromFilename(System.getenv("XMLRESOLVER_PROPERTIES"));
+    }
+    if (config == null) {
+      config = fromProperties(Catalog.class.getResource("/xmlresolver.properties"));
+    }
+    if (config == null) {
+      config = new Configuration(null, null);
+    }
+
+    return config;
+  }
+
+  private static Configuration fromFilename(String filename) {
+    Configuration config = null;
+
+    if (filename != null) {
+      try {
+        URL propURL = new URL(filename);
+        config = fromProperties(propURL);
+      } catch (MalformedURLException mue) {
+        Catalog.logger.warn("Malformed xmlresolver.properties URL: " + filename);
+      }
+    }
+
+    return config;
+  }
+
+  private static Configuration fromProperties(URL propurl) {
+    Configuration config = null;
+
     if (propurl != null) {
-      Catalog.logger.debug("Loaded xmlresolver.properties from classpath: " + propurl);
+      Catalog.logger.debug("Loading xmlresolver.properties: " + propurl);
       Properties properties = new Properties();
       try {
         properties.load(propurl.openStream());
-        return new Configuration(properties, propurl);
+        config = new Configuration(properties, propurl);
       } catch (IOException e) {
         Catalog.logger.warn("I/O error reading " + propurl);
       }
     }
 
-    return new Configuration(null, null);
+    return config;
   }
   
   private final Properties properties;
