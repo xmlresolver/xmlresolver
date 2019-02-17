@@ -1,6 +1,10 @@
 package org.xmlresolver;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.File;
+
 import static org.junit.Assert.assertEquals;
 
 /**
