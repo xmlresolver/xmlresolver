@@ -54,54 +54,31 @@ import java.util.Vector;
  *
  * <p>Usage: org.xmlresolver.apps.Parse [opts] xmlfile</p>
  *
- * <p>Where:</p>
- *
- * <dl>
- * <dt><code>-c</code> <em>catalogfile</em></dt>
- * <dd>Load a particular catalog file</dd>
- * <dt><code>-w</code></dt>
- * <dd>Perform a well-formed parse, not a validating parse</dd>
- * <dt><code>-v</code></dt>
- * <dd>Perform a validating parse (the default)</dd>
- * <dt><code>-s</code></dt>
- * <dd>Enable W3C XML Schema validation</dd>
- * <dt><code>-S</code> <em>schema.xsd</em></dt>
- * <dd>Use schema.xsd for validation (implies -s)</dd>
- * <dt><code>-f</code></dt>
- * <dd>Enable full schema checking (implies -s)</dd>
- * <dt><code>-n</code></dt>
- * <dd>Perform a namespace-ignorant parse</dd>
- * <dt><code>-N</code></dt>
- * <dd>Perform a namespace-aware parse (the default)</dd>
- * <dt><code>-d</code> <em>integer</em></dt>
- * <dd>Set the debug level (warnings are level 2)</dd>
- * <dt><code>-E</code> <em>integer</em></dt>
- * <dd>Set the maximum number of errors to display</dd>
- * </dl>
+ * This class provides nothing more than a simple example of how the
+ * resolver is used. For a more comprehensive command line parsing
+ * app, see http://github.com/ndw/xjparse./
  *
  * <p>The process ends with error-level 1, if there are errors.</p>
- *
- * @see org.xmlresolver.tools.ResolvingXMLReader
  *
  * @author Norman Walsh
  * <a href="mailto:ndw@nwalsh.com">ndw@nwalsh.com</a>
  *
- * @version 1.0
+ * @version 2.0
  */
 public class Parse {
     private static Logger logger = LoggerFactory.getLogger(Parse.class);
 
-    protected static final String SCHEMA_VALIDATION_FEATURE_ID
-	= "http://apache.org/xml/features/validation/schema";
+    private static final String SCHEMA_VALIDATION_FEATURE_ID
+            = "http://apache.org/xml/features/validation/schema";
 
-    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID
-	= "http://apache.org/xml/features/validation/schema-full-checking";
+    private static final String SCHEMA_FULL_CHECKING_FEATURE_ID
+            = "http://apache.org/xml/features/validation/schema-full-checking";
 
-    protected static final String EXTERNAL_SCHEMA_LOCATION_PROPERTY_ID
-	= "http://apache.org/xml/properties/schema/external-schemaLocation";
+    private static final String EXTERNAL_SCHEMA_LOCATION_PROPERTY_ID
+            = "http://apache.org/xml/properties/schema/external-schemaLocation";
 
-    protected static final String EXTERNAL_NONS_SCHEMA_LOCATION_PROPERTY_ID
-	= "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
+    private static final String EXTERNAL_NONS_SCHEMA_LOCATION_PROPERTY_ID
+            = "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
 
     public Parse() {
         // construct me!
@@ -115,26 +92,18 @@ public class Parse {
      */
     public static void main (String[] args) throws FileNotFoundException, IOException {
         Parse parse = new Parse();
-        
-        //String[] testargs = { "-d", "finer", "-w", "/projects/sun/java.net/xmlresolver/java/documents/dtdtest.xml" };
-        //parse.run(testargs);
-
-        parse.run(args);
+        if (! parse.run(args)) {
+            System.exit(1);
+        }
     }
 
-    /** The main entry point
-     *
-     * @param args The command line arguments
+    /* The main entry point
      */
-    public void run(String[] args) {
+    public boolean run(String[] args) {
         String  xmlfile    = null;
         int     maxErrs    = 10;
-        boolean nsAware    = true;
         boolean validating = true;
         boolean useSchema  = false;
-        boolean showWarnings = true;
-        boolean showErrors = true;
-        boolean fullChecking = false; // true implies useSchema
         Vector<String> xsdFiles = new Vector<String>();
         Vector<String> catalogFiles = new Vector<String>();
 
@@ -150,11 +119,6 @@ public class Parse {
                 continue;
             }
 
-            if (args[i].equals("-v")) {
-                validating = true;
-                continue;
-            }
-
             if (args[i].equals("-s")) {
                 useSchema = true;
                 continue;
@@ -167,87 +131,51 @@ public class Parse {
                 continue;
             }
 
-            if (args[i].equals("-f")) {
-                fullChecking = true;
-                useSchema = true;
-                continue;
-            }
-
-            if (args[i].equals("-n")) {
-                nsAware = false;
-                continue;
-            }
-
-            if (args[i].equals("-N")) {
-                nsAware = true;
-                continue;
-            }
-
-            if (args[i].equals("-E")) {
-                ++i;
-                String errstr = args[i];
-                try {
-                    int errs = Integer.parseInt(errstr);
-                    if (errs >= 0) {
-                        maxErrs = errs;
-                    }
-                } catch (Exception e) {
-                    // nop
-                }
-                continue;
-            }
-
             xmlfile = args[i];
         }
 
-	if (xmlfile == null && !fullChecking) {
-	    // Hack
-	    System.out.println("Usage: com.nwalsh.parsers.xjparse [opts] xmlfile");
-	    System.out.println("");
-	    System.out.println("Where:");
-	    System.out.println("");
-	    System.out.println("-c catalogfile   Load a particular catalog file");
-	    System.out.println("-w               Perform a well-formed parse, not a validating parse");
-	    System.out.println("-v               Perform a validating parse (the default)");
-	    System.out.println("-s               Enable W3C XML Schema validation");
-	    System.out.println("-S schema.xsd    Use schema.xsd for validation (implies -s)");
-	    System.out.println("-f               Enable full schema checking (implies -s)");
-	    System.out.println("-n               Perform a namespace-ignorant parse");
-	    System.out.println("-N               Perform a namespace-aware parse (the default)");
-	    System.out.println("-E integer       Set the maximum number of errors to display");
-	    System.out.println("");
-	    System.out.println("The process ends with error-level 1, if there are errors.");
-	    System.exit(1);
-	}
+        if (xmlfile == null) {
+            // Hack
+            System.out.println("Usage: org.xmlresolver.apps.Parse [opts] xmlfile");
+            System.out.println("");
+            System.out.println("Where:");
+            System.out.println("");
+            System.out.println("-c catalogfile   Load a particular catalog file");
+            System.out.println("-w               Perform a well-formed parse, not a validating parse");
+            System.out.println("-s               Enable W3C XML Schema validation");
+            System.out.println("-S schema.xsd    Use schema.xsd for validation (implies -s)");
+            System.out.println("");
+            System.out.println("The process ends with error-level 1, if there are errors.");
+            return false;
+        }
 
-	Hashtable schemaList = lookupSchemas(xsdFiles);
+        Hashtable schemaList = lookupSchemas(xsdFiles);
 
-        String catalogList = "";
+        StringBuilder catalogList = new StringBuilder();
         for (int count = 0; count < catalogFiles.size(); count++) {
             String file = catalogFiles.elementAt(count);
-            if (count > 0) { catalogList += ";"; }
-            catalogList += file;
+            if (count > 0) { catalogList.append(";"); }
+            catalogList.append(file);
         }
 
         Catalog catalog = null;
-        if ("".equals(catalogList)) {
+        if (catalogFiles.isEmpty()) {
             catalog = new Catalog();
         } else {
-            catalog = new Catalog(catalogList);
+            catalog = new Catalog(catalogList.toString());
         }
 
         Resolver resolver = new Resolver(catalog);
 	    ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
 
         try {
-            nsAware = true;
-            reader.setFeature("http://xml.org/sax/features/namespaces",
-                    nsAware);
-            reader.setFeature("http://xml.org/sax/features/validation",
-                    validating);
+            reader.setFeature("http://xml.org/sax/features/namespaces", true);
+            reader.setFeature("http://xml.org/sax/features/validation", validating);
+
             if (useSchema) {
                 reader.setFeature(SCHEMA_VALIDATION_FEATURE_ID, useSchema);
-                reader.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, fullChecking);
+                reader.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, false);
+
                 if (schemaList != null) {
                     String slh = "";
                     String nons_slh = "";
@@ -282,101 +210,56 @@ public class Parse {
             // nop;
         }
 
-        
-	XParseError xpe = new XParseError(showErrors, showWarnings);
-	xpe.setMaxMessages(maxErrs);
-	reader.setErrorHandler(xpe);
+        XParseError xpe = new XParseError();
+        xpe.setMaxMessages(maxErrs);
+        reader.setErrorHandler(xpe);
+        boolean pass = true;
 
-        Date startTime = null;
+        try {
+            String parseType = validating ? "validating" : "well-formed";
+            String nsType = "namespace-aware";
+            System.out.println("Attempting "
+                    + parseType
+                    + ", "
+                    + nsType
+                    + " parse");
+            reader.parse(xmlfile);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            pass = false;
+        }
 
-	try {
-            if (xmlfile != null) {
-                String parseType = validating ? "validating" : "well-formed";
-                String nsType = nsAware ? "namespace-aware" : "namespace-ignorant";
-                if (maxErrs > 0) {
-                    System.out.println("Attempting "
-                            + parseType
-                            + ", "
-                            + nsType
-                            + " parse");
-                }
-                startTime = new Date();
-                reader.parse(xmlfile);
-            } else {
-                System.exit(0);
-            }
-                
-	} catch (SAXException sx) {
-	    System.out.println("SAX Exception: " + sx);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
+        System.out.print("Parse ");
+        if (!pass || xpe.getFatalCount() > 0) {
+            System.out.print("failed ");
+            pass = false;
+        } else {
+            System.out.print("succeeded ");
+        }
+        System.out.print("with ");
 
-	Date endTime = new Date();
+        int errCount = xpe.getErrorCount();
+        int warnCount = xpe.getWarningCount();
 
-	long millisec = endTime.getTime() - startTime.getTime();
-	long secs = 0;
-	long mins = 0;
-	long hours = 0;
+        if (errCount > 0) {
+            System.out.print(errCount + " error");
+            System.out.print(errCount > 1 ? "s" : "");
+            System.out.print(" and ");
+        } else {
+            System.out.print("no errors and ");
+        }
 
-	if (millisec > 1000) {
-	    secs = millisec / 1000;
-	    millisec = millisec % 1000;
-	}
+        if (warnCount > 0) {
+            System.out.print(warnCount + " warning");
+            System.out.print(warnCount > 1 ? "s" : "");
+            System.out.print(".");
+        } else {
+            System.out.print("no warnings.");
+        }
 
-	if (secs > 60) {
-	    mins = secs / 60;
-	    secs = secs % 60;
-	}
+        System.out.println("");
 
-	if (mins > 60) {
-	    hours = mins / 60;
-	    mins = mins % 60;
-	}
-
-	if (maxErrs > 0) {
-	    System.out.print("Parse ");
-	    if (xpe.getFatalCount() > 0) {
-		System.out.print("failed ");
-	    } else {
-		System.out.print("succeeded ");
-		System.out.print("(");
-		if (hours > 0) {
-		    System.out.print(hours + ":");
-		}
-		if (hours > 0 || mins > 0) {
-		    System.out.print(mins + ":");
-		}
-		System.out.print(secs + "." + millisec);
-		System.out.print(") ");
-	    }
-	    System.out.print("with ");
-
-	    int errCount = xpe.getErrorCount();
-	    int warnCount = xpe.getWarningCount();
-
-	    if (errCount > 0) {
-		System.out.print(errCount + " error");
-		System.out.print(errCount > 1 ? "s" : "");
-		System.out.print(" and ");
-	    } else {
-		System.out.print("no errors and ");
-	    }
-
-	    if (warnCount > 0) {
-		System.out.print(warnCount + " warning");
-		System.out.print(warnCount > 1 ? "s" : "");
-		System.out.print(".");
-	    } else {
-		System.out.print("no warnings.");
-	    }
-
-	    System.out.println("");
-	}
-
-	if (xpe.getErrorCount() > 0) {
-	    System.exit(1);
-	}
+        return pass;
     }
 
     private static Hashtable lookupSchemas(Vector xsdFiles) {
@@ -405,12 +288,8 @@ public class Parse {
                 mapping.put(targetNS, xsd);
             }
             }
-        } catch (ParserConfigurationException pce) {
+        } catch (ParserConfigurationException | SAXException | IOException pce) {
             pce.printStackTrace();
-        } catch (SAXException se) {
-            se.printStackTrace();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
         }
 
         return mapping;
@@ -429,11 +308,8 @@ public class Parse {
      * @version 1.0
      */
     class XParseError implements ErrorHandler {
-        /** Show errors? */
         private boolean showErrors = true;
-
-        /** Show warnings? */
-        private boolean showWarnings = false;
+        private boolean showWarnings = true;
 
         /** How many messages should be presented? */
         private int maxMessages = 10;
@@ -451,10 +327,7 @@ public class Parse {
         private String baseURI = "";
 
         /** Constructor */
-        public XParseError(boolean errors, boolean warnings) {
-            showErrors = errors;
-            showWarnings = warnings;
-
+        public XParseError() {
             try {
                 URI uri = FileURI.makeURI("basename");
                 baseURI = uri.toURL().toString();
