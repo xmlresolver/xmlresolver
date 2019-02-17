@@ -20,6 +20,22 @@ and a robust, thread-safe implementation.
 
 ## Release notes
 
+### 0.99.0, 17 February 2019
+
+This is also mostly a cleanup release.
+
+* I simplified the app `Parse` class. It’s not intended to be a robust parser; it’s
+  just a demo of the resolver. See http://github.com/ndw/xjparse for a more
+  robust parser.
+* I tweaked the way the `xmlresolver.properties` system property is used to
+  find the properties file.
+* I added support for locating the propertiese file with an `XMLRESOLVER_PROPERTIES`
+  environment variable. Note that this must be a URI, not a bare filename.
+* I added a few more tests.
+
+If no one reports any problems, I really, truly am going to make a “1.0.0” release
+“real soon now.”
+
 ### 0.14.0, 7 July 2018
 
 This is mostly a cleanup release:
