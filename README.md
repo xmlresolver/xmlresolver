@@ -20,6 +20,12 @@ and a robust, thread-safe implementation.
 
 ## Release notes
 
+### 0.99.1, 18 February 2019
+
+* Added a DEBUG level message including the resolver version number
+* Added an INFO level message for resolved identifiers
+* Refactored a bit to remove some code duplication
+
 ### 0.99.0, 17 February 2019
 
 This is also mostly a cleanup release.
