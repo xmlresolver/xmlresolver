@@ -327,6 +327,11 @@ public class Catalog {
             CatalogResult resolved = aFunction.apply(aDocRoot);
             if (resolved != null) {
                 logger.trace("  Found: " + resolved);
+                if (resolved.cached()) {
+                    logger.info("Cached: " + resolved.externalURI());
+                } else {
+                    logger.info("Resolved: " + resolved.externalURI());
+                }
                 return resolved;
             }
         }
@@ -650,8 +655,6 @@ public class Catalog {
         String startString = null;
         Element node = null;
         for (Element child : entries(group, "rewriteSystem", null, null, null, null)) {
-            // BUG here : attribute is systemIdStartString
-            // String p = child.getAttribute("uriStartString");
             String p = child.getAttribute("systemIdStartString");
             if (p.length() <= systemId.length() && p.equals(systemId.substring(0, p.length()))) {
                 // Is this the longest prefix?
