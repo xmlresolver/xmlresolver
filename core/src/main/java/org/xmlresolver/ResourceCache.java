@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.GregorianCalendar;
@@ -485,7 +484,6 @@ public class ResourceCache {
         String contentType = connection.getContentType();
         InputStream resource = connection.getStream();
 
-
         logger.info("Caching URI: " + name);
 
         DirectoryLock lock = new DirectoryLock();
@@ -526,16 +524,8 @@ public class ResourceCache {
                 uri = localFile.getPath();
             }
 
-            FileOutputStream fos = new FileOutputStream(localFile);
-            
             // Now copy the input stream into our cache copy
-            byte[] buf = new byte[4096];
-            int read = resource.read(buf);
-            while (read > 0) {
-                fos.write(buf, 0, read);
-                read = resource.read(buf);
-            }
-            fos.close();
+            storeStream(resource, localFile);
             resource.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -575,19 +565,8 @@ public class ResourceCache {
         try {
             Document wrapper = builder.newDocument();
             wrapper.appendChild(wrapper.importNode(newuri, true));
-            
-            String entryfn = localFile.getName();
-            entryfn = entryfn.substring(0,entryfn.lastIndexOf("."));
-            File entryFile = new File(entryDir.toString() + "/" + entryfn + ".xml");
-            
-            FileOutputStream fos = new FileOutputStream(entryFile);
-            DOMImplementationLS domimpl = (DOMImplementationLS) cache.getImplementation();
-            LSSerializer serializer = domimpl.createLSSerializer();
-            LSOutput output = domimpl.createLSOutput();
-            output.setEncoding("utf-8");
-            output.setByteStream(fos);
-            serializer.write(wrapper, output);
-            fos.close();
+
+            storeCacheEntry(localFile, wrapper);
         } catch (IOException ioe) {
             lock.unlock();
             throw new UnsupportedOperationException("Failed to create entry file");
@@ -597,7 +576,33 @@ public class ResourceCache {
         
         return uri;
     }
-    
+
+    private void storeStream(InputStream resource, File localFile) throws IOException {
+        FileOutputStream fos = new FileOutputStream(localFile);
+        byte[] buf = new byte[4096];
+        int read = resource.read(buf);
+        while (read > 0) {
+            fos.write(buf, 0, read);
+            read = resource.read(buf);
+        }
+        fos.close();
+    }
+
+    private void storeCacheEntry(File localFile, Document wrapper) throws IOException {
+        String entryfn = localFile.getName();
+        entryfn = entryfn.substring(0,entryfn.lastIndexOf("."));
+        File entryFile = new File(entryDir.toString() + "/" + entryfn + ".xml");
+
+        FileOutputStream fos = new FileOutputStream(entryFile);
+        DOMImplementationLS domimpl = (DOMImplementationLS) cache.getImplementation();
+        LSSerializer serializer = domimpl.createLSSerializer();
+        LSOutput output = domimpl.createLSOutput();
+        output.setEncoding("utf-8");
+        output.setByteStream(fos);
+        serializer.write(wrapper, output);
+        fos.close();
+    }
+
     /** Add a system identifier to the cache.
      *
      * <p>This method reads the supplied InputStream, storing the resource locally, and returns the name
@@ -652,16 +657,8 @@ public class ResourceCache {
                 uri = localFile.getPath();
             }
 
-            FileOutputStream fos = new FileOutputStream(localFile);
-            
             // Now copy the input stream into our cache copy
-            byte[] buf = new byte[4096];
-            int read = resource.read(buf);
-            while (read > 0) {
-                fos.write(buf, 0, read);
-                read = resource.read(buf);
-            }
-            fos.close();
+            storeStream(resource, localFile);
             resource.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -717,19 +714,8 @@ public class ResourceCache {
                 wcat.appendChild(wrapper.importNode(newpub, true));
                 wcat.appendChild(wrapper.createTextNode("\n"));
             }
-            
-            String entryfn = localFile.getName();
-            entryfn = entryfn.substring(0,entryfn.lastIndexOf("."));
-            File entryFile = new File(entryDir.toString() + "/" + entryfn + ".xml");
-            
-            FileOutputStream fos = new FileOutputStream(entryFile);
-            DOMImplementationLS domimpl = (DOMImplementationLS) cache.getImplementation();
-            LSSerializer serializer = domimpl.createLSSerializer();
-            LSOutput output = domimpl.createLSOutput();
-            output.setEncoding("utf-8");
-            output.setByteStream(fos);
-            serializer.write(wrapper, output);
-            fos.close();
+
+            storeCacheEntry(localFile, wrapper);
         } catch (IOException ioe) {
             lock.unlock();
             throw new UnsupportedOperationException("Failed to create entry file");
