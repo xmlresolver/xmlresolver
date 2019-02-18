@@ -77,6 +77,7 @@ public class Configuration {
         Configuration config = null;
 
         if (propurl != null) {
+            Catalog.logger.debug("XMLResolver version " + BuildConfig.VERSION);
             Catalog.logger.debug("Loading xmlresolver.properties: " + propurl);
             Properties properties = new Properties();
             try {
