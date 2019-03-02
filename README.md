@@ -18,7 +18,13 @@ implement these resolvers.
 The goal of this project is to produce a clean, reasonably simple API
 and a robust, thread-safe implementation.
 
+See also: https://xmlresolver.org/
+
 ## Release notes
+
+### 1.0.0, 2 March 2019
+
+* Let’s call it 1.0.0!
 
 ### 0.99.1, 18 February 2019
 
