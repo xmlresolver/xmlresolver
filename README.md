@@ -22,6 +22,13 @@ See also: https://xmlresolver.org/
 
 ## Release notes
 
+### 1.0.1, ?? March 2019
+
+* Removed the default `xmlresolver.properties` file that shipped with the XML Resolver jar file.
+  This fixes [issue 21](https://github.com/ndw/xmlresolver/issues/21) but introduces no change
+  in behavior because the default values in the absence of a property configuration file are all
+  the same as what was in that default properties file.
+
 ### 1.0.0, 2 March 2019
 
 * Let’s call it 1.0.0!
