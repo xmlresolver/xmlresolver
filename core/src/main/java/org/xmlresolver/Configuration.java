@@ -16,6 +16,15 @@ import java.util.Vector;
  * @author swachter
  */
 public class Configuration {
+    private final Properties properties;
+    private final URL propertiesFileUri;
+
+    public Configuration(Properties properties, URL propertiesFileUri) {
+        Catalog.logger.debug("XMLResolver version " + BuildConfig.VERSION);
+        Catalog.logger.debug("Loading xmlresolver.properties: " + propertiesFileUri);
+        this.properties = properties;
+        this.propertiesFileUri = propertiesFileUri;
+    }
 
     private static boolean isTrue(String aString) {
         return "true".equalsIgnoreCase(aString) || "yes".equalsIgnoreCase(aString) || "1".equalsIgnoreCase(aString);
@@ -77,8 +86,6 @@ public class Configuration {
         Configuration config = null;
 
         if (propurl != null) {
-            Catalog.logger.debug("XMLResolver version " + BuildConfig.VERSION);
-            Catalog.logger.debug("Loading xmlresolver.properties: " + propurl);
             Properties properties = new Properties();
             try {
                 properties.load(propurl.openStream());
@@ -89,14 +96,6 @@ public class Configuration {
         }
 
         return config;
-    }
-
-    private final Properties properties;
-    private final URL propertiesFileUri;
-
-    public Configuration(Properties properties, URL propertiesFileUri) {
-        this.properties = properties;
-        this.propertiesFileUri = propertiesFileUri;
     }
 
     private String getProperty(String aPropertyName) {
