@@ -69,8 +69,8 @@ public class StAXResolver implements XMLResolver {
     /** Implements the {@link javax.xml.stream.XMLResolver} interface. */
     public Object resolveEntity(String publicId, String systemId, String baseURI, String namespace) throws XMLStreamException {
         // We can do better than this, but for now...just get an absolute URI
-        String absSystem = null;
-        
+
+        String absSystem = systemId;
         if (baseURI != null) {
             try {
                 URI auri = new URI(baseURI);
