@@ -328,7 +328,12 @@ public class Catalog {
             if (resolved != null) {
                 logger.trace("  Found: " + resolved);
                 if (resolved.cached()) {
-                    logger.info("Cached: " + resolved.externalURI());
+                    if (resolved.expired()) {
+                        logger.info("Expired: " + resolved.externalURI());
+                        resolved = null;
+                    } else {
+                        logger.info("Cached: " + resolved.externalURI());
+                    }
                 } else {
                     logger.info("Resolved: " + resolved.externalURI());
                 }
