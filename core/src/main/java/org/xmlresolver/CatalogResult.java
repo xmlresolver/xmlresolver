@@ -137,7 +137,7 @@ public class CatalogResult {
      * @return True if and only if the resource is known to be expired.
      */
     public boolean expired() {
-        if (origURI == null || cache == null || !origURI.startsWith("http:")) {
+        if (origURI == null || cache == null || !(origURI.startsWith("http:") || origURI.startsWith("https:"))) {
             return false;
         }
 

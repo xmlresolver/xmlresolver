@@ -167,7 +167,7 @@ public class CacheInfo {
     }
 
     private boolean expired(String origURI, String uri, long cacheTime) {
-        if (origURI == null || !origURI.startsWith("http:")) {
+        if (origURI == null || !(origURI.startsWith("http:") || origURI.startsWith("https:"))) {
             System.out.println(uri + ":");
             System.out.println("\t" + origURI);
             System.out.println("\tNot http:");
