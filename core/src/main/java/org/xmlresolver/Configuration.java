@@ -179,7 +179,11 @@ public class Configuration {
         }
         String prop = getProperty("xml.catalog.cache." + scheme, "cache-" + scheme + "-uri");
         if (prop == null) {
-            return !"file".equals(scheme);
+            // FIXME: should probably base this test on the beginning of the absolute URI instead of the scheme.
+            // The jar: scheme is odd. I definitely don't want to cache jar:file:... URIs, but if a
+            // jar:https:... URI came through it probably would be nice to cache that. However, for the
+            // moment, we're just going to skip jar: URIs because that's all the control we have
+            return !("file".equals(scheme) || "jar".equals(scheme));
         } else {
             return isTrue(prop);
         }
