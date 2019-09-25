@@ -329,13 +329,13 @@ public class Catalog {
                 logger.trace("  Found: " + resolved);
                 if (resolved.cached()) {
                     if (resolved.expired()) {
-                        logger.info("Expired: " + resolved.externalURI());
+                        logger.debug("Expired: " + resolved.externalURI());
                         resolved = null;
                     } else {
-                        logger.info("Cached: " + resolved.externalURI());
+                        logger.debug("Cached: " + resolved.externalURI());
                     }
                 } else {
-                    logger.info("Resolved: " + resolved.externalURI());
+                    logger.debug("Resolved: " + resolved.externalURI());
                 }
                 return resolved;
             }
