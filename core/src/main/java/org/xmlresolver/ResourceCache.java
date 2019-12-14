@@ -200,16 +200,16 @@ public class ResourceCache {
         File fDir = new File(dir);
         try {
             cacheDir = fDir.getCanonicalFile();
-            logger.trace("Cache: " + cacheDir);
+            logger.debug("Cache: " + cacheDir);
             if (!cacheDir.exists()) {
                 cacheDir.mkdir();
             }
             if (!cacheDir.exists()) {
-                logger.trace("Cache directory does not exist/cannot be created");
+                logger.info("Cannot create cache directory: " + cacheDir);
                 cacheDir = null;
             }
         } catch (IOException ioe) {
-            logger.trace("IOException getting cache directory: " + dir);
+            logger.debug("IOException getting cache directory: " + dir);
             cacheDir = null;
         }
 
@@ -292,7 +292,7 @@ public class ResourceCache {
      * @return The catalog
      */
     public synchronized Element catalog() {
-        if (!cacheDir.exists() || !cacheDir.isDirectory()) {
+        if (cacheDir == null || !cacheDir.exists() || !cacheDir.isDirectory()) {
             return null;
         }
 
@@ -833,7 +833,7 @@ public class ResourceCache {
 
         // Flush oldest entries...
         if (cacheCount > info.cacheSize || cacheSize > info.cacheSpace) {
-            logger.trace("Too many cache entries, or cache size too large: expiring oldest entries");
+            logger.debug("Too many cache entries, or cache size too large: expiring oldest entries");
             flushCache(uriPattern, info.cacheSize, info.cacheSpace);
         }
 
@@ -870,7 +870,7 @@ public class ResourceCache {
         }
 
         if (rconn.getStatusCode() != 200) {
-            logger.trace("Not expired: " + origURI + " (HTTP " + rconn.getStatusCode() + ")");
+            logger.debug("Not expired: " + origURI + " (HTTP " + rconn.getStatusCode() + ")");
             return false;
         }
 
@@ -878,18 +878,18 @@ public class ResourceCache {
         
         if (lastModified < 0) {
             if (etagsDiffer) {
-                logger.trace("Expired: " + origURI + " (no last-modified header, etags differ)");
+                logger.debug("Expired: " + origURI + " (no last-modified header, etags differ)");
                 return true;
             } else {
-                logger.trace("Not expired: " + origURI + " (no last-modified header, etags identical)");
+                logger.debug("Not expired: " + origURI + " (no last-modified header, etags identical)");
                 return false;
             }
         } else if (lastModified > cacheTime || etagsDiffer) {
-            logger.trace("Expired: " + origURI);
+            logger.debug("Expired: " + origURI);
             expire(uri);
             return true;
         } else {
-            logger.trace("Not expired: " + origURI);
+            logger.debug("Not expired: " + origURI);
             return false;
         }
     }
@@ -956,7 +956,7 @@ public class ResourceCache {
                 name = name.substring(0, pos);
             }
 
-            logger.trace("Expiring: " + name);
+            logger.debug("Expiring: " + name);
 
             File entry = new File(entryDir + "/" + name + ".xml");
             if (entry.exists() && entry.isFile()) {
