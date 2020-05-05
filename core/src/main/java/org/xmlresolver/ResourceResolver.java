@@ -35,7 +35,7 @@ import java.net.URISyntaxException;
 public class ResourceResolver {
     private static Logger logger = LoggerFactory.getLogger(ResourceResolver.class);
 
-    // the static catalog is initialized lazily. Maybe it is not neede.
+    // the static catalog is initialized lazily. Maybe it is not needed.
     private static Catalog staticCatalog = null;
     
     private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
