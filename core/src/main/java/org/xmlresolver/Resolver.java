@@ -165,10 +165,8 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             try {
                 URI auri = new URI(baseURI);
                 auri = auri.resolve(new URI(systemId));
-                absSystem = auri.toURL().toString();
+                absSystem = auri.toString();
             } catch (URISyntaxException use) {
-                // nop;
-            } catch (MalformedURLException mue) {
                 // nop;
             } catch (IllegalArgumentException iae) {
                 // In case someone uses baseURI=null, systemId="../some/local/path"
