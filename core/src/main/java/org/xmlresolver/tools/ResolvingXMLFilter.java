@@ -20,6 +20,7 @@ import org.xmlresolver.helpers.FileURI;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 /** An implementation of {@link org.xml.sax.XMLFilter} that performs catalog resolution.
@@ -30,11 +31,11 @@ import java.net.URL;
  * @author ndw
  */
 public class ResolvingXMLFilter extends XMLFilterImpl {
-    /** Are we in the prolog? Is an oasis-xml-catalog PI valid now? */
-    private boolean allowXMLCatalogPI = false;
+    /** Are oasis-xml-catalog PIs allowed by this catalog? */
+    private boolean allowXMLCatalogPI = true;
 
-    /** Has an oasis-xml-catalog PI been seen? */
-    private boolean oasisXMLCatalogPI = false;
+    /** Are we in the prolog? Is an oasis-xml-catalog PI valid now? */
+    private boolean processXMLCatalogPI = false;
 
     private Resolver resolver = new Resolver();
     
@@ -53,6 +54,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     public ResolvingXMLFilter(Resolver resolver) {
         super();
         this.resolver = resolver;
+        allowXMLCatalogPI = resolver.getCatalog().getConfiguration().queryAllowPI();
     }
 
     /** Construct an XML filter with the specified parent and resolver.
@@ -96,7 +98,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * parsing, it will never be printed.</p>
      */
     public void parse(InputSource input) throws IOException, SAXException {
-        allowXMLCatalogPI = true;
+        processXMLCatalogPI = allowXMLCatalogPI;
         setupBaseURI(input.getSystemId());
         super.parse(input);
     }
@@ -106,7 +108,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * @see #parse(InputSource)
      */
     public void parse(String systemId) throws IOException, SAXException {
-        allowXMLCatalogPI = true;
+        processXMLCatalogPI = allowXMLCatalogPI;
         setupBaseURI(systemId);
         super.parse(systemId);
     }
@@ -117,10 +119,6 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * to do the real work.
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        allowXMLCatalogPI = false;
-        
-        // FIXME: Handle oasis catalog PI here!
-        
         return resolver.resolveEntity(publicId, systemId);
     }
 
@@ -135,10 +133,6 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * @throws IOException If an I/O error occurs
      */
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-        allowXMLCatalogPI = false;
-        
-        // FIXME: Handle oasis catalog PI here!
-        
         return resolver.resolveEntity(name, publicId, baseURI, systemId);
     }
     
@@ -150,7 +144,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      */
     public void notationDecl(String name, String publicId, String systemId)
     throws SAXException {
-        allowXMLCatalogPI = false;
+        processXMLCatalogPI = false;
         super.notationDecl(name,publicId,systemId);
     }
 
@@ -164,7 +158,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
                                    String publicId,
                                    String systemId,
                                    String notationName) throws SAXException {
-        allowXMLCatalogPI = false;
+        processXMLCatalogPI = false;
         super.unparsedEntityDecl(name, publicId, systemId, notationName);
     }
 
@@ -175,7 +169,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * the events are just passed through.</p>
      */
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        allowXMLCatalogPI = false;
+        processXMLCatalogPI = false;
         super.startElement(uri,localName,qName,atts);
     }
 
@@ -184,7 +178,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * <p>Detect and use the oasis-xml-catalog PI if it occurs.</p>
      */
     public void processingInstruction(String target, String pidata) throws SAXException {
-        if (allowXMLCatalogPI && target.equals("oasis-xml-catalog")) {
+        if (processXMLCatalogPI && target.equals("oasis-xml-catalog")) {
             URL catalog = null;
             String data = pidata;
 
@@ -222,9 +216,12 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
         URL cwd = null;
 
         try {
-            cwd = FileURI.makeURI("basename").toURL();
+            URI furi = FileURI.makeURI("basename");
+            if (furi != null) {
+                cwd = furi.toURL();
+            }
         } catch (MalformedURLException mue) {
-            cwd = null;
+            // nevermind
         }
 
         try {

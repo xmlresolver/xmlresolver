@@ -66,7 +66,7 @@ public class ResourceResolver {
      *
      * <p>By default, a static catalog initialized using the default properties is used by all ResourceResolvers.</p>
      */
-    public ResourceResolver() {
+    public  ResourceResolver() {
         init(getStaticCatalog());
     }
 
