@@ -21,7 +21,7 @@ import org.xmlresolver.tools.BootstrapResolver;
  * @author swachter
  */
 public abstract class CatalogSource<S> {
-  private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+  private static final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
   static {
     factory.setNamespaceAware(true);
@@ -42,10 +42,9 @@ public abstract class CatalogSource<S> {
 
     public Element parse() {
       try {
-        DocumentBuilder builder = null;
-        Document doc = null;
-        builder = factory.newDocumentBuilder();
-        doc = doParse(builder);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        builder.setEntityResolver(new BootstrapResolver());
+        Document doc = doParse(builder);
         return doc.getDocumentElement();
       } catch (ParserConfigurationException pce) {
         Catalog.logger.warn("Parser configuration exception attempting to load " + this);

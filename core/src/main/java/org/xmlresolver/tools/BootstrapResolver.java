@@ -14,8 +14,13 @@ import java.net.URL;
  * Created by ndw on 5/27/15.
  */
 public class BootstrapResolver implements EntityResolver, EntityResolver2 {
-    public static final String oasispublic = "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN";
-    public static final String oasissystem = "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd";
+    // version in the file retrieved is "1.10", not "1.0"
+    public static final String oasispublic10 = "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN";
+    public static final String oasissystem10 = "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd";
+
+    // version in the file retrieved is "1.14", not "1.1"
+    public static final String oasispublic11 = "-//OASIS//DTD XML Catalogs V1.1//EN";
+    public static final String oasissystem11 = "http://www.oasis-open.org/committees/entity/release/1.1/catalog.dtd";
 
     @Override
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
@@ -37,11 +42,19 @@ public class BootstrapResolver implements EntityResolver, EntityResolver2 {
             // nop
         }
 
-        if (oasispublic.equals(publicId) || oasissystem.equals(system.toASCIIString())) {
-            URL dtd = BootstrapResolver.class.getResource("/oasis-xml-catalog.dtd");
+        if (oasispublic10.equals(publicId) || oasissystem10.equals(system.toASCIIString())) {
+            URL dtd = BootstrapResolver.class.getResource("/oasis-xml-catalog-1.0.dtd");
             InputSource s = new InputSource(dtd.openStream());
-            s.setSystemId(oasissystem);
-            s.setPublicId(oasispublic);
+            s.setSystemId(oasissystem10);
+            s.setPublicId(oasispublic10);
+            return s;
+        }
+
+        if (oasispublic11.equals(publicId) || oasissystem11.equals(system.toASCIIString())) {
+            URL dtd = BootstrapResolver.class.getResource("/oasis-xml-catalog-1.1.dtd");
+            InputSource s = new InputSource(dtd.openStream());
+            s.setSystemId(oasissystem11);
+            s.setPublicId(oasispublic11);
             return s;
         }
 
