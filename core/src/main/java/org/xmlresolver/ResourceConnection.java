@@ -118,7 +118,7 @@ public class ResourceConnection {
                 date = connection.getDate();
                 statusCode = 200;
             }
-        } catch (URISyntaxException | IOException use) {
+        } catch (URISyntaxException | IOException | IllegalArgumentException use) {
             // nop
         }
     }

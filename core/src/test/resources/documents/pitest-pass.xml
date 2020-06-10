@@ -1,0 +1,6 @@
+<?oasis-xml-catalog catalog='doesnotexist.xml'?>
+<?oasis-xml-catalog catalog='picat.xml'?>
+<!DOCTYPE doc PUBLIC "-//Example//DTD PI Document//EN" "doc.dtd">
+<doc>
+<p>Foo!</p>
+</doc>

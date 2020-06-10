@@ -156,6 +156,14 @@ public class Catalog {
         }
     }
 
+    /** Returns the configuration of this catalog
+     *
+     * @return Configuration of this catalog
+     */
+    public Configuration getConfiguration() {
+        return conf;
+    }
+
     // ======================================================================================================
     
     /** Returns the list of known catalog files.

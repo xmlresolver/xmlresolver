@@ -27,7 +27,11 @@ public class Configuration {
     }
 
     private static boolean isTrue(String aString) {
-        return "true".equalsIgnoreCase(aString) || "yes".equalsIgnoreCase(aString) || "1".equalsIgnoreCase(aString);
+        if (aString == null) {
+            return false;
+        } else {
+            return "true".equalsIgnoreCase(aString) || "yes".equalsIgnoreCase(aString) || "1".equalsIgnoreCase(aString);
+        }
     }
 
     public static Configuration create(String aPropertiesFiles) {
@@ -147,6 +151,11 @@ public class Configuration {
     public boolean queryPreferPublic() {
         String prefer = getProperty("xml.catalog.prefer", "prefer");
         return prefer == null || "public".equalsIgnoreCase(prefer);
+    }
+
+    public boolean queryAllowPI() {
+        String allowpi = getProperty("xml.catalog.allowPI", "allow-oasis-xml-catalog-pi");
+        return isTrue(allowpi);
     }
 
     public String queryCache() {
