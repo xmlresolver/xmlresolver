@@ -1,19 +1,178 @@
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'signing'
+plugins {
+  id "java"
+  id "maven-publish"
+  id "signing"
+  id 'com.github.gmazzo.buildconfig' version "2.0.2"
+}
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        maven { url "https://maven.restlet.com" }
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven { url "https://maven.restlet.com" }
+}
+
+configurations.all {
+  resolutionStrategy {
+    force 'xml-apis:xml-apis:1.4.01'
+  }
+}
+
+dependencies {
+  implementation (
+    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
+    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'],
+    [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
+    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
+  )
+
+  runtimeOnly (
+    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
+    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'],
+    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
+  )
+
+  testImplementation (
+    [group: 'junit', name: 'junit', version: '4.12'],
+    [group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.1'],
+    [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'],
+    [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1']
+  )
+}
+
+if (!hasProperty("sonatypeUsername")) {
+  ext.sonatypeUsername=""
+}
+
+if (!hasProperty("sonatypePassword")) {
+  ext.sonatypePassword=""
+}
+
+buildConfig {
+  packageName("org.xmlresolver")
+  buildConfigField('String', 'appName', "\"org.xmlresolver\"")
+  buildConfigField('String', 'VERSION', "\"${resolverVersion}\"")
+}
+
+jar {
+  exclude("org/xmlresolver/apps/**")
+  archiveBaseName = "${basename}-${resolverVersion}"
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver"
+    attributes "Implementation-Version": resolverVersion
+  }
+}
+
+task appJar(type: Jar) {
+  from (sourceSets.main.output) {
+    include("org/xmlresolver/apps/**")
+  }
+  archiveBaseName = "${basename}-apps-${resolverVersion}"
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver Apps"
+    attributes "Implementation-Version": resolverVersion
+  }
+}
+
+task copyJars(type: Copy, dependsOn: ["jar", "appJar"]) {
+  from "build/libs"
+  into "build/${basename}-${resolverVersion}/lib"
+  doFirst {
+    mkdir "build/${basename}-${resolverVersion}/lib"
+  }
+}
+
+task copyDocs(type: Copy) {
+  from "${projectDir}/docs"
+  into "build/${basename}-${resolverVersion}/"
+  filter { String line ->
+    if (line.indexOf("@@") >= 0) {
+      line = line
+        .replace("@@VERSION@@", resolverVersion)
     }
+    line
+  }
+  doFirst {
+    mkdir "build/${basename}-${resolverVersion}"
+  }
 }
 
-task dist(dependsOn: [ "core:build", "apps:build" ], type: Zip) {
-  from('core/build/libs')
-  from('apps/build/libs')
-  into 'xmlresolver-' + version
-  archiveName 'xmlresolver-' + version + ".zip"
+task dist(dependsOn: ["copyDocs", "copyJars"], type: Zip) {
+  from("build/${basename}-${resolverVersion}")
+  into 'xmlresolver-' + resolverVersion
+  archiveFileName = "xmlresolver-${resolverVersion}.zip"
 }
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+signing {
+  sign publishing.publications
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      pom {
+        name = 'XML Resolver'
+        packaging = 'jar'
+        description = 'An XML entity/uri resolver'
+        url = 'https://github.com/ndw/xmlresolver'
+
+        scm {
+          url = 'scm:git@github.com:ndw/xmlresolver.git'
+          connection = 'scm:git@github.com:ndw/xmlresolver.git'
+          developerConnection = 'scm:git@github.com:ndw/xmlresolver.git'
+        }
+
+        licenses {
+          license {
+            name = 'Apache License version 2.0'
+            url = 'https://www.apache.org/licenses/LICENSE-2.0'
+            distribution = 'repo'
+          }
+        }
+
+        developers {
+          developer {
+            id = 'ndw'
+            name = 'Norman Walsh'
+          }
+        }
+      }
+
+      artifactId = basename
+      version = resolverVersion
+      from components.java
+      artifact javadocJar
+      artifact sourcesJar
+    }
+  }
+
+  repositories {
+    maven {
+      url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      credentials {
+        username = sonatypeUsername
+        password = sonatypePassword
+      }
+    }
+  }
+}
+
+task deleteBuild() {
+  delete "build"
+}
+
+clean.dependsOn deleteBuild
 
