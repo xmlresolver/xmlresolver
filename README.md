@@ -5,8 +5,8 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xmlresolver/xmlresolver/badge.svg)](https://search.maven.org/search?q=g:org.xmlresolver)
 
-Attention: On 7 August 2020, I changed the default branch in this repository to `main`. 
-If you’ve got a clone of this repo, you may want to update it. Apologies for the inconvenience.
+*Attention: On 7 August 2020, I changed the default branch in this repository to `main`. 
+If you’ve got a clone of this repo, you may want to update it. Apologies for the inconvenience.*
 
 The xmlresolver project provides an advanced implementation of the SAX
 `EntityResolver`, the Transformer `URIResolver`, and a new
