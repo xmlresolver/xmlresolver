@@ -5,6 +5,9 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xmlresolver/xmlresolver/badge.svg)](https://search.maven.org/search?q=g:org.xmlresolver)
 
+Attention: On 7 August 2020, I changed the default branch in this repository to `main`. 
+If you’ve got a clone of this repo, you may want to update it. Apologies for the inconvenience.
+
 The xmlresolver project provides an advanced implementation of the SAX
 `EntityResolver`, the Transformer `URIResolver`, and a new
 `NamespaceResolver`. The implementation uses the OASIS XML Catalogs V1.1
@@ -30,3 +33,6 @@ The goal of this project is to produce a clean, reasonably simple API
 and a robust, thread-safe implementation.
 
 See also: https://xmlresolver.org/
+
+For guidelines about how to migrate your application from the Apache Commons resolver to
+this resolver, see documentation and examples in https://github.com/ndw/resolver-migration/
