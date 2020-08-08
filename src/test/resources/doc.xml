@@ -2,7 +2,7 @@
 <doc xmlns="http://example.org/ns/document"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://example.org/ns/document
-                         http://exampel.org/schema/doc.xsd">
+                         http://example.org/schema/doc.xsd">
 <title>Document Title</title>
 <p>This is some <emphasis>text</emphasis>.</p>
 </doc>

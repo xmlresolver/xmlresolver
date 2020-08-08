@@ -169,29 +169,34 @@ public class ResourceResolver {
         } else {
             return null;
         }
-    }    
-    
-    private Resource cacheStreamSystem(String resolved, String publicId) {
-        ResourceConnection conn = new ResourceConnection(resolved);
+    }
 
-        if (conn.getStatusCode() == 200) {
-            String absuriString = conn.getURI();
-            if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
-                try {
-                    String localName = cache.addSystem(conn, publicId);
-                    File localFile = new File(localName);
-                    InputStream result = new FileInputStream(localFile);
-                    return new Resource(result, absuriString);
-                } catch (IOException ioe) {
-                    return null;
+    private Resource cacheStreamSystem(String resolved, String publicId) {
+        try {
+            ResourceConnection conn = new ResourceConnection(resolved);
+
+            if (conn.getStatusCode() == 200) {
+                String absuriString = conn.getURI();
+                if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
+                    try {
+                        String localName = cache.addSystem(conn, publicId);
+                        File localFile = new File(localName);
+                        InputStream result = new FileInputStream(localFile);
+                        return new Resource(result, absuriString);
+                    } catch (IOException ioe) {
+                        return null;
+                    }
+                } else {
+                    return new Resource(conn.getStream(), absuriString);
                 }
-            } else {                        
-                return new Resource(conn.getStream(), absuriString);
             }
-        } else {
+        } catch (NoClassDefFoundError ncdfe) {
+            logger.debug("Apache http library classes apparently unavailable, not attempting to cache");
             return null;
         }
-    }    
+
+        return null;
+    }
 
     /** Resolve a URI. 
      *
