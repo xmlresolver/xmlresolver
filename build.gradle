@@ -17,6 +17,10 @@ configurations.all {
   }
 }
 
+configurations {
+  standaloneClasspath.extendsFrom(testImplementation)
+}
+
 dependencies {
   implementation (
     [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
@@ -25,16 +29,9 @@ dependencies {
     [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
   )
 
-  runtimeOnly (
-    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
-    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'],
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
-  )
-
   testImplementation (
     [group: 'junit', name: 'junit', version: '4.12'],
     [group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.1'],
-    [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'],
     [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1']
   )
 }
@@ -45,6 +42,14 @@ if (!hasProperty("sonatypeUsername")) {
 
 if (!hasProperty("sonatypePassword")) {
   ext.sonatypePassword=""
+}
+
+def EXCP="${projectDir}/build/classes/java/main"
+configurations.standaloneClasspath.each { it ->
+  // Explicitly remove the http libraries
+  if (!it.toString().contains("http")) {
+    EXCP += ":" + it
+  }
 }
 
 buildConfig {
@@ -168,6 +173,17 @@ publishing {
       }
     }
   }
+}
+
+// Test that the resolver can function without the http client
+// libraries on the classpath. You don't get caching, obviously,
+// but you also don't get a runtime exception!
+task standaloneTest(type: Exec, dependsOn: ["compileJava"]) {
+  commandLine "java",
+    "-Dlog4j.configurationFile=/Users/ndw/java/log4j2-debug.xml",
+    "-cp", EXCP, "org.xmlresolver.apps.Parse",
+    "-c", "src/test/resources/catalog.xml",
+    "-s", "src/test/resources/doc.xml"
 }
 
 task deleteBuild() {
