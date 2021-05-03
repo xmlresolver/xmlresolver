@@ -76,9 +76,7 @@ public class StAXResolver implements XMLResolver {
                 URI auri = new URI(baseURI);
                 auri = auri.resolve(new URI(systemId));
                 absSystem = auri.toURL().toString();
-            } catch (URISyntaxException use) {
-                // nop;
-            } catch (MalformedURLException mue) {
+            } catch (URISyntaxException | MalformedURLException use) {
                 // nop;
             } catch (IllegalArgumentException iae) {
                 // In case someone uses baseURI=null, systemId="../some/local/path"

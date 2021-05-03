@@ -14,6 +14,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
+import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.Catalog;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.helpers.FileURI;
@@ -45,6 +46,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     /** Construct a filter with the default resolver. */
     public ResolvingXMLFilter() {
         super();
+        allowXMLCatalogPI = resolver.getCatalog().getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
     }
 
     /** Construct an XML filter with the specified resolver.
@@ -54,7 +56,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     public ResolvingXMLFilter(Resolver resolver) {
         super();
         this.resolver = resolver;
-        allowXMLCatalogPI = resolver.getCatalog().getConfiguration().queryAllowPI();
+        allowXMLCatalogPI = resolver.getCatalog().getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
     }
 
     /** Construct an XML filter with the specified parent and resolver.

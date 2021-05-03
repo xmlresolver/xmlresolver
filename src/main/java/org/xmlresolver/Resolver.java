@@ -242,7 +242,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         }
     }
 
-    class ResolverLSInput implements LSInput {
+    static class ResolverLSInput implements LSInput {
         Resource rsrc = null;
         String publicId = null;
         

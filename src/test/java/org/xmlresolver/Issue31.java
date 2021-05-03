@@ -39,7 +39,8 @@ public class Issue31 {
         source.appendChild(file);
 
         final Properties properties = new Properties();
-        final Configuration configuration = new Configuration(properties, null);
+        final XMLResolverConfiguration configuration = new XMLResolverConfiguration();
+        configuration.loadPropertiesConfiguration(properties);
         final Vector<CatalogSource> catalogList = new Vector<>();
         catalogList.add(new CatalogSource.DomCatalogSource(source));
         final Catalog catalog = new Catalog(configuration, catalogList);

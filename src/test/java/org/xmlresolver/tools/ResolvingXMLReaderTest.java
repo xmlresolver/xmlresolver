@@ -10,8 +10,8 @@ package org.xmlresolver.tools;
 import junit.framework.TestCase;
 import org.xml.sax.SAXException;
 import org.xmlresolver.Catalog;
-import org.xmlresolver.Configuration;
 import org.xmlresolver.Resolver;
+import org.xmlresolver.XMLResolverConfiguration;
 
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
@@ -53,7 +53,8 @@ public class ResolvingXMLReaderTest extends TestCase {
     public void testForbiddenPI() throws IOException, SAXException {
         Properties prop = new Properties();
         prop.setProperty("allow-oasis-xml-catalog-pi", "false");
-        Configuration config = new Configuration(prop, null);
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        config.loadPropertiesConfiguration(prop);
         Catalog catalog = new Catalog(config, "dummy.cat");
         Resolver resolver = new Resolver(catalog);
 

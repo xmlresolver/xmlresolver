@@ -22,12 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ndw
- * Date: 2/8/12
- * Time: 9:15 PM
- */
 public class ResourceConnection {
     private InputStream stream = null;
     private String absuri = null;

@@ -33,12 +33,12 @@ import java.net.URISyntaxException;
  *
  */
 public class ResourceResolver {
-    private static Logger logger = LoggerFactory.getLogger(ResourceResolver.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceResolver.class);
 
     // the static catalog is initialized lazily. Maybe it is not needed.
     private static Catalog staticCatalog = null;
     
-    private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    private static final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     private static DocumentBuilder builder = null;
     
     static {
@@ -66,7 +66,7 @@ public class ResourceResolver {
      *
      * <p>By default, a static catalog initialized using the default properties is used by all ResourceResolvers.</p>
      */
-    public  ResourceResolver() {
+    public ResourceResolver() {
         init(getStaticCatalog());
     }
 
@@ -132,7 +132,7 @@ public class ResourceResolver {
                 finalURI = absuriString;
             }
 
-            if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
+            if (cache != null && catalog.cacheURI(absuriString) && cache.cacheURI(absuriString)) {
                 try {
                     String localName = cache.addURI(conn);
                     File localFile = new File(localName);
@@ -154,7 +154,7 @@ public class ResourceResolver {
 
         if (conn.getStatusCode() == 200) {
             String absuriString = conn.getURI();
-            if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
+            if (cache != null && catalog.cacheURI(absuriString) && cache.cacheURI(absuriString)) {
                 try {
                     String localName = cache.addNamespaceURI(conn, nature, purpose);
                     File localFile = new File(localName);
@@ -177,7 +177,7 @@ public class ResourceResolver {
 
             if (conn.getStatusCode() == 200) {
                 String absuriString = conn.getURI();
-                if (cache != null && catalog.cacheSchemeURI(getScheme(absuriString)) && cache.cacheURI(absuriString)) {
+                if (cache != null && catalog.cacheURI(absuriString) && cache.cacheURI(absuriString)) {
                     try {
                         String localName = cache.addSystem(conn, publicId);
                         File localFile = new File(localName);
@@ -228,9 +228,7 @@ public class ResourceResolver {
                 auri = auri.resolve(new URI(uri));
                 uri = auri.toURL().toString();
                 resolved = catalog.lookupURI(uri);
-            } catch (URISyntaxException use) {
-                resolved = null;
-            } catch (MalformedURLException mue) {
+            } catch (URISyntaxException|MalformedURLException ex) {
                 resolved = null;
             } catch (IllegalArgumentException iae) {
                 // In case someone calls resolveURI("../some/local/path", null)
@@ -395,15 +393,6 @@ public class ResourceResolver {
             return null;
         } else {
             return streamResult(resolved);
-        }
-    }
-
-    private String getScheme(String uri) {
-        int pos = uri.indexOf(":");
-        if (pos >= 0) {
-            return uri.substring(0, pos);
-        } else {
-            return null;
         }
     }
 }
