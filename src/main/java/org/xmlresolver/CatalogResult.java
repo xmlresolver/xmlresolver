@@ -13,11 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /** Represents the result of a catalog search.
  *
@@ -120,10 +124,36 @@ public class CatalogResult {
     public InputStream body() throws MalformedURLException, IOException {
         InputStream body = null;
 
-        URL url = new URL(uri);
-        URLConnection connection = url.openConnection();
-        connection.connect();
-        body = connection.getInputStream();
+        if (uri.startsWith("data:")) {
+            // This is a little bit crude; see RFC 2397
+            int pos = uri.indexOf(",");
+            if (pos > 0) {
+                String mediatype = uri.substring(0, pos);
+                String data = uri.substring(pos+1);
+                if (mediatype.endsWith(";base64")) {
+                    // Base64 decode it
+                    return new ByteArrayInputStream(Base64.getDecoder().decode(data));
+                } else {
+                    // URL decode it
+                    String charset = "UTF-8";
+                    pos = mediatype.indexOf(";charset=");
+                    if (pos > 0) {
+                        charset = mediatype.substring(pos+9);
+                        pos = charset.indexOf(";");
+                        if (pos >= 0) {
+                            charset = charset.substring(0, pos);
+                        }
+                    }
+                    data = URLDecoder.decode(data, charset);
+                    return new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        } else {
+            URL url = new URL(uri);
+            URLConnection connection = url.openConnection();
+            connection.connect();
+            body = connection.getInputStream();
+        }
 
         return body;
     }
