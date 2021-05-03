@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 import org.xmlresolver.helpers.DOMUtils;
 import org.xmlresolver.helpers.PublicId;
 import org.xmlresolver.helpers.URIUtils;
@@ -276,44 +277,42 @@ public class Catalog {
         return cache;
     }
 
-    private synchronized Element loadCatalog(int index) {
+    private synchronized void loadCatalog(int index) {
         if (index < documentList.size()) {
-            return documentList.get(index);
+            return;
         }
         
         CatalogSource catalog = catalogList.get(index);
-
         Element docRoot = catalog.parse();
-        
+
         while (documentList.size() <= index) {
             documentList.add(null);
         }
         documentList.set(index, docRoot);
 
+        if (docRoot == null) {
+            return;
+        }
+
         int offset = 1;
-        if (docRoot != null) {
-                        
-            if (catalogElement(docRoot, "catalog")) {
-                Element child = DOMUtils.getFirstElement(docRoot);
-                while (child != null) {
-                    if (catalogElement(child, "nextCatalog")) {
-                        Element nextCat = (Element) child;
-                        String nextCatalog = DOMUtils.makeAbsolute(nextCat, nextCat.getAttribute("catalog"));
-                        logger.trace("Next catalog: " + nextCat.getAttribute("catalog") + " (" + nextCatalog + ")");
-                        
-                        if (index+offset >= catalogList.size()) {
-                            catalogList.add(new CatalogSource.UriCatalogSource(nextCatalog));
-                        } else {
-                            catalogList.insertElementAt(new CatalogSource.UriCatalogSource(nextCatalog), index+offset);
-                        }
-                        offset++;
+        if (catalogElement(docRoot, "catalog")) {
+            Element child = DOMUtils.getFirstElement(docRoot);
+            while (child != null) {
+                if (catalogElement(child, "nextCatalog")) {
+                    Element nextCat = (Element) child;
+                    String nextCatalog = DOMUtils.makeAbsolute(nextCat, nextCat.getAttribute("catalog"));
+                    logger.trace("Next catalog: " + nextCat.getAttribute("catalog") + " (" + nextCatalog + ")");
+
+                    if (index+offset >= catalogList.size()) {
+                        catalogList.add(new CatalogSource.UriCatalogSource(nextCatalog));
+                    } else {
+                        catalogList.insertElementAt(new CatalogSource.UriCatalogSource(nextCatalog), index+offset);
                     }
-                    child = DOMUtils.getNextElement(child);
+                    offset++;
                 }
+                child = DOMUtils.getNextElement(child);
             }
         }
-        
-        return docRoot;
     }
 
     private boolean catalogElement(Node node, String localName) {

@@ -82,4 +82,24 @@ public class ClasspathUriTest {
         }
         assertEquals("<doc>test</doc>", line);
     }
+
+    @Test
+    public void testClasspathCatalog() {
+        Catalog cpcat = new Catalog("classpath:org/xmlresolver/test/no-such-catalog.xml;classpath:org/xmlresolver/test/catalog.xml");
+        ResourceResolver cpres = new ResourceResolver(cpcat);
+
+        String href = "example.xml";
+        String base = "http://example.com/";
+
+        String line = null;
+        try {
+            Resource result = cpres.resolveURI(href, base);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.body()));
+            line = reader.readLine();
+        } catch (IOException ex) {
+            // ignore
+        }
+        assertEquals("<doc>test</doc>", line);
+
+    }
 }

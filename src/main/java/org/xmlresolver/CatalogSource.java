@@ -3,6 +3,7 @@ package org.xmlresolver;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -26,6 +27,7 @@ public abstract class CatalogSource<S> {
   static {
     factory.setNamespaceAware(true);
   }
+
   protected final S mySource;
 
   protected CatalogSource(S aSource) {
@@ -45,7 +47,11 @@ public abstract class CatalogSource<S> {
         DocumentBuilder builder = factory.newDocumentBuilder();
         builder.setEntityResolver(new BootstrapResolver());
         Document doc = doParse(builder);
-        return doc.getDocumentElement();
+        if (doc == null) {
+          return null;
+        } else {
+          return doc.getDocumentElement();
+        }
       } catch (ParserConfigurationException pce) {
         Catalog.logger.warn("Parser configuration exception attempting to load " + this);
         return null;
@@ -68,14 +74,26 @@ public abstract class CatalogSource<S> {
   }
 
   public static class UriCatalogSource extends ParsingCatalogSource<String> {
-
     public UriCatalogSource(String aSource) {
       super(aSource);
     }
 
     @Override
     protected Document doParse(DocumentBuilder aDocumentBuilder) throws SAXException, IOException {
-      return aDocumentBuilder.parse(mySource);
+      if (mySource.startsWith("classpath:")) {
+        String path = mySource.substring(10);
+        if (path.startsWith("/")) {
+          path = path.substring(1);
+        }
+        InputStream is = getClass().getClassLoader().getResourceAsStream(path);
+        if (is == null) {
+          throw new FileNotFoundException();
+        } else {
+          return aDocumentBuilder.parse(is, mySource);
+        }
+      } else {
+        return aDocumentBuilder.parse(mySource);
+      }
     }
   }
 
