@@ -16,6 +16,6 @@ public class CatalogDTDTest {
         String catalogFile = "src/test/resources/catalogs/dtd-catalog.xml";
         Catalog catalog = new Catalog(catalogFile);
         CatalogResult lookup = catalog.lookupURI("example.xml");
-        System.err.println(lookup.uri());
+        assertEquals("http://example.com/example.xml", lookup.uri());
     }
 }

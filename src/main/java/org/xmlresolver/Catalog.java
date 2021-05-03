@@ -13,10 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 import org.xmlresolver.helpers.DOMUtils;
 import org.xmlresolver.helpers.PublicId;
 import org.xmlresolver.helpers.URIUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 
 /**
@@ -99,7 +106,7 @@ public class Catalog {
         return propfile;
     }
     
-    private Configuration conf;
+    private ResolverConfiguration conf;
     
     private Vector<CatalogSource> catalogList = new Vector<CatalogSource>();
     private Vector<Element> documentList = new Vector<Element>();
@@ -131,28 +138,73 @@ public class Catalog {
      * file that can be found is used. The list of property files must be delimited with semicolons (";").
      *
      * @param propertyFileList The name of one or more property files.
-     * @param catalogList A semicolon delimited list of catalog files. If {@code null} is specified then
+     * @param catalogs A semicolon delimited list of catalog files. If {@code null} is specified then
      * the default "./catalog.xml" is used.
      */
-    public Catalog(String propertyFileList, String catalogList) {
-      this(Configuration.create(propertyFileList), catalogList);
+    public Catalog(String propertyFileList, String catalogs) {
+        XMLResolverConfiguration xconf = new XMLResolverConfiguration();
+        xconf.loadDefaultConfiguration();
+
+        if (propertyFileList != null) {
+            for (String fn : propertyFileList.split(";")) {
+                if ("".equals(fn)) continue;
+                URL url = Catalog.class.getResource("/" + fn);
+                if (url == null) {
+                    continue;
+                }
+                InputStream in = Catalog.class.getResourceAsStream("/" + fn);
+                if (in == null) {
+                    logger.warn("Cannot load " + fn);
+                    continue;
+                }
+                Properties properties = new Properties();
+                try {
+                    properties.load(in);
+                    xconf.loadPropertiesConfiguration(url, properties);
+                    break;
+                } catch (IOException e) {
+                    Catalog.logger.warn("I/O error reading " + fn);
+                }
+            }
+        }
+
+        init(xconf, createSources(xconf, catalogs));
     }
     
-    public Catalog(Configuration conf, String catalogList) {
+    public Catalog(XMLResolverConfiguration conf, String catalogList) {
         this(conf, createSources(conf, catalogList));
     }
     
-    public Catalog(Configuration conf, Vector<CatalogSource> catalogList) {
-      this.conf = conf;
-      this.catalogList = catalogList;
-      setCacheDir(conf.queryCache());
+    public Catalog(ResolverConfiguration conf, Vector<CatalogSource> catalogList) {
+        init(conf, catalogList);
     }
-    
-    public final void setCacheDir(String cacheDir) {
-        if (cacheDir != null && !cacheDir.equals("")) {
-            cache = new ResourceCache(cacheDir);
-        } else {
-            cache = null;
+
+    private void init(ResolverConfiguration conf, Vector<CatalogSource> catalogList) {
+        this.conf = conf;
+        this.catalogList = catalogList;
+
+        String cacheloc = conf.getFeature(ResolverFeature.CATALOG_CACHE);
+        if (cacheloc == null && conf.getFeature(ResolverFeature.CACHE_UNDER_HOME)) {
+            // Let's see if we can find a reasonable default...
+            String home = System.getProperty("user.home");
+            if (home != null && !"".equals(home)) {
+                cacheloc = home + "/.xmlresolver/cache";
+            }
+        }
+
+        if (cacheloc != null) {
+            File fDir = new File(cacheloc);
+            if (!fDir.exists()) {
+                if (!fDir.mkdirs()) {
+                    logger.warn("Could not create cache directory: " + cacheloc);
+                }
+            }
+            fDir = new File(cacheloc);
+            if (fDir.exists() && fDir.isDirectory()) {
+                cache = new ResourceCache(cacheloc);
+            } else {
+                logger.warn("Could not use cache location: " + cacheloc);
+            }
         }
     }
 
@@ -160,7 +212,7 @@ public class Catalog {
      *
      * @return Configuration of this catalog
      */
-    public Configuration getConfiguration() {
+    public ResolverConfiguration getConfiguration() {
         return conf;
     }
 
@@ -200,54 +252,66 @@ public class Catalog {
      * "<code>cache-<em>scheme</em>-uri</code>" in the property file can be used to specify
      * which schemes should be cached.</p>
      *
-     * <p>By default, all schemes except <code>file</code> are cached.</p>
+     * <p>By default, all schemes except <code>file</code> and <code>jar</code>are cached.</p>
      *
-     * @param scheme The name of a URI scheme, for example "http" or "file".
-     *
+     * @param uri The URI for which caching is being considered.
      * @return true if and only if URIs in the requested scheme should be cached.
      */
-    public boolean cacheSchemeURI(String scheme) {
-      return conf.queryCacheSchemeURI(scheme);
+    public boolean cacheURI(String uri) {
+        boolean cache = true;
+        List<String> cacheInclude = conf.getFeature(ResolverFeature.CACHE_INCLUDE_REGEX);
+        List<String> cacheExclude = conf.getFeature(ResolverFeature.CACHE_EXCLUDE_REGEX);
+
+        if (cacheInclude.size() > 0) {
+            cache = false;
+            for (String regex : cacheInclude) {
+                cache = cache || uri.matches(regex);
+            }
+        }
+
+        for (String regex : cacheExclude) {
+            cache = cache && !uri.matches(regex);
+        }
+
+        return cache;
     }
 
-    private synchronized Element loadCatalog(int index) {
+    private synchronized void loadCatalog(int index) {
         if (index < documentList.size()) {
-            return documentList.get(index);
+            return;
         }
         
         CatalogSource catalog = catalogList.get(index);
-
         Element docRoot = catalog.parse();
-        
+
         while (documentList.size() <= index) {
             documentList.add(null);
         }
         documentList.set(index, docRoot);
 
+        if (docRoot == null) {
+            return;
+        }
+
         int offset = 1;
-        if (docRoot != null) {
-                        
-            if (catalogElement(docRoot, "catalog")) {
-                Element child = DOMUtils.getFirstElement(docRoot);
-                while (child != null) {
-                    if (catalogElement(child, "nextCatalog")) {
-                        Element nextCat = (Element) child;
-                        String nextCatalog = DOMUtils.makeAbsolute(nextCat, nextCat.getAttribute("catalog"));
-                        logger.trace("Next catalog: " + nextCat.getAttribute("catalog") + " (" + nextCatalog + ")");
-                        
-                        if (index+offset >= catalogList.size()) {
-                            catalogList.add(new CatalogSource.UriCatalogSource(nextCatalog));
-                        } else {
-                            catalogList.insertElementAt(new CatalogSource.UriCatalogSource(nextCatalog), index+offset);
-                        }
-                        offset++;
+        if (catalogElement(docRoot, "catalog")) {
+            Element child = DOMUtils.getFirstElement(docRoot);
+            while (child != null) {
+                if (catalogElement(child, "nextCatalog")) {
+                    Element nextCat = (Element) child;
+                    String nextCatalog = DOMUtils.makeAbsolute(nextCat, nextCat.getAttribute("catalog"));
+                    logger.trace("Next catalog: " + nextCat.getAttribute("catalog") + " (" + nextCatalog + ")");
+
+                    if (index+offset >= catalogList.size()) {
+                        catalogList.add(new CatalogSource.UriCatalogSource(nextCatalog));
+                    } else {
+                        catalogList.insertElementAt(new CatalogSource.UriCatalogSource(nextCatalog), index+offset);
                     }
-                    child = DOMUtils.getNextElement(child);
+                    offset++;
                 }
+                child = DOMUtils.getNextElement(child);
             }
         }
-        
-        return docRoot;
     }
 
     private boolean catalogElement(Node node, String localName) {
@@ -579,7 +643,7 @@ public class Catalog {
         // If there's a PUBLIC entry in this catalog, use it
         for (Element child : entries(group, "public", "publicId", publicId, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = conf.queryPreferPublic();
+            boolean preferpublic = conf.getFeature(ResolverFeature.PREFER_PUBLIC);
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -771,7 +835,7 @@ public class Catalog {
         // If there's a DOCTYPE entry in this catalog, use it
         for (Element child : entries(group, "doctype", "name", entityName, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = conf.queryPreferPublic();
+            boolean preferpublic = conf.getFeature(ResolverFeature.PREFER_PUBLIC);
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -867,7 +931,7 @@ public class Catalog {
         // If there's a ENTITY entry in this catalog, use it
         for (Element child : entries(group, "entity", "name", entityName, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = conf.queryPreferPublic();
+            boolean preferpublic = conf.getFeature(ResolverFeature.PREFER_PUBLIC);
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -937,7 +1001,7 @@ public class Catalog {
         // If there's a NOTATION entry in this catalog, use it
         for (Element child : entries(group, "notation", "name", notName, null, null)) {
             // What's the prefer setting for this entry?
-            boolean preferpublic = conf.queryPreferPublic();
+            boolean preferpublic = conf.getFeature(ResolverFeature.PREFER_PUBLIC);
             Node node = child;
             while (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 Element p = (Element) node;
@@ -966,10 +1030,10 @@ public class Catalog {
       catalogList.add(aCatalogSource);
     }
 
-    private static Vector<CatalogSource> createSources(Configuration aConf, String aCatalogFiles) {
+    private static Vector<CatalogSource> createSources(ResolverConfiguration aConf, String aCatalogFiles) {
         Vector<CatalogSource> res = new Vector<CatalogSource>();
         if (aCatalogFiles == null) {
-            for (String s: aConf.queryCatalogFiles()) {
+            for (String s: aConf.getFeature(ResolverFeature.CATALOG_FILES)) {
                 res.add(new CatalogSource.UriCatalogSource(s));
             }
         } else {

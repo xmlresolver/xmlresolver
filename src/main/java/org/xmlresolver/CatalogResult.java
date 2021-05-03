@@ -13,11 +13,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Enumeration;
 
 /** Represents the result of a catalog search.
  *
@@ -118,14 +126,69 @@ public class CatalogResult {
      * @return The InputStream
      */
     public InputStream body() throws MalformedURLException, IOException {
-        InputStream body = null;
+        if (uri.startsWith("data:")) {
+            // This is a little bit crude; see RFC 2397
+            int pos = uri.indexOf(",");
+            if (pos > 0) {
+                String mediatype = uri.substring(0, pos);
+                String data = uri.substring(pos + 1);
+                if (mediatype.endsWith(";base64")) {
+                    // Base64 decode it
+                    return new ByteArrayInputStream(Base64.getDecoder().decode(data));
+                } else {
+                    // URL decode it
+                    String charset = "UTF-8";
+                    pos = mediatype.indexOf(";charset=");
+                    if (pos > 0) {
+                        charset = mediatype.substring(pos + 9);
+                        pos = charset.indexOf(";");
+                        if (pos >= 0) {
+                            charset = charset.substring(0, pos);
+                        }
+                    }
+                    data = URLDecoder.decode(data, charset);
+                    return new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+                }
+            }
+            return null;
+        }
+
+        if (uri.startsWith("classpath:")) {
+            String path = uri.substring(10);
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            return getClass().getClassLoader().getResourceAsStream(path);
+        }
+
+        // I don't think anyone is ever going to use this, feature, but for the sake
+        // of completeness...
+        if (uri.startsWith("classpath*:")) {
+            String path = uri.substring(11);
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            Enumeration<URL> urls = getClass().getClassLoader().getResources(path);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] bytes = new byte[8192];
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                InputStream is = url.openStream();
+                int len = is.read(bytes);
+                while (len >= 0) {
+                    baos.write(bytes, 0, len);
+                    len = is.read(bytes);
+                }
+                is.close();
+            }
+
+            return new ByteArrayInputStream(baos.toByteArray());
+        }
 
         URL url = new URL(uri);
         URLConnection connection = url.openConnection();
         connection.connect();
-        body = connection.getInputStream();
-
-        return body;
+        return connection.getInputStream();
     }
     
     /** Attempts to determine if the local copy (represented by this result) is out of date.

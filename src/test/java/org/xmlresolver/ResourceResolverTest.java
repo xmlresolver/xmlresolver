@@ -33,7 +33,6 @@ public class ResourceResolverTest {
     /**
      * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
      */
-    @Ignore
     public void testResolveURI() {
         String href = ".bibliography.xml";
         String base = "file:///home/nosuchuser/";
@@ -45,7 +44,6 @@ public class ResourceResolverTest {
     /**
      * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
      */
-    @Ignore
     public void testResolveEntity() {
         String href = ".bibliography.xml";
         String base = "file:///home/nosuchuser/";
@@ -56,7 +54,6 @@ public class ResourceResolverTest {
 
     /* Test of resolveNamespaceURI method, of class org.xmlresolver.ResourceResolver.
      */
-    @Ignore
     public void testResolveNamespaceURI() throws Exception {
         ResourceResolver myResolver = new ResourceResolver(new Catalog("documents/catalog.xml"));
         
