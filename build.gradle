@@ -168,7 +168,7 @@ publishing {
 
   repositories {
     maven {
-      url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      url = sonatypeUrl
       credentials {
         username = sonatypeUsername
         password = sonatypePassword
@@ -194,3 +194,9 @@ task deleteBuild() {
 
 clean.dependsOn deleteBuild
 
+task helloWorld() {
+  // My task for testing
+  doLast {
+    println("Hello, world.")
+  }
+}
