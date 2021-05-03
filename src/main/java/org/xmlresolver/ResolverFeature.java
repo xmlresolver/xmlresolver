@@ -16,6 +16,7 @@ public class ResolverFeature<T> {
     protected ResolverFeature(String name, T defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
+        index.put(name, this);
     }
 
     public String getName() {
@@ -36,6 +37,9 @@ public class ResolverFeature<T> {
 
     public static final ResolverFeature<List<String>> CATALOG_FILES = new ResolverFeature<List<String>>(
             "http://xmlresolver.org/feature/catalog-files", Collections.unmodifiableList(new ArrayList<String>()));
+
+    public static final ResolverFeature<List<String>> CATALOG_ADDITIONS = new ResolverFeature<List<String>>(
+            "http://xmlresolver.org/feature/catalog-additions", Collections.unmodifiableList(new ArrayList<String>()));
 
     public static final ResolverFeature<Boolean> PREFER_PUBLIC = new ResolverFeature<Boolean>(
             "http://xmlresolver.org/feature/prefer-public", true);

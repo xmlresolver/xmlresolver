@@ -3,7 +3,6 @@ package org.xmlresolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -19,7 +18,8 @@ import java.util.StringTokenizer;
 public class XMLResolverConfiguration implements ResolverConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(XMLResolverConfiguration.class);
     private static final ResolverFeature<?>[] knownFeatures = { ResolverFeature.CATALOG_FILES,
-            ResolverFeature.PREFER_PUBLIC, ResolverFeature.ALLOW_CATALOG_PI,
+            ResolverFeature.PREFER_PUBLIC, ResolverFeature.PREFER_PROPERTY_FILE,
+            ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.CATALOG_ADDITIONS,
             ResolverFeature.CATALOG_CACHE, ResolverFeature.CACHE_UNDER_HOME,
             ResolverFeature.CACHE_EXCLUDE_REGEX, ResolverFeature.CACHE_INCLUDE_REGEX };
 
@@ -60,6 +60,17 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             catalogs.clear();
+            while (tokens.hasMoreTokens()) {
+                String token = tokens.nextToken();
+                if (!"".equals(token.trim())) {
+                    catalogs.add(token);
+                }
+            }
+        }
+
+        property = System.getProperty("xml.catalog.additions");
+        if (property != null) {
+            StringTokenizer tokens = new StringTokenizer(property, ";");
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
@@ -158,15 +169,34 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     public void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
+        boolean relative = true;
+        String allow = properties.getProperty("relative-catalogs");
+        if (allow != null) {
+            relative = isTrue(allow);
+        }
+
         String property = properties.getProperty("catalogs");
         if (property != null) {
-            boolean relative = true;
-            String allow = properties.getProperty("relative-catalogs");
-            if (allow != null) {
-                relative = isTrue(allow);
-            }
             StringTokenizer tokens = new StringTokenizer(property, ";");
             catalogs.clear();
+            while (tokens.hasMoreTokens()) {
+                String token = tokens.nextToken();
+                if (!"".equals(token.trim())) {
+                    if (relative && propertiesURL != null) {
+                        try {
+                            token = new URL(propertiesURL, token).toURI().toASCIIString();
+                        } catch (URISyntaxException | MalformedURLException e) {
+                            logger.debug("Cannot make absolute: " + token);
+                        }
+                    }
+                    catalogs.add(token);
+                }
+            }
+        }
+
+        property = properties.getProperty("catalog-additions");
+        if (property != null) {
+            StringTokenizer tokens = new StringTokenizer(property, ";");
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
