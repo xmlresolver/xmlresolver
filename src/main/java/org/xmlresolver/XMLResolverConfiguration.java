@@ -9,7 +9,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -322,10 +321,6 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     @Override
     public Iterator<ResolverFeature<?>> getFeatures() {
          return Arrays.stream(knownFeatures).iterator();
-    }
-
-    public List<String> queryCatalogFiles() {
-        return Collections.unmodifiableList(catalogs);
     }
 
     private static boolean isTrue(String aString) {

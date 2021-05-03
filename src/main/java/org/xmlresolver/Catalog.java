@@ -252,10 +252,9 @@ public class Catalog {
      * "<code>cache-<em>scheme</em>-uri</code>" in the property file can be used to specify
      * which schemes should be cached.</p>
      *
-     * <p>By default, all schemes except <code>file</code> are cached.</p>
+     * <p>By default, all schemes except <code>file</code> and <code>jar</code>are cached.</p>
      *
-     * @param scheme The name of a URI scheme, for example "http" or "file".
-     *
+     * @param uri The URI for which caching is being considered.
      * @return true if and only if URIs in the requested scheme should be cached.
      */
     public boolean cacheURI(String uri) {
