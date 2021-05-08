@@ -158,7 +158,24 @@ public class CatalogResult {
             if (path.startsWith("/")) {
                 path = path.substring(1);
             }
-            return getClass().getClassLoader().getResourceAsStream(path);
+            // The URI class throws exceptions if you attempt to manipulate
+            // classpath: URIs. Fair enough, given their ad hoc invention
+            // by the Spring framework. We're going to cheat a little bit here
+            // and replace the classpath: URI with the actual URI of the resource
+            // found (if one is found). That means downstream processes will
+            // have a "useful" URI. It still might not work, due to class loaders and
+            // such, but at least it won't immediately blow up.
+            URL rsrc = getClass().getClassLoader().getResource(path);
+            if (rsrc == null) {
+                return null;
+            } else {
+                uri = rsrc.toString();
+                try {
+                    return rsrc.openStream();
+                } catch (IOException ee) {
+                    return null;
+                }
+            }
         }
 
         // I don't think anyone is ever going to use this, feature, but for the sake
