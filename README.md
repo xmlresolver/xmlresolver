@@ -50,7 +50,7 @@ The `Configuration` object has been renamed `XMLResolverConfiguration`
 and now implements the `ResolverConfiguration` interface.
 
 Several methods on the configuration object have been removed. Their
-values can be obtained by requesting the specific feature.
+values can be obtained by requesting the corresponding feature.
 
 ### Behavior changes
 
@@ -95,7 +95,7 @@ In brief, a `classpath:` URI is resolved by attempting to find a
 document with the specified path in the classpath, including within
 JAR files on the classpath.
 
-For example, this catalog entry:
+This catalog entry:
 
 ```
   <uri name="http://example.com/example.xml"
@@ -103,20 +103,55 @@ For example, this catalog entry:
 ```
 
 maps the URI `http://example.com/example.xml` to a document with the path `path/example-doc.xml` on
-the classpath. Searches always begin at the root of the classpath segments, so
-`path/example-doc.xml` and `/path/example-doc.xml` are equivalent.
+the classpath. (Searches always begin at the root of the classpath segments, so
+`path/example-doc.xml` and `/path/example-doc.xml` are equivalent.)
 
-(The resolver also supports `classpath*:` but since it’s defined as
-concatenating the resources identified, it’s of comparatively little
-use in the XML case.)
+(For what it’s worth, the resolver also supports `classpath*:` but
+since that’s defined as concatenating the resources identified, it’s of
+comparatively little use in the XML case.)
+
+Suppose, for example, that your classpath
+includes `/home/ndw/java/libs/example.jar`:
+
+```
+$ jar vtf /home/ndw/java/libs/example.jar
+     0 Wed May 05 14:51:50 BST 2021 META-INF/
+    25 Wed May 05 14:51:50 BST 2021 META-INF/MANIFEST.MF
+     0 Wed May 05 14:51:48 BST 2021 org/
+     0 Wed May 05 14:51:50 BST 2021 org/example/
+  3262 Wed May 05 14:51:50 BST 2021 org/example/DWIM.class
+  1831 Wed May 05 14:51:50 BST 2021 path/example-doc.xml
+   219 Wed May 05 14:51:50 BST 2021 path/something-else.txt
+```
+
+Assuming that this JAR file is the first place on your classpath where
+`path/example-doc.xml` occurs, then that’s the document that will be returned.
+
+#### Lies, damned lies, and URIs
+
+At this point, we expect the resolver to return that resource with a base URI of
+`classpath:path/example-doc.xml`. Unfortunately, if we do that, any attempt to resolve
+a URI against that document’s base URI (for example, if `example-doc.xml` contains an
+XInclude with a relative `href` value), will immediately fail. It fails constructing the
+URI long before it calls the resolver to attempt to retrieve it.
+
+To avoid this, the resolver lies. It returns the resource with the base URI set to the
+resolved location, `jar:file:///home/ndw/java/libs/example.jar!path/example-doc.xml`.
+The URI class doesn’t resolve relative URIs against that base URI either, but at least
+it doesn’t throw an exception.
+
+The practical consequence of this is that the resolver never gets
+asked to resolve URIs made absolute against either of these forms of
+URI. If you put a document in a JAR file, make sure that all of it’s
+relative references (includes, imports, etc.) will resolve correctly.
+You can’t re-interpret them in the resolver.
 
 ### Support for additional catalog files
 
 If a project uses a particular schema, or set of schemas, it may be
-useful to add an additional catalog (or catalogs) to the users default
-catalog file path. That’s not currently practical.
-
-If both system properties and a property file are used to configure a
+useful to add an additional catalog (or catalogs) to the user’s default
+catalog file path. That’s not currently practical:
+if both system properties and a property file are used to configure a
 resolver, and the same setting appears in both places, either the
 system property value is used (the default in 2.x) or the property
 file value is used (the default in 1.x).
@@ -130,4 +165,4 @@ To make this easier, the 2.0 release adds a new system property,
 `xml.catalog.additions`, and a new property file key,
 `catalog-additions`. Both properties take a list of catalog files.
 Those files will be added to the list defined by the normal catalog
-files properties.
+settings.
