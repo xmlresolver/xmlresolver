@@ -68,6 +68,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         this.resolver = resolver;
     }
 
+    /** What version is this?
+     *
+     * Returns the version number of this resolver instance.
+     *
+     * @return The version number
+     */
+    public static String version() {
+        return BuildConfig.VERSION;
+    }
+
     /** Get the Catalog used by this resolver.
      *
      * @return The underlying catalog.
