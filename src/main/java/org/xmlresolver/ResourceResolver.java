@@ -218,35 +218,25 @@ public class ResourceResolver {
      */
     public Resource resolveURI(String href, String base) {
         logger.trace("resolveURI(" + href + "," + base + ")");
-        String uri = href;
-        CatalogResult resolved = catalog.lookupURI(uri);
-        boolean skipCache = false;
-        
+        CatalogResult resolved = catalog.lookupURI(href);
+
         if (resolved == null && base != null) {
+            // N.B. If base is a jar:file:/path/to/file.jar!/resource/path URI, the
+            // URI.resolve() call wan't resolve the href against the /resource/path
+            // in the way you might expect. We could, but I'm not sure it's a good
+            // idea.
+
             try {
-                URI auri = new URI(base);
-                auri = auri.resolve(new URI(uri));
-                uri = auri.toURL().toString();
-                resolved = catalog.lookupURI(uri);
-            } catch (URISyntaxException|MalformedURLException ex) {
-                resolved = null;
-            } catch (IllegalArgumentException iae) {
-                // In case someone calls resolveURI("../some/local/path", null)
-                resolved = null;
-                skipCache = true;
-            }
-        }
-
-        if (resolved == null) {
-            if (skipCache) {
+                URI auri = new URI(base).resolve(href);
+                resolved = catalog.lookupURI(auri.toString());
+            } catch (URISyntaxException|IllegalArgumentException ex) {
+                // In case the base URI isn't absolute or the URI is just malformed
                 return null;
-            } else {
-                return cacheStreamURI(uri);
             }
         }
 
-        if (resolved.expired()) {
-            return cacheStreamURI(uri);
+        if (resolved == null || resolved.expired()) {
+            return cacheStreamURI(href);
         }
 
         return streamResult(resolved);
