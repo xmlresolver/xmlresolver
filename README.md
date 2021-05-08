@@ -142,7 +142,7 @@ it doesn’t throw an exception.
 
 The practical consequence of this is that the resolver never gets
 asked to resolve URIs made absolute against either of these forms of
-URI. If you put a document in a JAR file, make sure that all of it’s
+URI. If you put a document in a JAR file, make sure that all of its
 relative references (includes, imports, etc.) will resolve correctly.
 You can’t re-interpret them in the resolver.
 
