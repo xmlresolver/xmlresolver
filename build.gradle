@@ -38,14 +38,6 @@ dependencies {
   )
 }
 
-if (!hasProperty("sonatypeUsername")) {
-  ext.sonatypeUsername=""
-}
-
-if (!hasProperty("sonatypePassword")) {
-  ext.sonatypePassword=""
-}
-
 def EXCP="${projectDir}/build/classes/java/main"
 configurations.standaloneClasspath.each { it ->
   // Explicitly remove the http libraries
@@ -168,10 +160,12 @@ publishing {
 
   repositories {
     maven {
-      url = sonatypeUrl
+      url = resolverVersion.contains("SNAPSHOT") ?
+        "https://oss.sonatype.org/content/repositories/snapshots/" :
+        "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
       credentials {
-        username = sonatypeUsername
-        password = sonatypePassword
+        username = findProperty("sonatypeUsername") ?: ""
+        password = findProperty("sonatypePassword") ?: ""
       }
     }
   }
