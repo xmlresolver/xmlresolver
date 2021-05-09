@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.Vector;
@@ -306,7 +307,10 @@ public class ResourceCache {
 
     private synchronized void cleanupCache() {
         DirectoryLock lock = new DirectoryLock();
-        if (!lock.locked()) {
+        try {
+            lock.lock();
+        } catch (IOException ex) {
+            // nevermind
             return;
         }
 
@@ -374,10 +378,13 @@ public class ResourceCache {
         }
 
         DirectoryLock lock = new DirectoryLock();
-        if (!lock.locked()) {
+        try {
+            lock.lock();
+        } catch (IOException ex) {
+            // Nevermind
             return;
         }
-        
+
         File files[] = dataDir.listFiles();
         for (int pos = 0; pos < files.length; pos++) {
             if (files[pos].canRead()) {
@@ -487,7 +494,9 @@ public class ResourceCache {
         logger.info("Caching URI: " + name);
 
         DirectoryLock lock = new DirectoryLock();
-        if (!lock.locked()) {
+        try {
+            lock.lock();
+        } catch (IOException ex) {
             return null;
         }
 
@@ -628,7 +637,9 @@ public class ResourceCache {
         logger.info("Caching system identifier: " + systemId);
 
         DirectoryLock lock = new DirectoryLock();
-        if (!lock.locked()) {
+        try {
+            lock.lock();
+        } catch (IOException ex) {
             return null;
         }
 
@@ -941,7 +952,9 @@ public class ResourceCache {
 
     private synchronized void expire(Vector<String> expired) {
         DirectoryLock lock = new DirectoryLock();
-        if (!lock.locked()) {
+        try {
+            lock.lock();
+        } catch (IOException ex) {
             return;
         }
 
@@ -998,36 +1011,49 @@ public class ResourceCache {
         private RandomAccessFile lockFile = null;
         private FileChannel lockChannel = null;
         private FileLock lock = null;
-        private boolean locked = false;
-        
+
         DirectoryLock() {
             try {
                 lockF = new File(cacheDir.toString()+"/lock");
                 lockFile = new RandomAccessFile(lockF, "rw");
                 lockChannel = lockFile.getChannel();
-                lock = lockChannel.lock();
-                locked = true;
-            } catch (IOException ioe) {
+                lock = lockChannel.tryLock();
+            } catch (IOException|OverlappingFileLockException ex) {
                 // nop;
             }
         }
 
         boolean locked() {
-            return locked;
+            return lock != null;
+        }
+
+        void lock() throws IOException {
+            while (lock == null) {
+                try {
+                    lock = lockChannel.lock();
+                } catch (OverlappingFileLockException ex) {
+                    try {
+                        // Let's wait and see if this clears
+                        Thread.sleep(500);
+                    } catch (InterruptedException iex) {
+                        // I don't care.
+                    }
+                }
+            }
         }
 
         void unlock() {
             try {
                 lock.release();
-                locked = false;
                 lockFile.close();
+                lock = null;
             } catch (IOException ioe) {
                 // nop;
             }
         }
     }
     
-    private class CacheInfo {
+    private static class CacheInfo {
         private boolean cache = true;
         private String pattern = "";
         private long deleteWait = -1;
