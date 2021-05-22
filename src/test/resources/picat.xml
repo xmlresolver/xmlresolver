@@ -1,0 +1,10 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//Sample//DTD PITEST Simple 1.0//EN"
+          uri="sample10/sample.dtd"/>
+
+  <system systemId="https://xmlresolver.org/ns/pitest-sample/sample.dtd"
+          uri="sample10/sample.dtd"/>
+
+</catalog>

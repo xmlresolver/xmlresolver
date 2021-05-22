@@ -7,6 +7,7 @@
 
 package org.xmlresolver;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -14,34 +15,56 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Source;
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  *
  * @author ndw
  */
-public class ResolverTest {
-    /* Test of resolve method, of class org.xmlresolver.Resolver.
-     */
+public class ResolverTest extends CacheManager {
+    /* Test of resolve method, of class org.xmlresolver.Resolver. */
+    XMLResolverConfiguration config = null;
+
+    @Before
+    public void setup() {
+        config = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
+        config.setFeature(ResolverFeature.CATALOG_CACHE, null);
+
+        // Make sure the Docker container is running where we expect.
+        ResourceConnection conn = new ResourceConnection("http://localhost:8222/docs/sample/sample.dtd", true);
+        assertEquals(200, conn.getStatusCode());
+    }
+
     @Test
     public void testResolver1() throws Exception {
         SAXParserFactory spfactory = SAXParserFactory.newInstance();
         spfactory.setValidating(true);
         SAXParser parser = spfactory.newSAXParser();
-        Catalog c = new Catalog("src/test/resources/documents/catalog.xml");
-        parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new Resolver(c)));
-        // If we didn't get an exception, we passed!
+        try {
+            parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new Resolver(config)));
+        } catch (Exception ex) {
+            fail();
+        }
     }
 
     @Test
     public void testPerformance() throws Exception {
-        Resolver resolver = new Resolver(new Catalog("src/test/resources/catalogs/catalog.xml"));
+        Resolver resolver = new Resolver(config);
 
-        resolver.resolve("http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl","file:/tmp/test.xsl");
-        resolver.resolve("../VERSION","http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl");
+        // These aren't found in the catalog
+
+        Source source = resolver.resolve("http://localhost:8222/docs/sample/sample.xsl","file:/tmp/test.xsl");
+        assertEquals("http://localhost:8222/docs/sample/sample.xsl", source.getSystemId());
+        source = resolver.resolve("../helloworld.xml","http://localhost:8222/docs/sample/sample.xsl");
+        assertEquals("http://localhost:8222/docs/helloworld.xml", source.getSystemId());
+
     }
 
-    private class DevNullHandler extends DefaultHandler {
+    private static class DevNullHandler extends DefaultHandler {
         private Resolver resolver = null;
 
         public DevNullHandler(Resolver resolver) {

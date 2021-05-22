@@ -1,0 +1,18 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+	 xmlns:rddl="http://www.rddl.org/"
+	 xmlns:xr="http://xmlresolver.org/ns/catalog"
+         prefer="public">
+
+  <public publicId="-//Example//DTD Example Document//EN"
+          uri="documents/doc.dtd"/>
+
+  <!-- The DOM (incorrectly!) passes only the fully resolved URI
+       to the resolver, so we use a URI that'll be resolved
+       consistently.
+  -->
+  <system systemId="http://example.com/entity/ent.xml"
+          uri="documents/real-ent.xml"/>
+
+  <rewriteSystem systemIdStartString="foo:" rewritePrefix="http://example.com/entity/"/>
+
+</catalog>

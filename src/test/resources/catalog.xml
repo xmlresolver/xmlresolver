@@ -1,12 +1,34 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
          prefer="public">
 
-  <system systemId="http://example.org/schema/doc.dtd"
-          uri="doc.dtd"/>
+  <public publicId="-//Sample//DTD Simple 1.0//EN"
+          uri="sample10/sample.dtd"/>
 
-  <system systemId="http://example.org/schema/doc.xsd"
-          uri="doc.xsd"/>
+  <system systemId="https://xmlresolver.com/ns/sample/sample.dtd"
+          uri="sample10/sample.dtd"/>
 
-  <uri systemId="http://example.com/schema/xml.xsd"
-       uri="xml.xsd"/>
+  <group prefer="system">
+    <public publicId="-//Sample//DTD Simple Prefer System 1.0//EN"
+            uri="sample10/sample-public.dtd"/>
+
+    <system systemId="https://example.com/sample-system/1.0/sample.dtd"
+            uri="sample10/sample-system.dtd"/>
+  </group>
+
+  <!-- ============================================================ -->
+
+  <rewriteSystem systemIdStartString="https://example.com/path1/"
+                 rewritePrefix="https://example.com/path2/"/>
+
+  <systemSuffix systemIdSuffix="/2.0/sample.dtd"
+                uri="sample20/sample-suffix.dtd"/>
+
+  <delegatePublic publicIdStartString="-//Sample Delegated//"
+                  uri="lookup-delegated.xml"/>
+
+  <!-- ============================================================ -->
+
+  <uri name="https://xmlresolver.org/ns/sample-as-uri/sample.dtd"
+       uri="http://localhost:8222/docs/sample/sample.dtd"/>
+
 </catalog>

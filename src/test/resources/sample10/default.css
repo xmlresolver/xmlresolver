@@ -1,0 +1,17 @@
+html {
+    font-size: 14pt;
+    line-height: 1.4;
+}
+
+body {
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 8rem;
+    margin-bottom: 8rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: sans-serif;
+}
+

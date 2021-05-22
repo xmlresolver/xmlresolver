@@ -1,0 +1,8 @@
+<!DOCTYPE book PUBLIC "-//Sample//DTD Simple 1.0//EN"
+          "https://xmlresolver.org/ns/sample/sample.dtd">
+<book xmlns="https://xmlresolver.com/ns/sample">
+<title>A sample book</title>
+<article>
+<p>This book validates against DTD with both public and system identifiers.</p>
+</article>
+</book>

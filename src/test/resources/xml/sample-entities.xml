@@ -1,0 +1,10 @@
+<!DOCTYPE book PUBLIC "-//Sample//DTD Simple 1.0//EN"
+                      "https://xmlresolver.org/ns/sample/sample.dtd" [
+<!ENTITY chap1 PUBLIC "-//Sample//TEXT Chapter 1.0//EN" "ch01.xml">
+<!ENTITY chap2 SYSTEM "ch02.xml">
+]>
+<book xmlns="https://xmlresolver.com/ns/sample">
+<title>A sample book with chapters</title>
+&chap1;
+&chap2;
+</book>

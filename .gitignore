@@ -3,3 +3,5 @@
 /apps/build/
 /.idea/
 /.gradle/
+/buildSrc/build/
+/buildSrc/.gradle/

@@ -15,6 +15,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.FileInputStream;
 
+import static org.junit.Assert.fail;
+
 /**
  *
  * @author ndw
@@ -25,22 +27,24 @@ public class StAXResolverTest {
     @Test
     public void testResolver() throws Exception {
         XMLInputFactory factory = XMLInputFactory.newInstance();
-        Catalog catalog = new Catalog("src/test/resources/catalogs/resolver2.xml");
-        StAXResolver resolver = new StAXResolver(catalog);
+        XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
+        StAXResolver resolver = new StAXResolver(config);
         factory.setXMLResolver(new SResolver(resolver));
         
         String xmlFile = "src/test/resources/documents/dtdtest.xml";
         XMLStreamReader reader = factory.createXMLStreamReader(xmlFile, new FileInputStream(xmlFile));
 
-        while (reader.hasNext()) {
-            int event = reader.next();
+        try {
+            while (reader.hasNext()) {
+                reader.next();
+            }
+            reader.close();
+        } catch (Exception ex) {
+            fail();
         }
-        reader.close();
-        
-        // If we didn't get an exception, we passed!
     }
     
-    private class SResolver implements XMLResolver {
+    private static class SResolver implements XMLResolver {
         private StAXResolver resolver = null;
 
         public SResolver(StAXResolver resolver) {

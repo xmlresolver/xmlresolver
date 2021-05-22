@@ -1,0 +1,17 @@
+#!/usr/bin/perl -- # -*- Perl -*-
+
+use strict;
+use English;
+use POSIX qw(strftime);
+use CGI::Carp qw(fatalsToBrowser);
+
+my $CGI = exists $ENV{'GATEWAY_INTERFACE'} ? 1 : 0;
+
+my $now = strftime("%a, %d %b %Y %H:%M:%S GMT", gmtime());
+print "Last-Modified: $now\n";
+print "Content-type: application/xml\n\n";
+print "<beeeep>";
+print "At the tone, the time will be $now.";
+print "</beeeep>\n";
+
+exit(0);

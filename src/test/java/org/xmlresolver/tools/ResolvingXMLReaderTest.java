@@ -7,65 +7,51 @@
 
 package org.xmlresolver.tools;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 import org.xml.sax.SAXException;
-import org.xmlresolver.Catalog;
 import org.xmlresolver.Resolver;
+import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.XMLResolverConfiguration;
 
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerException;
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Collections;
+
+import static junit.framework.TestCase.fail;
 
 /**
  *
  * @author ndw
  */
-public class ResolvingXMLReaderTest extends TestCase {
-    
-    public ResolvingXMLReaderTest(String testName) {
-        super(testName);
-    }
+public class ResolvingXMLReaderTest {
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-    
+    @Test
     public void testReader() throws IOException, SAXException {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setNamespaceAware(true);
         spf.setValidating(true);
-        
-        ResolvingXMLReader reader = new ResolvingXMLReader(spf);
-        reader.parse("src/test/resources/documents/pitest.xml");
-        
-        Resolver resolver = reader.getResolver();
-        Catalog catalog = resolver.getCatalog();
-        String catalogList = catalog.catalogList();
-        assert(catalogList.contains("/doesnotexist.xml"));
-        assert(catalogList.contains("/picat.xml"));
-        assertNotNull(resolver.resolveEntity("", "pi.dtd"));
+
+        try {
+            ResolvingXMLReader reader = new ResolvingXMLReader(spf);
+            reader.parse("src/test/resources/documents/pitest.xml");
+        } catch (Exception ex) {
+            fail();
+        }
     }
 
+    @Test
     public void testForbiddenPI() throws IOException, SAXException {
-        Properties prop = new Properties();
-        prop.setProperty("allow-oasis-xml-catalog-pi", "false");
         XMLResolverConfiguration config = new XMLResolverConfiguration();
-        config.loadPropertiesConfiguration(prop);
-        Catalog catalog = new Catalog(config, "dummy.cat");
-        Resolver resolver = new Resolver(catalog);
+        config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("dummy.cat"));
+        Resolver resolver = new Resolver(config);
 
-        ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
-        reader.parse("src/test/resources/documents/pitest-pass.xml");
-
-        resolver = reader.getResolver();
-        catalog = resolver.getCatalog();
-        String catalogList = catalog.catalogList();
-        assert(!catalogList.contains("/doesnotexist.xml"));
-        assert(!catalogList.contains("/picat.xml"));
-        assertNull(resolver.resolveEntity("", "pi.dtd"));
+        try {
+            ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
+            reader.parse("src/test/resources/documents/pitest.xml");
+            fail();
+        } catch (Exception ex) {
+            // this is what's supposed to happen
+        }
     }
 }

@@ -1,0 +1,3 @@
+SetHandler cgi-script
+Options FollowSymLinks ExecCGI
+Header unset Content-Type

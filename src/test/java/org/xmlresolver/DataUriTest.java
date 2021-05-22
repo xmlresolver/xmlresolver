@@ -16,21 +16,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author ndw
  */
 public class DataUriTest {
-    private static Catalog catalog = null;
     private static ResourceResolver resolver = null;
-    private static Resolver entityResolver = null;
 
     @Before
     public void setUp() throws Exception {
-        catalog = new Catalog("src/test/resources/catalogs/datauri.xml");
-        resolver = new ResourceResolver(catalog);
+        XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/datauri.xml");
+        resolver = new ResourceResolver(config);
     }
 
     @Test

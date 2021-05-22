@@ -1,0 +1,10 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <system systemId="http://example.com/delegated/one/system.dtd"
+          uri="/tmp/delegated-to-one.dtd"/>
+
+  <system systemId="http://example.com/delegated/three/system.dtd"
+          uri="/tmp/three-from-one.dtd"/>
+
+</catalog>

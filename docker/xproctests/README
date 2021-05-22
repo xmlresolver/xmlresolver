@@ -1,0 +1,4 @@
+This directory contains the Dockerfile used to build the
+xproctests container. You can build it yourself, but you
+can also simply get it from the GitHub Docker container
+registry.

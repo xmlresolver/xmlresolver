@@ -27,9 +27,9 @@ import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xmlresolver.Catalog;
 import org.xmlresolver.Resolver;
-import org.xmlresolver.helpers.FileURI;
+import org.xmlresolver.XMLResolverConfiguration;
+import org.xmlresolver.utils.URIUtils;
 import org.xmlresolver.tools.ResolvingXMLReader;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,10 +39,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.Date;
-import java.util.Enumeration;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 /**
  * A simple command-line XML parsing application.
@@ -66,7 +65,7 @@ import java.util.Vector;
  * @version 2.0
  */
 public class Parse {
-    private static Logger logger = LoggerFactory.getLogger(Parse.class);
+    private static final Logger logger = LoggerFactory.getLogger(Parse.class);
 
     private static final String SCHEMA_VALIDATION_FEATURE_ID
             = "http://apache.org/xml/features/validation/schema";
@@ -104,8 +103,8 @@ public class Parse {
         int     maxErrs    = 10;
         boolean validating = true;
         boolean useSchema  = false;
-        Vector<String> xsdFiles = new Vector<String>();
-        Vector<String> catalogFiles = new Vector<String>();
+        ArrayList<String> xsdFiles = new ArrayList<>();
+        ArrayList<String> catalogFiles = new ArrayList<>();
 
         for (int i=0; i<args.length; i++) {
             if (args[i].equals("-c")) {
@@ -149,23 +148,18 @@ public class Parse {
             return false;
         }
 
-        Hashtable schemaList = lookupSchemas(xsdFiles);
+        Hashtable<String,String> schemaList = lookupSchemas(xsdFiles);
 
         StringBuilder catalogList = new StringBuilder();
-        for (int count = 0; count < catalogFiles.size(); count++) {
-            String file = catalogFiles.elementAt(count);
-            if (count > 0) { catalogList.append(";"); }
+        String sep = "";
+        for (String file : catalogFiles) {
+            catalogList.append(sep);
             catalogList.append(file);
+            sep = ";";
         }
 
-        Catalog catalog = null;
-        if (catalogFiles.isEmpty()) {
-            catalog = new Catalog();
-        } else {
-            catalog = new Catalog(catalogList.toString());
-        }
-
-        Resolver resolver = new Resolver(catalog);
+        XMLResolverConfiguration config = new XMLResolverConfiguration(catalogList.toString());
+        Resolver resolver = new Resolver(config);
 	    ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
 
         try {
@@ -176,13 +170,11 @@ public class Parse {
                 reader.setFeature(SCHEMA_VALIDATION_FEATURE_ID, useSchema);
                 reader.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, false);
 
-                if (schemaList != null) {
+                if (!schemaList.isEmpty()) {
                     String slh = "";
                     String nons_slh = "";
-                    Enumeration nskey = schemaList.keys();
-                    while (nskey.hasMoreElements()) {
-                        String ns = (String) nskey.nextElement();
-                        String xsd = (String) schemaList.get(ns);
+                    for (String ns : schemaList.keySet()) {
+                        String xsd = schemaList.get(ns);
                         if ("".equals(ns)) {
                             nons_slh = xsd;
                             logger.trace("Hint: ''=" + xsd);
@@ -262,8 +254,8 @@ public class Parse {
         return pass;
     }
 
-    private static Hashtable lookupSchemas(Vector xsdFiles) {
-        Hashtable<String,String> mapping = new Hashtable<String,String>();
+    private static Hashtable<String,String> lookupSchemas(ArrayList<String> xsdFiles) {
+        Hashtable<String,String> mapping = new Hashtable<>();
 
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -272,21 +264,18 @@ public class Parse {
             dbf.setValidating(false);
             DocumentBuilder db = dbf.newDocumentBuilder();
 
-            Enumeration xsdenum = xsdFiles.elements();
-            while (xsdenum.hasMoreElements()) {
-            String xsd = (String) xsdenum.nextElement();
+            for (String xsd : xsdFiles) {
+                // Hack. Spaces will cause Xerces to fall over.
+                xsd = xsd.replaceAll(" ","%20");
 
-            // Hack. Spaces will cause Xerces to fall over.
-            xsd = xsd.replaceAll(" ","%20");
-
-            Document doc = db.parse(xsd);
-            Element s = doc.getDocumentElement();
-            String targetNS = s.getAttribute("targetNamespace");
-            if (targetNS == null || "".equals(targetNS)) {
-                mapping.put("", xsd);
-            } else {
-                mapping.put(targetNS, xsd);
-            }
+                Document doc = db.parse(xsd);
+                Element s = doc.getDocumentElement();
+                String targetNS = s.getAttribute("targetNamespace");
+                if (targetNS == null || "".equals(targetNS)) {
+                    mapping.put("", xsd);
+                } else {
+                    mapping.put(targetNS, xsd);
+                }
             }
         } catch (ParserConfigurationException | SAXException | IOException pce) {
             pce.printStackTrace();
@@ -307,9 +296,9 @@ public class Parse {
      *
      * @version 1.0
      */
-    class XParseError implements ErrorHandler {
-        private boolean showErrors = true;
-        private boolean showWarnings = true;
+    private static class XParseError implements ErrorHandler {
+        private static final boolean showErrors = true;
+        private static final boolean showWarnings = true;
 
         /** How many messages should be presented? */
         private int maxMessages = 10;
@@ -329,9 +318,9 @@ public class Parse {
         /** Constructor */
         public XParseError() {
             try {
-                URI uri = FileURI.makeURI("basename");
+                URI uri = URIUtils.newURI(System.getProperty("user.dir") + "/basename");
                 baseURI = uri.toURL().toString();
-            } catch (MalformedURLException mue) {
+            } catch (URISyntaxException|MalformedURLException mue) {
                 // nop;
             }
         }

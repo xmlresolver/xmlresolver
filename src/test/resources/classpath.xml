@@ -1,0 +1,6 @@
+<!DOCTYPE doc [
+<!ENTITY example SYSTEM "http://example.com/example.xml">
+]>
+<doc>
+&example;
+</doc>

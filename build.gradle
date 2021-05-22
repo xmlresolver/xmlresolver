@@ -26,7 +26,8 @@ dependencies {
     [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
     [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'],
     [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
+    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ],
+    [group: 'org.jetbrains', name: 'annotations', version: '20.1.0' ]
   )
 
   testImplementation (
@@ -36,6 +37,12 @@ dependencies {
     files("src/test/resources/data1.jar"),
     files("src/test/resources/data2.jar")
   )
+}
+
+import Docker
+
+ext {
+  c_restest = "restest"
 }
 
 def EXCP="${projectDir}/build/classes/java/main"
@@ -75,6 +82,7 @@ task appJar(type: Jar) {
     attributes "Implementation-Version": resolverVersion
   }
 }
+assemble.dependsOn appJar
 
 task copyJars(type: Copy, dependsOn: ["jar", "appJar"]) {
   from "build/libs"
@@ -103,6 +111,20 @@ task dist(dependsOn: ["copyDocs", "copyJars"], type: Zip) {
   from("build/${basename}-${resolverVersion}")
   into 'xmlresolver-' + resolverVersion
   archiveFileName = "xmlresolver-${resolverVersion}.zip"
+}
+
+javadoc {
+  title 'XML Catalog Resolver API'
+  exclude 'org/xmlresolver/utils/**'
+  exclude 'org/xmlresolver/BuildConfig.java'
+  exclude 'org/xmlresolver/ResourceConnection.java'
+  exclude 'org/xmlresolver/cache/CacheEntryCatalog.java'
+  exclude 'org/xmlresolver/catalog/**'
+  options.showFromPublic()
+  options.overview = 'src/main/java/overview.html'
+  options.encoding('utf-8')
+  options.docEncoding('utf-8')
+  options.charSet('utf-8')
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -187,6 +209,54 @@ task deleteBuild() {
 }
 
 clean.dependsOn deleteBuild
+
+// ======================================================================
+
+tasks.register("dockerup") {
+  doLast {
+    Docker.assertRunning(c_restest)
+  }
+}
+
+tasks.register("dockerdown") {
+  doLast {
+    Docker.assertNotRunning(c_restest)
+  }
+}
+
+tasks.register("start") {
+  dependsOn "dockerdown"
+
+  doFirst {
+    Docker.assertDockerAvailable()
+    Docker.assertDockerComposeAvailable()
+  }
+
+  doLast {
+    exec {
+      workingDir "docker"
+      commandLine Docker.dockerCompose(), "up", "-d"
+    }
+    exec {
+      commandLine Docker.docker(), "ps", "-a", "--format={{.ID}} {{.Names}} {{.Status}}"
+    }
+  }
+}
+
+tasks.register("stop") {
+  doFirst {
+    Docker.assertDockerComposeAvailable()
+  }    
+
+  doLast {
+    exec {
+      workingDir "docker"
+      commandLine Docker.dockerCompose(), "down"
+    }
+  }
+}
+
+// ======================================================================
 
 task helloWorld() {
   // My task for testing
