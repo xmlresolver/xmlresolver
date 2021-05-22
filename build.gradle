@@ -148,12 +148,12 @@ publishing {
         name = 'XML Resolver'
         packaging = 'jar'
         description = 'An XML entity/uri resolver'
-        url = 'https://github.com/ndw/xmlresolver'
+        url = 'https://github.com/xmlresolver/xmlresolver'
 
         scm {
-          url = 'scm:git@github.com:ndw/xmlresolver.git'
-          connection = 'scm:git@github.com:ndw/xmlresolver.git'
-          developerConnection = 'scm:git@github.com:ndw/xmlresolver.git'
+          url = 'scm:git@github.com:xmlresolver/xmlresolver.git'
+          connection = 'scm:git@github.com:xmlresolver/xmlresolver.git'
+          developerConnection = 'scm:git@github.com:xmlresolver/xmlresolver.git'
         }
 
         licenses {
