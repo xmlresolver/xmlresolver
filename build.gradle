@@ -132,7 +132,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
-task sourcesJar(type: Jar) {
+task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
   classifier = 'sources'
   from sourceSets.main.allSource
 }
