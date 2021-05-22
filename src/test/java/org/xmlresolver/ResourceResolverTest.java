@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.xml.sax.InputSource;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class ResourceResolverTest {
@@ -16,6 +17,7 @@ public class ResourceResolverTest {
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
+        config.setFeature(ResolverFeature.CATALOG_CACHE, "/tmp/y/cache");
         resolver = new Resolver(config);
     }
 
@@ -24,7 +26,7 @@ public class ResourceResolverTest {
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, false);
         try {
             InputSource is = resolver.resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
-            assertEquals("https://xmlresolver.org/ns/sample-as-uri/sample.dtd", is.getSystemId());
+            assertNull(is);
         } catch (Exception ex) {
             fail();
         }
@@ -37,6 +39,7 @@ public class ResourceResolverTest {
             InputSource is = resolver.resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
             assertEquals("http://localhost:8222/docs/sample/sample.dtd", is.getSystemId());
         } catch (Exception ex) {
+            ex.printStackTrace();
             fail();
         }
     }

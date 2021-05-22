@@ -75,6 +75,7 @@ import java.util.StringTokenizer;
  *
  * @author ndw
  */
+
 public class XMLResolverConfiguration implements ResolverConfiguration {
     private static final ResolverLogger logger = new ResolverLogger(XMLResolverConfiguration.class);
     private static final ResolverFeature<?>[] knownFeatures = { ResolverFeature.CATALOG_FILES,

@@ -24,7 +24,7 @@
                 uri="sample20/sample-suffix.dtd"/>
 
   <delegatePublic publicIdStartString="-//Sample Delegated//"
-                  uri="lookup-delegated.xml"/>
+                  catalog="lookup-delegated.xml"/>
 
   <!-- ============================================================ -->
 

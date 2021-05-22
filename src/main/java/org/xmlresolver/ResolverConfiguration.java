@@ -3,8 +3,7 @@ package org.xmlresolver;
 import java.util.Iterator;
 
 /**
- * Interface for configuring the resolver. The actual configurations are defined
- * as constants in {@link XMLResolverConfiguration}.
+ * Interface for configuring the resolver.
  */
 
 public interface ResolverConfiguration {

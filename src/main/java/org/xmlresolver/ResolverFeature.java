@@ -112,7 +112,7 @@ public class ResolverFeature<T> {
      * be used.</p>
      */
     public static final ResolverFeature<String> CATALOG_CACHE = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/cache", null);
+            "http://xmlresolver.org/feature/cache", (String) null);
 
     /**
      * Determines if a default cache location of <code>.xmlresolver.org/cache</code>

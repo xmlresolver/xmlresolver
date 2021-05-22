@@ -13,6 +13,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -111,7 +112,15 @@ public class ResourceConnection {
                 etag = connection.getHeaderField("Etag");
                 lastModified = connection.getLastModified();
                 date = connection.getDate();
-                statusCode = 200;
+
+                try {
+                    // This is almost always going to be an http URL
+                    HttpURLConnection http = (HttpURLConnection) connection;
+                    statusCode = http.getResponseCode();
+                } catch (ClassCastException ex) {
+                    // Assume it's ok?
+                    statusCode = 200;
+                }
             }
         } catch (URISyntaxException | IOException | IllegalArgumentException use) {
             logger.log(ResolverLogger.WARNING, "Failed to %s: %s: %s", headOnly ? "HEAD" : "GET", resolved, use.getMessage());

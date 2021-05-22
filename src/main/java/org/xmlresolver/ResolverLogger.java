@@ -88,6 +88,7 @@ public class ResolverLogger {
 
         Integer deflevel = categories.getOrDefault("*", DEBUG);
         Integer level = categories.getOrDefault(cat, deflevel);
+
         switch (level) {
             case WARN:
                 logger.warn(sb.toString());

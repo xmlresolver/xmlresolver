@@ -525,7 +525,7 @@ public class ResourceCache extends CatalogManager {
             if (cacheURI(systemId.toString())) {
                 try {
                     ResourceConnection conn = new ResourceConnection(systemId.toString());
-                    if (conn.getStream() != null) {
+                    if (conn.getStatusCode() == 200 && conn.getStream() != null) {
                         entry = addSystem(conn, publicId);
                     }
                 } catch (NoClassDefFoundError ncdfe) {

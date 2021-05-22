@@ -45,7 +45,7 @@ public interface NamespaceResolver {
      * @param uri The namespace URI.
      * @param nature The RDDL nature of the resource.
      * @param purpose The RDDL purpose of the resource.
-     * @return A Source.
+     * @return A Source object, or null if the href cannot be resolved, and the processor should try to resolve the URI itself.
      * @throws TransformerException If an error occurs
      */
     public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException;

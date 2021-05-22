@@ -107,7 +107,7 @@ task copyDocs(type: Copy) {
   }
 }
 
-task dist(dependsOn: ["copyDocs", "copyJars"], type: Zip) {
+task dist(dependsOn: ["copyDocs", "copyJars", "test"], type: Zip) {
   from("build/${basename}-${resolverVersion}")
   into 'xmlresolver-' + resolverVersion
   archiveFileName = "xmlresolver-${resolverVersion}.zip"

@@ -18,19 +18,19 @@ import java.io.Reader;
 
 /** Implements the {@link org.xml.sax.EntityResolver}, {@link org.xml.sax.ext.EntityResolver2},
  * {@link LSResourceResolver}
- * and {@link NamespaceResolver}, and {@link javax.xml.transform.URIResolver} interfaces.
+ * and {@link org.xmlresolver.NamespaceResolver}, and {@link javax.xml.transform.URIResolver} interfaces.
  *
  * <p>The StAX {@link javax.xml.stream.XMLResolver} interface is implemented by the
- * {@link StAXResolver} class because the <code>resolveEntity</code> method
+ * {@link org.xmlresolver.StAXResolver} class because the <code>resolveEntity</code> method
  * of the <code>XMLResolver</code> interface isn't compatible with the <code>EntityResolver2</code>
  * method of the same name.</p>
  *
- * @see StAXResolver
+ * @see org.xmlresolver.StAXResolver
  */
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
-    private static ResolverLogger logger = new ResolverLogger(Resolver.class);
+    private static final ResolverLogger logger = new ResolverLogger(Resolver.class);
     ResourceResolver resolver = null;
-    
+
     /** Creates a new instance of Resolver.
      *
      * The default resolver is a new ResourceResolver that uses a static catalog shared by all threads.
@@ -77,7 +77,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return resolver.getConfiguration();
     }
 
-    public Resource resolveResource(String href, String base) {
+    public Resource resolveResource(String href, String base)    {
         return resolver.resolveURI(href, base);
     }
 
@@ -93,7 +93,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         }
     }
 
-    /** Implements the {@link NamespaceResolver} interface. */
+    /** Implements the {@link org.xmlresolver.NamespaceResolver} interface. */
     public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
         Resource rsrc = resolver.resolveNamespaceURI(uri, nature, purpose);
         if (rsrc == null) {
@@ -133,7 +133,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
         Resource rsrc = resolver.resolveEntity(name, publicId, systemId, baseURI);
         if (rsrc == null) {
-            return null;
+           return null;
         } else {
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(rsrc.uri().toASCIIString());
