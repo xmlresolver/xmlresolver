@@ -91,7 +91,7 @@ public class ResourceResolver {
      * <p>If the resource cannot be found locally, it is downloaded and added to the cache. The resulting
      * cached resource is returned.</p>
      *
-     * <p>Note that the original URI is provided as the base URI in the returned {@link Resource}. This
+     * <p>Note that the original URI is provided as the base URI in the returned {@link org.xmlresolver.Resource}. This
      * means that relative URIs in the locally cached resource will still resolve correctly.</p>
      *
      * @param href The URI of the resource
@@ -105,38 +105,39 @@ public class ResourceResolver {
         if (href == null || "".equals(href)) {
             href = base;
             base = null;
-            if (href == null) {
+            if (href == null || "".equals(href)) {
                 return null;
             }
         }
 
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
-        URI absolute = null;
         URI resolved = catalog.lookupURI(href);
 
-        if (resolved == null && base != null) {
+        if (resolved == null) {
+            URI absolute = null;
+
             try {
-                // N.B. If base is a jar:file:/path/to/file.jar!/resource/path URI, the
-                // URI.resolve() call wan't resolve the href against the /resource/path
-                // in the way you might expect. We could, but I'm not sure it's a good
-                // idea.
-                absolute = URIUtils.newURI(base).resolve(href);
-                resolved = catalog.lookupURI(absolute.toString());
+                if (base == null) {
+                    absolute = new URI(href);
+                } else {
+                    absolute = new URI(base).resolve(href);
+                }
+
+                if (!href.equals(absolute.toString())) {
+                    resolved = catalog.lookupURI(absolute.toString());
+                    if (resolved != null) {
+                        return streamResult(resolved, cache.cachedUri(resolved));
+                    }
+                }
             } catch (URISyntaxException ex) {
                 logger.log(ResolverLogger.ERROR, "Failed to resolve URI: %s (base URI: %s)", href, base);
+                return null;
             }
-        }
 
-        if (resolved == null) {
-            if (absolute == null) {
-                try {
-                    resolved = URIUtils.newURI(href);
-                } catch (URISyntaxException ex) {
-                    logger.log(ResolverLogger.ERROR, "URI syntax exception: " + href);
-                    return null;
-                }
+            if (cache.cacheURI(absolute.toString())) {
+                return streamResult(absolute, cache.cachedUri(absolute));
             } else {
-                resolved = absolute;
+                return null;
             }
         }
 
@@ -169,11 +170,15 @@ public class ResourceResolver {
         if (resolved == null) {
             try {
                 resolved = URIUtils.newURI(systemId);
+                if (cache.cacheURI(resolved.toString())) {
+                    return streamResult(resolved, cache.cachedUri(resolved));
+                } else {
+                    return null;
+                }
             } catch (URISyntaxException ex) {
                 logger.log(ResolverLogger.ERROR, "URI syntax exception: " + systemId);
                 return null;
             }
-
         }
 
         return streamResult(resolved, cache.cachedSystem(resolved, publicId));
@@ -212,8 +217,9 @@ public class ResourceResolver {
             return null;
         }
 
+        URI resolvedSystem = null;
+
         try {
-            URI resolvedSystem;
             if (baseURI != null) {
                 resolvedSystem = URIUtils.newURI(baseURI).resolve(systemId);
             } else {
@@ -237,6 +243,9 @@ public class ResourceResolver {
         }
 
         if (resolved == null) {
+            if (cache.cacheURI(resolvedSystem.toString())) {
+                return streamResult(resolvedSystem, cache.cachedSystem(resolvedSystem, publicId));
+            }
             return null;
         } else {
             return streamResult(resolved, cache.cachedSystem(resolved, publicId));
@@ -378,37 +387,6 @@ public class ResourceResolver {
                     resolved, ex.getMessage());
             return null;
         }
-
-        // Suppose this is an XHTML RDDL document?
-
-        /*
-        try {
-            Document doc;
-            synchronized (builder) {
-              doc = builder.parse(nsResult.uri());
-            }
-            NodeList rsrcs = doc.getElementsByTagNameNS(Catalog.NS_RDDL, "resource");
-            for (int pos = 0; rddlURI == null && pos < rsrcs.getLength(); pos++) {
-                Element rsrc = (Element) rsrcs.item(pos);
-                String rnature = DOMUtils.attr(rsrc, Catalog.NS_XLINK, "role");
-                String rpurpose = DOMUtils.attr(rsrc, Catalog.NS_XLINK, "arcrole");
-                String rhref = DOMUtils.attr(rsrc, Catalog.NS_XLINK, "href");
-                
-                if (rnature != null && rnature.equals(nature)
-                    && rpurpose != null && rpurpose.equals(purpose)
-                    && rhref != null) {
-                    rddlURI = DOMUtils.makeAbsolute(rsrc, rhref, uri);
-                }
-            }
-            
-        } catch (SAXException|IOException ex) {
-            logger.log(ResolverLogger.ERROR, "Failed to parse RDDL: %s: %s", nsResult.uri(), ex.getMessage());
-        }
-
-        if (rddlURI == null) {
-            return streamResult(new CatalogResult(uri, uri));
-        }
-        */
     }
 
     private URI checkRddl(CacheEntry cached, String nature, String purpose) {

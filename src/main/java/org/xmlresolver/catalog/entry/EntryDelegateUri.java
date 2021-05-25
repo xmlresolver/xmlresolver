@@ -8,7 +8,15 @@ public class EntryDelegateUri extends Entry {
 
     public EntryDelegateUri(URI baseURI, String id, String start, String catalog) {
         super(baseURI, id);
-        uriStart = start;
+
+        if (start.startsWith("classpath:/")) {
+            // classpath:/path/to/thing is the same as classpath:path/to/thing
+            // normalize without the leading slash.
+            uriStart = "classpath:" + start.substring(11);
+        } else {
+            uriStart = start;
+        }
+
         this.catalog = baseURI.resolve(catalog);
     }
 

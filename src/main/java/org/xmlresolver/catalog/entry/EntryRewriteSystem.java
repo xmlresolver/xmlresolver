@@ -8,7 +8,15 @@ public class EntryRewriteSystem extends Entry {
 
     public EntryRewriteSystem(URI baseURI, String id, String start, String rewrite) {
         super(baseURI, id);
-        systemIdStart = start;
+
+        if (start.startsWith("classpath:/")) {
+            // classpath:/path/to/thing is the same as classpath:path/to/thing
+            // normalize without the leading slash.
+            systemIdStart = "classpath:" + start.substring(11);
+        } else {
+            systemIdStart = start;
+        }
+
         rewritePrefix = baseURI.resolve(rewrite);
     }
 

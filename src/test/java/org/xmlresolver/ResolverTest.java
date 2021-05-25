@@ -19,6 +19,7 @@ import javax.xml.transform.Source;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -58,10 +59,9 @@ public class ResolverTest extends CacheManager {
         // These aren't found in the catalog
 
         Source source = resolver.resolve("http://localhost:8222/docs/sample/sample.xsl","file:/tmp/test.xsl");
-        assertEquals("http://localhost:8222/docs/sample/sample.xsl", source.getSystemId());
+        assertNull(source);
         source = resolver.resolve("../helloworld.xml","http://localhost:8222/docs/sample/sample.xsl");
-        assertEquals("http://localhost:8222/docs/helloworld.xml", source.getSystemId());
-
+        assertNull(source);
     }
 
     private static class DevNullHandler extends DefaultHandler {

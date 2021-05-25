@@ -20,7 +20,13 @@ public class QueryUri extends QueryCatalog {
 
     public QueryUri(String uri, String nature, String purpose, List<URI> catalogs) {
         super(catalogs);
-        this.uri = uri;
+
+        if (uri.startsWith("classpath:/")) {
+            this.uri = "classpath:" + uri.substring(11);
+        } else {
+            this.uri = uri;
+        }
+
         this.nature = nature;
         this.purpose = purpose;
     }

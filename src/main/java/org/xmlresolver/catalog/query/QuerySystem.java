@@ -20,7 +20,13 @@ public class QuerySystem extends QueryCatalog {
 
     public QuerySystem(String systemId, List<URI> catalogs, boolean local) {
         super(catalogs);
-        this.systemId = systemId;
+
+        if (systemId.startsWith("classpath:/")) {
+            this.systemId = "classpath:" + systemId.substring(11);
+        } else {
+            this.systemId = systemId;
+        }
+
         this.localOnly = local;
     }
 

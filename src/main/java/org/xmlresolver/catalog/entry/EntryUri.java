@@ -9,7 +9,15 @@ public class EntryUri extends EntryResource {
 
     public EntryUri(URI baseURI, String id, String name, String uri, String nature, String purpose) {
         super(baseURI, id, uri);
-        this.name = name;
+
+        if (name.startsWith("classpath:/")) {
+            // classpath:/path/to/thing is the same as classpath:path/to/thing
+            // normalize without the leading slash.
+            this.name = "classpath:" + name.substring(11);
+        } else {
+            this.name = name;
+        }
+
         this.nature = nature;
         this.purpose = purpose;
     }
