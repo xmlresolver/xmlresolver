@@ -29,6 +29,9 @@ import java.net.URISyntaxException;
  * <p>This class implements the <code>oasis-xml-catalog</code> processing instruction if the underlying
  * resolver allows it.</p>
  *
+ * <p>Each instance constructed with the zero-argument constructor uses a shared, static
+ * resolver. This avoids paying the instantiation cost each time a parse is created.</p>
+ *
  * @author ndw
  */
 public class ResolvingXMLFilter extends XMLFilterImpl {
@@ -39,6 +42,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
 
     /** Are we in the prolog? Is an oasis-xml-catalog PI valid now? */
     private boolean processXMLCatalogPI = false;
+    private static Resolver staticResolver = null;
     private Resolver resolver = null;
     
     /** The base URI of the input document, if known. */
@@ -47,7 +51,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     /** Construct a filter with the default resolver. */
     public ResolvingXMLFilter() {
         super();
-        resolver = new Resolver();
+        if (staticResolver == null) {
+            staticResolver = new Resolver();
+        }
+        resolver = staticResolver;
         allowXMLCatalogPI = resolver.getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
     }
 
