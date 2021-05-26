@@ -26,7 +26,7 @@ public class CacheTest extends CacheManager {
         File cache = clearCache(cacheDir);
 
         config = new XMLResolverConfiguration();
-        config.setFeature(ResolverFeature.CATALOG_CACHE, cache.getAbsolutePath());
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, cache.getAbsolutePath());
         this.cache = new ResourceCache(config);
     }
 
@@ -80,7 +80,7 @@ public class CacheTest extends CacheManager {
         cache.addCacheInfo("^frabble:", true, 123, 456, 789, 10);
 
         XMLResolverConfiguration secondConfig = new XMLResolverConfiguration();
-        secondConfig.setFeature(ResolverFeature.CATALOG_CACHE, URIUtils.cwd().resolve(cacheDir).getPath());
+        secondConfig.setFeature(ResolverFeature.CACHE_DIRECTORY, URIUtils.cwd().resolve(cacheDir).getPath());
         ResourceCache secondCache = new ResourceCache(secondConfig);
 
         assertEquals(5, secondCache.getCacheInfoList().size());

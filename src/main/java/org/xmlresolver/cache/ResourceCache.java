@@ -134,7 +134,7 @@ public class ResourceCache extends CatalogManager {
         // In case there is no control.xml file...
         defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace, maxAge);
 
-        String dir = config.getFeature(ResolverFeature.CATALOG_CACHE);
+        String dir = config.getFeature(ResolverFeature.CACHE_DIRECTORY);
         if (dir == null) {
             if (config.getFeature(ResolverFeature.CACHE_UNDER_HOME)) {
                 dir = System.getProperty("user.home");

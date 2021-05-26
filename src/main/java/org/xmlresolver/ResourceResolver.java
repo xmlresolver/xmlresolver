@@ -83,11 +83,8 @@ public class ResourceResolver {
      * @throws NullPointerException if the configuration is null.
      */
     public ResourceResolver(XMLResolverConfiguration conf) {
-        if (conf == null) {
-            throw new NullPointerException("XMLResolverConfiguration is null");
-        }
         config = conf;
-        cache = new ResourceCache(config);
+        cache = conf.getFeature(ResolverFeature.CACHE);
     }
 
     /** Returns the {@link XMLResolverConfiguration} used by this ResourceResolver.

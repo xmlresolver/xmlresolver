@@ -1,6 +1,7 @@
 package org.xmlresolver;
 
 import org.xml.sax.InputSource;
+import org.xmlresolver.cache.ResourceCache;
 import org.xmlresolver.utils.URIUtils;
 
 import java.io.IOException;
@@ -81,16 +82,18 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private static final ResolverFeature<?>[] knownFeatures = { ResolverFeature.CATALOG_FILES,
             ResolverFeature.PREFER_PUBLIC, ResolverFeature.PREFER_PROPERTY_FILE,
             ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.CATALOG_ADDITIONS,
-            ResolverFeature.CATALOG_CACHE, ResolverFeature.CACHE_UNDER_HOME,
+            ResolverFeature.CACHE_DIRECTORY, ResolverFeature.CACHE_UNDER_HOME,
+            ResolverFeature.CACHE,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM };
 
     private List<String> catalogs = new ArrayList<>();
     private Boolean preferPublic = ResolverFeature.PREFER_PUBLIC.getDefaultValue();
     private Boolean preferPropertyFile = ResolverFeature.PREFER_PROPERTY_FILE.getDefaultValue();
     private Boolean allowCatalogPI = ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue();
-    private String cache = ResolverFeature.CATALOG_CACHE.getDefaultValue();
+    private String cacheDirectory = ResolverFeature.CACHE_DIRECTORY.getDefaultValue();
     private Boolean cacheUnderHome = ResolverFeature.CACHE_UNDER_HOME.getDefaultValue();
-    private CatalogManager manager = ResolverFeature.CATALOG_MANAGER.getDefaultValue();
+    private ResourceCache cache = ResolverFeature.CACHE.getDefaultValue(); // null
+    private CatalogManager manager = ResolverFeature.CATALOG_MANAGER.getDefaultValue(); // also null
     private Boolean uriForSystem = ResolverFeature.URI_FOR_SYSTEM.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
@@ -114,8 +117,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         preferPublic = current.preferPublic;
         preferPropertyFile = current.preferPropertyFile;
         allowCatalogPI = current.allowCatalogPI;
-        cache = current.cache;
+        cacheDirectory = current.cacheDirectory;
         cacheUnderHome = current.cacheUnderHome;
+        cache = current.cache;
         if (current.manager == null) {
             manager = null;
         } else {
@@ -260,7 +264,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             if (showConfigChanges) {
                 logger.log(ResolverLogger.CONFIG, "Cache directory: %s", property);
             }
-            cache = property;
+            cacheDirectory = property;
         }
 
         property = System.getProperty("xml.catalog.cacheUnderHome");
@@ -280,7 +284,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         }
     }
 
-    public void loadPropertiesConfiguration(URL propertiesURL) {
+    /*
+    private void loadPropertiesConfiguration(URL propertiesURL) {
         try {
             logger.log(ResolverLogger.CONFIG, "Load properties file: %s", propertiesURL);
             Properties props = new Properties();
@@ -291,11 +296,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         }
     }
 
-    public void loadPropertiesConfiguration(Properties properties) {
+    private void loadPropertiesConfiguration(Properties properties) {
         loadPropertiesConfiguration(null, properties);
     }
+    */
 
-    public void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
+    private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
         boolean relative = true;
         String allow = properties.getProperty("relative-catalogs");
         if (allow != null) {
@@ -380,7 +386,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             if (showConfigChanges) {
                 logger.log(ResolverLogger.CONFIG, "Cache directory: %s", property);
             }
-            cache = property;
+            cacheDirectory = property;
         }
 
         property = properties.getProperty("cacheUnderHome");
@@ -410,7 +416,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
         logger.log(ResolverLogger.CONFIG, "URI for system: %s", uriForSystem);
         logger.log(ResolverLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
-        logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cache);
+        logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
         for (String catalog: catalogs) {
             logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
         }
@@ -444,10 +450,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             preferPropertyFile = (Boolean) value;
         } else if (feature == ResolverFeature.ALLOW_CATALOG_PI) {
             allowCatalogPI = (Boolean) value;
-        } else if (feature == ResolverFeature.CATALOG_CACHE) {
-            cache = (String) value;
+        } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
+            cacheDirectory = (String) value;
+            cache = null;
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             cacheUnderHome = (Boolean) value;
+            cache = null;
+        } else if (feature == ResolverFeature.CACHE) {
+            cache = (ResourceCache) value;
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
@@ -476,10 +486,15 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) preferPropertyFile;
         } else if (feature == ResolverFeature.ALLOW_CATALOG_PI) {
             return (T) allowCatalogPI;
-        } else if (feature == ResolverFeature.CATALOG_CACHE) {
-            return (T) cache;
+        } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
+            return (T) cacheDirectory;
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
             return (T) uriForSystem;
+        } else if (feature == ResolverFeature.CACHE) {
+            if (cache == null) {
+                cache = new ResourceCache(this);
+            }
+            return (T) cache;
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             return (T) cacheUnderHome;
         } else {

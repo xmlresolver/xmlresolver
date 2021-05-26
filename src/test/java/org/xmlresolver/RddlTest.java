@@ -22,7 +22,7 @@ public class RddlTest extends CacheManager {
         File cache = clearCache("build/rddl-cache");
 
         config = new XMLResolverConfiguration(catalog);
-        config.setFeature(ResolverFeature.CATALOG_CACHE, cache.getAbsolutePath());
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, cache.getAbsolutePath());
         resolver = new ResourceResolver(config);
 
         // Make sure the Docker container is running where we expect.

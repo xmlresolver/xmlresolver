@@ -17,7 +17,7 @@ public class ResourceResolverTest {
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
-        config.setFeature(ResolverFeature.CATALOG_CACHE, "/tmp/y/cache");
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, "/tmp/y/cache");
         resolver = new Resolver(config);
     }
 

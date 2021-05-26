@@ -47,7 +47,7 @@ public class CacheDetails {
 
     public void run(String dir) {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
-        config.setFeature(ResolverFeature.CATALOG_CACHE, dir);
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, dir);
         ResourceCache cache = new ResourceCache(config);
         if (cache.directory() == null) {
             System.err.println(usage);

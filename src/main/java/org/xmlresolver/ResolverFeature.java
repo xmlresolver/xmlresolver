@@ -1,5 +1,7 @@
 package org.xmlresolver;
 
+import org.xmlresolver.cache.ResourceCache;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -111,8 +113,8 @@ public class ResolverFeature<T> {
      * is <code>null</code>, and <code>CACHE_UNDER_HOME</code> is <code>false</code>, no cache will
      * be used.</p>
      */
-    public static final ResolverFeature<String> CATALOG_CACHE = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/cache", (String) null);
+    public static final ResolverFeature<String> CACHE_DIRECTORY = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/cache-directory", (String) null);
 
     /**
      * Determines if a default cache location of <code>.xmlresolver.org/cache</code>
@@ -123,6 +125,12 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> CACHE_UNDER_HOME = new ResolverFeature<>(
             "http://xmlresolver.org/feature/cache-under-home", true);
+
+    /**
+     * Provides access to the {@link ResourceCache} that the resolver is using.
+     */
+    public static final ResolverFeature<ResourceCache> CACHE = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/cache", (ResourceCache) null);
 
     /**
      * Provides access to the {@link CatalogManager} that
