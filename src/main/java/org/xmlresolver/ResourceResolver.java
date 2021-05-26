@@ -30,6 +30,39 @@ import java.util.Stack;
 
 /** Resolves resources in the catalog.
  *
+ * <p>This class integrates the CatalogManager and the ResourceCache.</p>
+ *
+ * <p>The resolve* methods use the CatalogManager to resolve the resource. If an entry is found
+ * in the catalog, the mapped resource is returned.</p>
+ *
+ * <p>If an entry isn't found, and caching is not enabled (or does not apply to the resource requested),
+ * null is returned.</p>
+ *
+ * <p>If caching is enabled, then the resource is retrieved and added to the cache (if necessary).
+ * That cached resource is returned.</p>
+ *
+ * <p>There's a subtle difference between how mapped and cached resources are returned.
+ * If the resource is mapped in a catalog, the base URI of the resource returned is the
+ * mapped URI. That's consistent with what the resolver APIs expect.</p>
+ *
+ * <p>If a cached resource is returned, the base URI is unchanged, even though InputStream
+ * for the resource is a local file. That's necessary because subsequent attempts to resolve
+ * relative URIs against that resource must resolve against the original URI. These will, in turn,
+ * go through the resolver and will be cached.</p>
+ *
+ * <p>Without caching, a request for http://example.com/ that isn't mapped in the catalog will
+ * return null. The process using the resolver will then, most likely, retrieve http://example.com/ and
+ * proceed.</p>
+ *
+ * <p>With caching, a request for http://example.com/ that isn't mapped in the catalog will cause
+ * the resolver to download the resource and add it to the cache. Then that resource will be returned
+ * with the base URI of http://example.com/. The process using the resolver wil then, most likely,
+ * continue processing with that resource.</p>
+ *
+ * <p>In the latter case, the result is almost guaranteed to be the same as the former case, but
+ * the process using the resolver will not notice that the resolution "missed". It's possible,
+ * however unlikely, for this to result in different behavior.</p>
+ *
  */
 public class ResourceResolver {
     private static final ResolverLogger logger = new ResolverLogger(ResourceResolver.class);
@@ -37,9 +70,7 @@ public class ResourceResolver {
     private ResourceCache cache = null;
 
     /**
-     * Creates a new instance of ResourceResolver.
-     *
-     * <p>By default, a static catalog initialized using the default properties is used by all ResourceResolvers.</p>
+     * Creates a new instance of ResourceResolver using a default configuration.
      */
     public ResourceResolver() {
         this(new XMLResolverConfiguration());
@@ -49,6 +80,7 @@ public class ResourceResolver {
      * Creates a new instance of ResourceResolver with the specified resolver configuration.
      *
      * @param conf The {@link XMLResolverConfiguration} to use.
+     * @throws NullPointerException if the configuration is null.
      */
     public ResourceResolver(XMLResolverConfiguration conf) {
         if (conf == null) {
@@ -60,7 +92,7 @@ public class ResourceResolver {
 
     /** Returns the {@link XMLResolverConfiguration} used by this ResourceResolver.
      *
-     * @return The catalog
+     * @return The configuration.
      */
     public XMLResolverConfiguration getConfiguration() {
         return config;
@@ -83,21 +115,15 @@ public class ResourceResolver {
 
     /** Resolve a URI.
      *
-     * <p>The catalog is interrogated for the specified <code>href</code>. If it is found, it is returned.
+     * <p>The catalog is interrogated for the specified <code>href</code>. If it is found, its mapping is returned.
      * Otherwise, the <code>href</code> is made absolute with respect to the specified
      * <code>base</code> and the catalog is interrogated for the resulting absolute URI. If it is found,
-     * it is returned.</p>
-     *
-     * <p>If the resource cannot be found locally, it is downloaded and added to the cache. The resulting
-     * cached resource is returned.</p>
-     *
-     * <p>Note that the original URI is provided as the base URI in the returned {@link org.xmlresolver.Resource}. This
-     * means that relative URIs in the locally cached resource will still resolve correctly.</p>
+     * its mapping is returned.</p>
      *
      * @param href The URI of the resource
      * @param base The base URI against which <code>href</code> should be made absolute, if necessary.
      *
-     * @return The resource that represents the URI.
+     * @return The resource that represents the URI or null.
      */
     public Resource resolveURI(String href, String base) {
         logger.log(ResolverLogger.REQUEST, "resolveURI: %s (base URI: %s)", href, base);
@@ -106,6 +132,7 @@ public class ResourceResolver {
             href = base;
             base = null;
             if (href == null || "".equals(href)) {
+                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
         }
@@ -126,21 +153,26 @@ public class ResourceResolver {
                 if (!href.equals(absolute.toString())) {
                     resolved = catalog.lookupURI(absolute.toString());
                     if (resolved != null) {
+                        logger.log(ResolverLogger.RESPONSE, "resolveURI: %s", resolved);
                         return streamResult(resolved, cache.cachedUri(resolved));
                     }
                 }
             } catch (URISyntaxException ex) {
-                logger.log(ResolverLogger.ERROR, "Failed to resolve URI: %s (base URI: %s)", href, base);
+                logger.log(ResolverLogger.ERROR, "URI syntax exception: %s (base URI: %s)", href, base);
+                logger.log(ResolverLogger.RESPONSE, "resolveURI: null", href, base);
                 return null;
             }
 
             if (cache.cacheURI(absolute.toString())) {
+                logger.log(ResolverLogger.RESPONSE, "resolveURI: cached %s", absolute);
                 return streamResult(absolute, cache.cachedUri(absolute));
             } else {
+                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
         }
 
+        logger.log(ResolverLogger.RESPONSE, "resolveURI: %s", resolved);
         return streamResult(resolved, cache.cachedUri(resolved));
     }
 
@@ -149,16 +181,10 @@ public class ResourceResolver {
      * <p>The catalog is interrogated for the specified external identifier (using the system and public
      * identifiers provided). If it is found, it is returned.</p>
      *
-     * <p>If the external identifier cannot be found locally, it is downloaded and added to the cache. The resulting
-     * cached resource is returned.</p>
-     *
-     * <p>Note that the original system identifier is provided as the base URI in the returned {@link Resource}. This
-     * means that relative URIs in the locally cached resource will still resolve correctly.</p>
-     *
      * @param systemId The system identifier of the entity.
      * @param publicId The public identifier of the entity.
      *
-     * @return The resource that represents the external identifier.
+     * @return The resource that represents the external identifier or null.
      */
     public Resource resolvePublic(String systemId, String publicId) {
         logger.log(ResolverLogger.REQUEST, "resolvePublic: %s (%s)", systemId, publicId);
@@ -171,50 +197,82 @@ public class ResourceResolver {
             try {
                 resolved = URIUtils.newURI(systemId);
                 if (cache.cacheURI(resolved.toString())) {
+                    logger.log(ResolverLogger.RESPONSE, "resolvePublic: cached %s", resolved);
                     return streamResult(resolved, cache.cachedUri(resolved));
                 } else {
+                    logger.log(ResolverLogger.RESPONSE, "resolvePublic: null");
                     return null;
                 }
             } catch (URISyntaxException ex) {
                 logger.log(ResolverLogger.ERROR, "URI syntax exception: " + systemId);
+                logger.log(ResolverLogger.RESPONSE, "resolvePublic: null");
                 return null;
             }
         }
 
+        logger.log(ResolverLogger.RESPONSE, "resolvePublic: %s", resolved);
         return streamResult(resolved, cache.cachedSystem(resolved, publicId));
     }
 
-    /** Resolve an entity using it's system and public identifiers or its name.
+    /** Resolve an entity using its system and public identifiers or its name.
      *
      * <p>The catalog is interrogated for the specified entity (using the system and public
-     * identifiers provided and its name). If it is found, it is returned.
-     *
-     * <p>If the external identifier cannot be found locally, it is downloaded and added to the cache. The resulting
-     * cached resource is returned.</p>
-     *
-     * <p>Note that the original system identifier is provided as the base URI in the returned {@link Resource}. This
-     * means that relative URIs in the locally cached resource will still resolve correctly.</p>
+     * identifiers provided and its name). If it is found, it is returned.</p>
      *
      * @param name The name of the entity.
      * @param systemId The system identifier of the entity.
      * @param publicId The public identifier of the entity.
      *
-     * @return The resource that represents the entity.
+     * @return The resource that represents the entity or null.
      */
     public Resource resolveEntity(String name, String systemId, String publicId) {
         return resolveEntity(name, publicId, systemId, null);
     }
 
+    /** Resolve an entity using its system and public identifiers or its name.
+     *
+     * <p>The catalog is interrogated for the specified entity (using the system and public
+     * identifiers provided and its name). If it is found, it is returned.</p>
+     *
+     * <p>If it's not found and the system identifier is null, null is returned.</p>
+     *
+     * <p>If it's not found and the baseURI is not null, the system identifier is resolved
+     * against the base URI and a second attempt is made to find the resource in the catalog
+     * using the resolved system identifier.</p>
+     *
+     * @param name The name of the entity.
+     * @param systemId The system identifier of the entity.
+     * @param publicId The public identifier of the entity.
+     * @param baseURI The base URI of the entity.
+     *
+     * @return The resource that represents the entity or null.
+     */
     public Resource resolveEntity(String name, String publicId, String systemId, String baseURI) {
-        logger.log(ResolverLogger.REQUEST, "resolveEntity: %s %s (baseURI: %s, publicId: %s)",
-                name, systemId, baseURI, publicId);
+        if (name != null) {
+            logger.log(ResolverLogger.REQUEST, "resolveEntity: %s %s (baseURI: %s, publicId: %s)",
+                    name, systemId, baseURI, publicId);
+        } else {
+            logger.log(ResolverLogger.REQUEST, "resolveEntity: %s (baseURI: %s, publicId: %s)",
+                    systemId, baseURI, publicId);
+        }
+
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI resolved = catalog.lookupEntity(name, systemId, publicId);
-        if (resolved != null) {
-            return streamResult(resolved, cache.cachedSystem(resolved, publicId));
+
+        if (resolved == null) {
+            if (systemId == null) {
+                logger.log(ResolverLogger.RESPONSE, "resolveEntity: null");
+                return null;
+            } else {
+                if (config.getFeature(ResolverFeature.URI_FOR_SYSTEM)) {
+                    resolved = catalog.lookupURI(systemId);
+                }
+            }
         }
-        if (systemId == null) {
-            return null;
+
+        if (resolved != null) {
+            logger.log(ResolverLogger.RESPONSE, "resolveEntity: %s", resolved);
+            return streamResult(resolved, cache.cachedSystem(resolved, publicId));
         }
 
         URI resolvedSystem = null;
@@ -237,17 +295,21 @@ public class ResourceResolver {
             if (baseURI == null) {
                 logger.log(ResolverLogger.ERROR, "URI syntax exception: %s", systemId);
             } else {
-                logger.log(ResolverLogger.ERROR, "URI syntax exception: %s", baseURI);
+                logger.log(ResolverLogger.ERROR, "URI syntax exception: %s (base URI: %s)", systemId, baseURI);
             }
+            logger.log(ResolverLogger.RESPONSE, "resolveEntity: null");
             return null;
         }
 
         if (resolved == null) {
             if (cache.cacheURI(resolvedSystem.toString())) {
+                logger.log(ResolverLogger.RESPONSE, "resolveEntity: cached %s", resolvedSystem);
                 return streamResult(resolvedSystem, cache.cachedSystem(resolvedSystem, publicId));
             }
+            logger.log(ResolverLogger.RESPONSE, "resolveEntity: null");
             return null;
         } else {
+            logger.log(ResolverLogger.RESPONSE, "resolveEntity: %s");
             return streamResult(resolved, cache.cachedSystem(resolved, publicId));
         }
     }
@@ -326,21 +388,16 @@ public class ResourceResolver {
      *
      * <p>The catalog is interrogated for the specified namespace. If it is found, it is returned.</p>
      *
-     * <p>If the resource cannot be found locally, it is downloaded and added to the cache.</p>
-     * 
      * <p>The resolver attempts to parse the resource as an XML document. If it finds RDDL 1.0 markup,
      * it will attempt to locate the resource with the specified nature and purpose. That resource will
      * be downloaded and returned. If it cannot parse the document or cannot find the markup that
      * it is looking for, it will return the resource that represents the namespace URI.</p>
      *
-     * <p>Note that the original URI is provided as the base URI in the returned {@link Resource}. This
-     * means that relative URIs in the locally cached resource will still resolve correctly.</p>
-     *
      * @param uri The URI of the resource.
      * @param nature The RDDL nature of the resource.
      * @param purpose The RDDL purpose of the resource.
      *
-     * @return The resource that represents the URI.
+     * @return The resource that represents the URI or null.
      */
     public Resource resolveNamespaceURI(String uri, String nature, String purpose) {
         logger.log(ResolverLogger.REQUEST, "resolveNamespace: %s (nature: %s, purpose: %s)",
@@ -352,6 +409,7 @@ public class ResourceResolver {
                 resolved = URIUtils.newURI(uri);
             } catch (URISyntaxException ex) {
                 logger.log(ResolverLogger.ERROR, "URI syntax exception: " + uri);
+                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
                 return null;
             }
         }
@@ -368,25 +426,19 @@ public class ResourceResolver {
                 }
             }
             try {
+                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", resolved);
                 FileInputStream fs = new FileInputStream(cached.file);
                 return new Resource(fs, resolved, cached.contentType());
             } catch (IOException ex) {
                 logger.log(ResolverLogger.ERROR, "Namespace URI resolution failed: %s: %s",
                         resolved, ex.getMessage());
+                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
                 return null;
             }
         }
 
-        // What if this is an XHTML RDDL document?
-
-        try {
-            URLConnection conn = resolved.toURL().openConnection();
-            return new Resource(conn.getInputStream(), resolved, conn.getContentType());
-        } catch (IOException ex) {
-            logger.log(ResolverLogger.ERROR, "Namespace URI resolution failed: %s: %s",
-                    resolved, ex.getMessage());
-            return null;
-        }
+        logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
+        return null;
     }
 
     private URI checkRddl(CacheEntry cached, String nature, String purpose) {
@@ -424,16 +476,11 @@ public class ResourceResolver {
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI resolved = catalog.lookupDoctype(name, null, null);
         if (resolved == null) {
+            logger.log(ResolverLogger.RESPONSE, "resolveDoctype: null");
             return null;
         } else {
-            try {
-                URLConnection conn = resolved.toURL().openConnection();
-                return new Resource(conn.getInputStream(), resolved, conn.getContentType());
-            } catch (IOException ex) {
-                logger.log(ResolverLogger.ERROR, "Doctype resolution failed: %s: %s",
-                        resolved, ex.getMessage());
-                return null;
-            }
+            logger.log(ResolverLogger.RESPONSE, "resolveDoctype: %s", resolved);
+            return streamResult(resolved, cache.cachedSystem(resolved, null));
         }
     }
 
