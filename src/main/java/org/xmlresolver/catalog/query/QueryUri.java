@@ -58,7 +58,7 @@ public class QueryUri extends QueryCatalog {
             }
         }
         if (rewrite != null) {
-            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, uri.substring(rewrite.uriStart.length()+1));
+            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, uri.substring(rewrite.uriStart.length()));
             return new QueryResult(resolved);
         }
 
