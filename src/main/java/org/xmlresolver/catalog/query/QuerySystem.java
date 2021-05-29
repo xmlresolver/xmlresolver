@@ -8,6 +8,7 @@ import org.xmlresolver.catalog.entry.EntryDelegateSystem;
 import org.xmlresolver.catalog.entry.EntryRewriteSystem;
 import org.xmlresolver.catalog.entry.EntrySystem;
 import org.xmlresolver.catalog.entry.EntrySystemSuffix;
+import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -69,7 +70,8 @@ public class QuerySystem extends QueryCatalog {
             }
         }
         if (rewrite != null) {
-            return new QueryResult(rewrite.rewritePrefix.resolve(systemId.substring(rewrite.systemIdStart.length())));
+            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, systemId.substring(rewrite.systemIdStart.length()));
+            return new QueryResult(resolved);
         }
 
         // <systemSuffix>

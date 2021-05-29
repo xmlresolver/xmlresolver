@@ -8,6 +8,7 @@ import org.xmlresolver.catalog.entry.EntryDelegateUri;
 import org.xmlresolver.catalog.entry.EntryRewriteUri;
 import org.xmlresolver.catalog.entry.EntryUri;
 import org.xmlresolver.catalog.entry.EntryUriSuffix;
+import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -57,7 +58,8 @@ public class QueryUri extends QueryCatalog {
             }
         }
         if (rewrite != null) {
-            return new QueryResult(rewrite.rewritePrefix.resolve(uri.substring(rewrite.uriStart.length())));
+            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, uri.substring(rewrite.uriStart.length()));
+            return new QueryResult(resolved);
         }
 
         // <uriSuffix>
