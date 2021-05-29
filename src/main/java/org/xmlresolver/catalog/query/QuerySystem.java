@@ -40,25 +40,31 @@ public class QuerySystem extends QueryCatalog {
 
     @Override
     public @NotNull QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
+        String compareSystem = manager.normalizedForComparison(systemId);
+
         String osname = System.getProperty("os.name").toLowerCase();
         boolean ignoreFScase = osname.contains("windows") || osname.contains("mac");
-        String lowerCaseSystemId = systemId.toLowerCase();
+        String lowerCaseSystemId = compareSystem.toLowerCase();
 
         // <system>
         for (Entry raw : catalog.entries(Entry.Type.SYSTEM)) {
             EntrySystem entry = (EntrySystem) raw;
-            if (entry.systemId.equals(systemId) || (ignoreFScase && entry.systemId.equalsIgnoreCase(systemId))) {
+            String entrySystem = manager.normalizedForComparison(entry.systemId);
+            if (entrySystem.equals(compareSystem) || (ignoreFScase && entrySystem.equalsIgnoreCase(compareSystem))) {
                 return new QueryResult(entry.uri);
             }
         }
 
         // <rewriteSystem>
         EntryRewriteSystem rewrite = null;
+        String rewriteStart = null;
         for (Entry raw : catalog.entries(Entry.Type.REWRITE_SYSTEM)) {
             EntryRewriteSystem entry = (EntryRewriteSystem) raw;
-            if (systemId.startsWith(entry.systemIdStart) || (ignoreFScase && lowerCaseSystemId.startsWith(entry.systemIdStart.toLowerCase()))) {
-                if (rewrite == null || entry.systemIdStart.length() > rewrite.systemIdStart.length()) {
+            String compareStart = manager.normalizedForComparison(entry.systemIdStart);
+            if (compareSystem.startsWith(compareStart) || (ignoreFScase && lowerCaseSystemId.startsWith(compareStart.toLowerCase()))) {
+                if (rewrite == null || compareStart.length() > rewriteStart.length()) {
                     rewrite = entry;
+                    rewriteStart = compareStart;
                 }
             }
         }
@@ -68,11 +74,14 @@ public class QuerySystem extends QueryCatalog {
 
         // <systemSuffix>
         EntrySystemSuffix suffix = null;
+        String systemSuffix = null;
         for (Entry raw : catalog.entries(Entry.Type.SYSTEM_SUFFIX)) {
             EntrySystemSuffix entry = (EntrySystemSuffix) raw;
-            if (systemId.endsWith(entry.systemIdSuffix) || (ignoreFScase && lowerCaseSystemId.endsWith(entry.systemIdSuffix.toLowerCase()))) {
-                if (suffix == null || entry.systemIdSuffix.length() > suffix.systemIdSuffix.length()) {
+            String compareSuffix = manager.normalizedForComparison(entry.systemIdSuffix);
+            if (compareSystem.endsWith(compareSuffix) || (ignoreFScase && lowerCaseSystemId.endsWith(compareSuffix.toLowerCase()))) {
+                if (suffix == null || compareSuffix.length() > systemSuffix.length()) {
                     suffix = entry;
+                    systemSuffix = compareSuffix;
                 }
             }
         }
@@ -84,9 +93,11 @@ public class QuerySystem extends QueryCatalog {
         ArrayList<EntryDelegateSystem> delegated = new ArrayList<>();
         for (Entry raw : catalog.entries(Entry.Type.DELEGATE_SYSTEM)) {
             EntryDelegateSystem entry = (EntryDelegateSystem) raw;
-            if (systemId.startsWith(entry.systemIdStart) || (ignoreFScase && lowerCaseSystemId.startsWith(entry.systemIdStart.toLowerCase()))) {
+            String delegateStart = manager.normalizedForComparison(entry.systemIdStart);
+            if (compareSystem.startsWith(delegateStart) || (ignoreFScase && lowerCaseSystemId.startsWith(delegateStart.toLowerCase()))) {
                 int pos = 0;
-                while (pos < delegated.size() && entry.systemIdStart.length() <= delegated.get(pos).systemIdStart.length()) {
+                while (pos < delegated.size()
+                        && delegateStart.length() <= manager.normalizedForComparison(delegated.get(pos).systemIdStart).length()) {
                     pos += 1;
                 }
                 delegated.add(pos, entry);

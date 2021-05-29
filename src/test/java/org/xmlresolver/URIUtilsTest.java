@@ -7,6 +7,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class URIUtilsTest {
     @Test
@@ -93,5 +95,88 @@ public class URIUtilsTest {
         assertEquals("testing#foo", uri.toASCIIString());
     }
 
+    @Test
+    public void test14() {
+        URI baseURI = URI.create("jar:file:/path/to/file!/path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "alternate");
+        assertEquals("jar:file:/path/to/file!/path/to/alternate", uri.toASCIIString());
+    }
 
+    @Test
+    public void test15() {
+        URI baseURI = URI.create("jar:file:/path/to/file!/path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "../alternate");
+        assertEquals("jar:file:/path/to/file!/path/alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test16() {
+        URI baseURI = URI.create("jar:file:/path/to/file!/path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "../../alternate");
+        assertEquals("jar:file:/path/to/file!/alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test17() {
+        URI baseURI = URI.create("jar:file:/path/to/file!/path/to/resource");
+        try {
+            URIUtils.resolve(baseURI, "../../../alternate");
+            fail();
+        } catch (IllegalArgumentException ex) {
+            assertTrue(ex.getMessage().contains("above root"));
+        }
+    }
+
+    @Test
+    public void test18() {
+        URI baseURI = URI.create("jar:file:/path/to/file!/path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "/alternate");
+        assertEquals("jar:file:/path/to/file!/alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test19() {
+        URI baseURI = URI.create("classpath:path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "alternate");
+        assertEquals("classpath:path/to/alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test20() {
+        URI baseURI = URI.create("classpath:path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "../alternate");
+        assertEquals("classpath:path/alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test21() {
+        URI baseURI = URI.create("classpath:path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "../../alternate");
+        assertEquals("classpath:alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test22() {
+        URI baseURI = URI.create("classpath:path/to/resource");
+        try {
+            URIUtils.resolve(baseURI, "../../../alternate");
+            fail();
+        } catch (IllegalArgumentException ex) {
+            assertTrue(ex.getMessage().contains("above root"));
+        }
+    }
+
+    @Test
+    public void test23() {
+        URI baseURI = URI.create("classpath:path/to/resource");
+        URI uri = URIUtils.resolve(baseURI, "/alternate");
+        assertEquals("classpath:alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test24() {
+        URI baseURI = URI.create("classpath:/path/to/resource"); // bogus leading '/'
+        URI uri = URIUtils.resolve(baseURI, "alternate");
+        assertEquals("classpath:path/to/alternate", uri.toASCIIString());
+    }
 }

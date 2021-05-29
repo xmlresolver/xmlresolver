@@ -26,7 +26,7 @@ import static junit.framework.TestCase.fail;
 public class ResolvingXMLReaderTest {
 
     @Test
-    public void testReader() throws IOException, SAXException {
+    public void testReader(){
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setNamespaceAware(true);
         spf.setValidating(true);
@@ -40,7 +40,7 @@ public class ResolvingXMLReaderTest {
     }
 
     @Test
-    public void testForbiddenPI() throws IOException, SAXException {
+    public void testForbiddenPI() {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("dummy.cat"));
@@ -52,6 +52,21 @@ public class ResolvingXMLReaderTest {
             fail();
         } catch (Exception ex) {
             // this is what's supposed to happen
+        }
+    }
+
+    @Test
+    public void testResolveInput() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:org/xmlresolver/data/catalog.xml"));
+        Resolver resolver = new Resolver(config);
+
+        try {
+            ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
+            reader.parse("https://www.w3.org/2001/xml.xsd");
+        } catch (Exception ex) {
+            fail();
         }
     }
 }

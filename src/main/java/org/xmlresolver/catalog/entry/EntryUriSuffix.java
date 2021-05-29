@@ -1,5 +1,7 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.utils.URIUtils;
+
 import java.net.URI;
 
 public class EntryUriSuffix extends Entry {
@@ -9,7 +11,7 @@ public class EntryUriSuffix extends Entry {
     public EntryUriSuffix(URI baseURI, String id, String suffix, String uri) {
         super(baseURI, id);
         this.uriSuffix = suffix;
-        this.uri = baseURI.resolve(uri);
+        this.uri = URIUtils.resolve(baseURI, uri);
     }
 
     @Override

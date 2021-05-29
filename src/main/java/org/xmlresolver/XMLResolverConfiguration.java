@@ -83,7 +83,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.PREFER_PUBLIC, ResolverFeature.PREFER_PROPERTY_FILE,
             ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.CATALOG_ADDITIONS,
             ResolverFeature.CACHE_DIRECTORY, ResolverFeature.CACHE_UNDER_HOME,
-            ResolverFeature.CACHE,
+            ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM };
 
     private List<String> catalogs = new ArrayList<>();
@@ -95,6 +95,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private ResourceCache cache = ResolverFeature.CACHE.getDefaultValue(); // null
     private CatalogManager manager = ResolverFeature.CATALOG_MANAGER.getDefaultValue(); // also null
     private Boolean uriForSystem = ResolverFeature.URI_FOR_SYSTEM.getDefaultValue();
+    private Boolean mergeHttps = ResolverFeature.MERGE_HTTPS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
     public XMLResolverConfiguration() {
@@ -126,6 +127,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             manager = new CatalogManager(current.manager, this);
         }
         uriForSystem = current.uriForSystem;
+        mergeHttps = current.mergeHttps;
         showConfigChanges = current.showConfigChanges;
     }
 
@@ -282,6 +284,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             uriForSystem = isTrue(property);
         }
+
+        property = System.getProperty("xml.catalog.mergeHttps");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Merge-https: %s", property);
+            }
+            mergeHttps = isTrue(property);
+        }
     }
 
     /*
@@ -407,6 +417,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             uriForSystem = isTrue(property);
         }
+
+        property = properties.getProperty("merge-https");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Merge-https: %s", property);
+            }
+            mergeHttps = isTrue(property);
+        }
     }
 
     private void showConfig() {
@@ -415,6 +433,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Prefer property file: %s", preferPropertyFile);
         logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
         logger.log(ResolverLogger.CONFIG, "URI for system: %s", uriForSystem);
+        logger.log(ResolverLogger.CONFIG, "Merge http/https: %s", mergeHttps);
         logger.log(ResolverLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
         logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
         for (String catalog: catalogs) {
@@ -462,6 +481,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             manager = (CatalogManager) value;
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
             uriForSystem = (Boolean) value;
+        } else if (feature == ResolverFeature.MERGE_HTTPS) {
+            mergeHttps = (Boolean) value;
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -490,6 +511,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) cacheDirectory;
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
             return (T) uriForSystem;
+        } else if (feature == ResolverFeature.MERGE_HTTPS) {
+            return (T) mergeHttps;
         } else if (feature == ResolverFeature.CACHE) {
             if (cache == null) {
                 cache = new ResourceCache(this);

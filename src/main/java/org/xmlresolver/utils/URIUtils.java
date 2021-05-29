@@ -102,6 +102,71 @@ public abstract class URIUtils {
     }
 
     /**
+     * Resolve a URI against a base URI.
+     *
+     * <p>What's special here is that we take special care to attempt to resolve <code>jar:</code>
+     * and <code>classpath:</code> URIs. The {@link URI} class doesn't handle those, but if
+     * we're going to support them in catalogs, we need to do better.</p>
+     *
+     * @param baseURI The base URI.
+     * @param uri The possibily relative URI to resolve against the base URI.
+     * @return The resolved URI.
+     * @throws IllegalArgumentException if the uri cannot be converted to a URI.
+     */
+    public static URI resolve(URI baseURI, String uri) {
+        if (baseURI == null) {
+            try {
+                return new URI(uri);
+            } catch (URISyntaxException use) {
+                throw new IllegalArgumentException(use.getMessage(), use);
+            }
+        }
+
+        URI resolved = URI.create(uri);
+        if (resolved.isAbsolute()) {
+            return resolved;
+        }
+
+        if ("jar".equals(baseURI.getScheme())) {
+            String url = baseURI.toString();
+            int pos = url.lastIndexOf("!");
+            if (pos > 0) {
+                String prefix = url.substring(0, pos+1);
+                String path = url.substring(pos+1);
+                URI fakeURI = null;
+                if (path.startsWith("/")) {
+                    fakeURI = URI.create("file://" + path);
+                } else {
+                    fakeURI = URI.create("file:///" + path);
+                }
+                fakeURI = fakeURI.resolve(uri);
+                if (fakeURI.getPath().startsWith("/../")) {
+                    throw new IllegalArgumentException("Attempt to navigate above root: " + prefix + fakeURI.getPath());
+                }
+                return URI.create(prefix + fakeURI.getPath());
+            } else {
+                return baseURI.resolve(uri);
+            }
+        } else if ("classpath".equals(baseURI.getScheme())) {
+            String path = baseURI.toString().substring(10);
+            URI fakeURI = null;
+            if (path.startsWith("/")) {
+                fakeURI = URI.create("file://" + path);
+            } else {
+                fakeURI = URI.create("file:///" + path);
+            }
+            fakeURI = fakeURI.resolve(uri);
+            String cpath = fakeURI.getPath().substring(1);
+            if (cpath.startsWith("../")) {
+                throw new IllegalArgumentException("Attempt to navigate above root: classpath:" + cpath);
+            }
+            return URI.create("classpath:" + cpath);
+        } else {
+            return baseURI.resolve(uri);
+        }
+    }
+
+    /**
      * Perform character normalization on a URI reference.
      *
      * @param uriref The URI reference.

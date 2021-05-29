@@ -3,6 +3,7 @@ plugins {
   id "maven-publish"
   id "signing"
   id 'com.github.gmazzo.buildconfig' version "2.0.2"
+  id 'com.nwalsh.saxon-gradle' version '0.9.1-beta3'
 }
 
 repositories {
@@ -35,10 +36,12 @@ dependencies {
     [group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.1'],
     [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'],
     files("src/test/resources/data1.jar"),
-    files("src/test/resources/data2.jar")
+    files("src/test/resources/data2.jar"),
+    files("src/test/resources/xmlresolver-data.jar")
   )
 }
 
+import com.nwalsh.SaxonXsltTask
 import Docker
 
 ext {
@@ -59,6 +62,39 @@ buildConfig {
   buildConfigField('String', 'VERSION', "\"${resolverVersion}\"")
 }
 
+// ============================================================
+
+task stageData(type: SaxonXsltTask) {
+  def baselen = "${projectDir}/src/data".length() + 1
+  def baseout = "${buildDir}/data/org/xmlresolver/data"
+
+  inputs.files fileTree(dir: "${projectDir}/src/data")
+  outputs.files fileTree(dir: "${projectDir}/src/data").collect { source ->
+    "${baseout}/${source.getAbsolutePath().substring(baselen)}"
+  }
+  outputs.file "${baseout}/cat-entities.xml"
+  outputs.file "${baseout}/cat-mathml2.xml"
+  outputs.file "${baseout}/cat-mathml3.xml"
+  outputs.file "${baseout}/cat-rddl.xml"
+  outputs.file "${baseout}/cat-svg.xml"
+  outputs.file "${baseout}/cat-xhtml.xml"
+
+  doFirst {
+    copy {
+      into "${buildDir}/data/org/xmlresolver/data"
+      from ("${projectDir}/src/data") {
+        exclude "manifest.xml"
+      }
+    }
+  }
+
+  input "${projectDir}/src/data/manifest.xml"
+  output "${buildDir}/data/org/xmlresolver/data/catalog.xml"
+  stylesheet "${projectDir}/tools/make-catalog.xsl"
+}
+
+// ============================================================
+
 jar {
   exclude("org/xmlresolver/apps/**")
   archiveBaseName = "${basename}-${resolverVersion}"
@@ -78,7 +114,7 @@ task appJar(type: Jar) {
   manifest {
     attributes "Built-By": "Norman Walsh"
     attributes "Implementation-Vendor": "Norman Walsh"
-    attributes "Implementation-Title": "XML Resolver Apps"
+    attributes "Implementation-Title": "XML Resolver applications"
     attributes "Implementation-Version": resolverVersion
   }
 }
@@ -128,14 +164,43 @@ javadoc {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
+  archiveFileName = "xmlresolver-javadoc-${resolverVersion}.zip"
   classifier = 'javadoc'
   from javadoc.destinationDir
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver API documentation"
+    attributes "Implementation-Version": resolverVersion
+  }
 }
+assemble.dependsOn javadocJar
 
 task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
+  archiveFileName = "xmlresolver-sources-${resolverVersion}.zip"
   classifier = 'sources'
   from sourceSets.main.allSource
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver sources"
+    attributes "Implementation-Version": resolverVersion
+  }
 }
+assemble.dependsOn sourcesJar
+
+task dataJar(type: Jar, dependsOn: ["stageData"]) {
+  archiveFileName = "xmlresolver-data-${resolverVersion}.zip"
+  classifier = 'data'
+  from "${buildDir}/data"
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver data"
+    attributes "Implementation-Version": resolverVersion
+  }
+}
+assemble.dependsOn dataJar
 
 signing {
   sign publishing.publications
@@ -177,6 +242,7 @@ publishing {
       from components.java
       artifact javadocJar
       artifact sourcesJar
+      artifact dataJar
     }
   }
 

@@ -26,7 +26,7 @@ public class CatalogLookupTest {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, Arrays.asList(catalog1, catalog2));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, false);
-        manager = new CatalogManager(config);
+        manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
     }
 
     @Test

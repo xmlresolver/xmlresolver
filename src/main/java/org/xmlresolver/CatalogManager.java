@@ -325,6 +325,34 @@ public class CatalogManager {
         return new ExternalIdentifiers(systemId, publicId);
     }
 
+    public URI normalizedForComparison(URI uri) {
+        if (uri == null) {
+            return null;
+        }
+
+        if ("http".equals(uri.getScheme()) || "classpath".equals(uri.getScheme())) {
+            return URI.create(normalizedForComparison(uri.toString()));
+        }
+
+        return uri;
+    }
+
+    public String normalizedForComparison(String uri) {
+        if (uri == null) {
+            return null;
+        }
+
+        if (uri.startsWith("classpath:/")) {
+            return "classpath:" + uri.substring(11);
+        }
+
+        if (resolverConfiguration.getFeature(ResolverFeature.MERGE_HTTPS) && uri.startsWith("http:")) {
+            return "https:" + uri.substring(5);
+        }
+
+        return uri;
+    }
+
     private static class CatalogContentHandler extends DefaultHandler {
         public static ResolverLogger logger = new ResolverLogger(CatalogContentHandler.class);
 

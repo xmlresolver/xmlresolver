@@ -1,5 +1,7 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.utils.URIUtils;
+
 import java.net.URI;
 
 public class EntryDelegateUri extends Entry {
@@ -17,7 +19,7 @@ public class EntryDelegateUri extends Entry {
             uriStart = start;
         }
 
-        this.catalog = baseURI.resolve(catalog);
+        this.catalog = URIUtils.resolve(baseURI, catalog);
     }
 
     @Override

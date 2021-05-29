@@ -20,36 +20,39 @@ public class QueryUri extends QueryCatalog {
 
     public QueryUri(String uri, String nature, String purpose, List<URI> catalogs) {
         super(catalogs);
-
-        if (uri.startsWith("classpath:/")) {
-            this.uri = "classpath:" + uri.substring(11);
-        } else {
-            this.uri = uri;
-        }
-
+        this.uri = uri;
         this.nature = nature;
         this.purpose = purpose;
     }
 
     @Override
     protected @NotNull QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
+        String compareUri = manager.normalizedForComparison(uri);
+        String compareNature = manager.normalizedForComparison(nature);
+        String comparePurpose = manager.normalizedForComparison(purpose);
+
         // <uri>
         for (Entry raw : catalog.entries(Entry.Type.URI)) {
             EntryUri entry = (EntryUri) raw;
-            if (entry.name.equals(uri)
-                    && (nature == null || entry.nature == null || nature.equals(entry.nature))
-                    && (purpose == null || entry.purpose == null || purpose.equals(entry.purpose))) {
+            if (compareUri.equals(manager.normalizedForComparison(entry.name))
+                    && (nature == null || entry.nature == null
+                        || compareNature.equals(manager.normalizedForComparison(entry.nature)))
+                    && (purpose == null || entry.purpose == null
+                        || comparePurpose.equals(manager.normalizedForComparison(entry.purpose)))) {
                 return new QueryResult(entry.uri);
             }
         }
 
         // <rewriteURI>
         EntryRewriteUri rewrite = null;
+        String rewriteStart = null;
         for (Entry raw : catalog.entries(Entry.Type.REWRITE_URI)) {
             EntryRewriteUri entry = (EntryRewriteUri) raw;
-            if (uri.startsWith(entry.uriStart)) {
-                if (rewrite == null || entry.uriStart.length() > rewrite.uriStart.length()) {
+            String compareStart = manager.normalizedForComparison(entry.uriStart);
+            if (compareUri.startsWith(compareStart)) {
+                if (rewrite == null || compareStart.length() > rewriteStart.length()) {
                     rewrite = entry;
+                    rewriteStart = compareStart;
                 }
             }
         }
@@ -59,11 +62,14 @@ public class QueryUri extends QueryCatalog {
 
         // <uriSuffix>
         EntryUriSuffix suffix = null;
+        String uriSuffix = null;
         for (Entry raw : catalog.entries(Entry.Type.URI_SUFFIX)) {
             EntryUriSuffix entry = (EntryUriSuffix) raw;
-            if (uri.endsWith(entry.uriSuffix)) {
-                if (suffix == null || entry.uriSuffix.length() > suffix.uriSuffix.length()) {
+            String compareSuffix = manager.normalizedForComparison(entry.uriSuffix);
+            if (compareUri.endsWith(compareSuffix)) {
+                if (suffix == null || compareSuffix.length() > uriSuffix.length()) {
                     suffix = entry;
+                    uriSuffix = compareSuffix;
                 }
             }
         }
@@ -75,9 +81,11 @@ public class QueryUri extends QueryCatalog {
         ArrayList<EntryDelegateUri> delegated = new ArrayList<>();
         for (Entry raw : catalog.entries(Entry.Type.DELEGATE_URI)) {
             EntryDelegateUri entry = (EntryDelegateUri) raw;
-            if (uri.startsWith(entry.uriStart)) {
+            String delegateStart = manager.normalizedForComparison(entry.uriStart);
+            if (compareUri.startsWith(delegateStart)) {
                 int pos = 0;
-                while (pos < delegated.size() && entry.uriStart.length() <= delegated.get(pos).uriStart.length()) {
+                while (pos < delegated.size()
+                        && delegateStart.length() <= manager.normalizedForComparison(delegated.get(pos).uriStart).length()) {
                     pos += 1;
                 }
                 delegated.add(pos, entry);

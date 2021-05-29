@@ -148,4 +148,19 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> URI_FOR_SYSTEM = new ResolverFeature<>(
             "http://xmlresolver.org/feature/uri-for-system", true);
+
+    /**
+     * Determines whether http: and https: URIs compare the same.
+     *
+     * <p>Historically, most web servers used <code>http:</code>, now most use <code>https:</code>.
+     * There are existing catalogs that can't practically be updated that use <code>http:</code> for
+     * system identifiers and URIs. But authors copying and pasting are likely to get <code>https:</code>
+     * URIs. If this option is true, then <code>http:</code> and <code>https:</code> are considred
+     * the same <emphasis>for the purpose of comparison in the catalog</emphasis>.</p>
+     *
+     * <p>This option has no effect on the URIs returned; it only influences catalog URI comparisons.</p>
+     */
+    public static final ResolverFeature<Boolean> MERGE_HTTPS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/merge-https", true);
+
 }

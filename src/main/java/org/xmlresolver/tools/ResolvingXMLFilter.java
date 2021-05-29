@@ -88,25 +88,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     }
 
     /**
-     * SAX XMLReader API.
+     * Parse a document.
      *
-     * <p>Note that the JAXP 1.1ea2 parser crashes with an InternalError if
-     * it encounters a system identifier that appears to be a relative URI
-     * that begins with a slash. For example, the declaration:</p>
-     *
-     * <pre>
-     * &lt;!DOCTYPE book SYSTEM "/path/to/dtd/on/my/system/docbookx.dtd"&gt;
-     * </pre>
-     *
-     * <p>would cause such an error. As a convenience, this method catches
-     * that error and prints an explanation. (Unfortunately, it's not possible
-     * to identify the particular system identifier that causes the problem.)
-     * </p>
-     *
-     * <p>The underlying error is forwarded after printing the explanatory
-     * message. The message is only every printed once and if
-     * <code>suppressExplanation</code> is set to <code>false</code> before
-     * parsing, it will never be printed.</p>
+     * <p>If the input doesn't have an associated open stream, this class will
+     * attempt to find the URI of the input in the catalog.</p>
      */
     public void parse(InputSource input) throws IOException, SAXException {
         Resolver localResolver = resolver;
@@ -119,6 +104,14 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
             }
             processXMLCatalogPI = allowXMLCatalogPI;
             setupBaseURI(input.getSystemId());
+
+            if (input.getByteStream() == null && input.getCharacterStream() == null) {
+                InputSource src = resolver.resolveEntity(null, input.getSystemId());
+                if (src != null) {
+                    input.setByteStream(src.getByteStream());
+                }
+            }
+
             super.parse(input);
         } finally {
             resolver = localResolver;
@@ -130,7 +123,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * @see #parse(InputSource)
      */
     public void parse(String systemId) throws IOException, SAXException {
-        super.parse(systemId); // This will come back through parse(InputSource)
+        parse(new InputSource(systemId));
     }
 
     /**

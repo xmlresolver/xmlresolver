@@ -1,5 +1,7 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.utils.URIUtils;
+
 import java.net.URI;
 
 public class EntryRewriteSystem extends Entry {
@@ -17,7 +19,7 @@ public class EntryRewriteSystem extends Entry {
             systemIdStart = start;
         }
 
-        rewritePrefix = baseURI.resolve(rewrite);
+        rewritePrefix = URIUtils.resolve(baseURI, rewrite);
     }
 
     @Override
