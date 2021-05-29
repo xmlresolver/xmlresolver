@@ -156,7 +156,7 @@ public class ResolverFeature<T> {
      * There are existing catalogs that can't practically be updated that use <code>http:</code> for
      * system identifiers and URIs. But authors copying and pasting are likely to get <code>https:</code>
      * URIs. If this option is true, then <code>http:</code> and <code>https:</code> are considred
-     * the same <emphasis>for the purpose of comparison in the catalog</emphasis>.</p>
+     * the same <em>for the purpose of comparison in the catalog</em>.</p>
      *
      * <p>This option has no effect on the URIs returned; it only influences catalog URI comparisons.</p>
      */
