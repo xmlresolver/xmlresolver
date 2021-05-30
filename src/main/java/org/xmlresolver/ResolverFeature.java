@@ -221,4 +221,13 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> MASK_JAR_URIS = new ResolverFeature<>(
             "http://xmlresolver.org/feature/mask-jar-uris", true);
+
+    /**
+     * Identifies the catalog loader class.
+     *
+     * <p>The default catalog loader class is usually fine. The validating class can be used
+     * to enforce schema validity checks on loaded catalogs.</p>
+     */
+    public static final ResolverFeature<String> CATALOG_LOADER_CLASS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/catalog-loader-class", "org.xmlresolver.loaders.XmlLoader");
 }

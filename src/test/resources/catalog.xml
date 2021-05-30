@@ -1,8 +1,15 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         xmlns:x="http://example.com/"
+         x:extra="Extra attributes are ok"
          prefer="public">
 
   <public publicId="-//Sample//DTD Simple 1.0//EN"
+          x:more="her too"
           uri="sample10/sample.dtd"/>
+
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <p>This is ok, but note that catalog entries in here are ignored</p>
+  </div>
 
   <system systemId="https://xmlresolver.com/ns/sample/sample.dtd"
           uri="sample10/sample.dtd"/>

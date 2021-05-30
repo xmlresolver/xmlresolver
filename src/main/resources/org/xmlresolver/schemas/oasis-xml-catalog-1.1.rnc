@@ -1,0 +1,157 @@
+# Originally converted with trang, but hand modified subsequently
+
+namespace cat = "urn:oasis:names:tc:entity:xmlns:xml:catalog"
+namespace local = ""
+default namespace = "urn:oasis:names:tc:entity:xmlns:xml:catalog"
+
+start = catalog
+
+_any.attribute = attribute * { text }
+_any.nsattribute = attribute * - (cat:* | local:*) { text }
+_any.element = element * - cat:* { (_any.attribute | text | _any.element)* }
+
+common.attlist &= 
+  attribute id { xsd:ID }?
+
+pubIdChars = string
+publicIdentifier = pubIdChars
+partialPublicIdentifier = pubIdChars
+uriReference = string
+systemOrPublic = "system" | "public"
+local.catalog.mix = _any.element*
+local.catalog.attribs = _any.nsattribute*
+
+catalog =
+  element catalog {
+    attlist.catalog,
+    (public
+     | system
+     | uri
+     | rewriteSystem
+     | rewriteURI
+     | systemSuffix
+     | uriSuffix
+     | delegatePublic
+     | delegateSystem
+     | delegateURI
+     | nextCatalog
+     | group
+     | local.catalog.mix)+
+  }
+
+attlist.catalog &=
+  common.attlist,
+  attribute prefer { systemOrPublic }?,
+  local.catalog.attribs
+
+local.public.attribs = _any.nsattribute*
+public = element public { attlist.public, empty }
+attlist.public &=
+  common.attlist,
+  attribute publicId { publicIdentifier },
+  attribute uri { uriReference },
+  local.public.attribs
+
+local.system.attribs = _any.nsattribute*
+system = element system { attlist.system, empty }
+attlist.system &=
+  common.attlist,
+  attribute systemId { string },
+  attribute uri { uriReference },
+  local.system.attribs
+
+local.uri.attribs = _any.nsattribute*
+uri = element uri { attlist.uri, empty }
+attlist.uri &=
+  common.attlist,
+  attribute name { string },
+  attribute uri { uriReference },
+  local.uri.attribs
+
+local.rewriteSystem.attribs = _any.nsattribute*
+rewriteSystem = element rewriteSystem { attlist.rewriteSystem, empty }
+attlist.rewriteSystem &=
+  common.attlist,
+  attribute systemIdStartString { string },
+  attribute rewritePrefix { string },
+  local.rewriteSystem.attribs
+
+local.rewriteURI.attribs = _any.nsattribute*
+rewriteURI = element rewriteURI { attlist.rewriteURI, empty }
+attlist.rewriteURI &=
+  common.attlist,
+  attribute uriStartString { string },
+  attribute rewritePrefix { string },
+  local.rewriteURI.attribs
+
+local.systemSuffix.attribs = _any.nsattribute*
+systemSuffix = element systemSuffix { attlist.systemSuffix, empty }
+attlist.systemSuffix &=
+  common.attlist,
+  attribute systemIdSuffix { string },
+  attribute uri { string },
+  local.systemSuffix.attribs
+
+local.uriSuffix.attribs = _any.nsattribute*
+uriSuffix = element uriSuffix { attlist.uriSuffix, empty }
+attlist.uriSuffix &=
+  common.attlist,
+  attribute uriSuffix { string },
+  attribute uri { string },
+  local.uriSuffix.attribs
+
+local.delegatePublic.attribs = _any.nsattribute*
+delegatePublic =
+  element delegatePublic { attlist.delegatePublic, empty }
+attlist.delegatePublic &=
+  common.attlist,
+  attribute publicIdStartString { partialPublicIdentifier },
+  attribute catalog { uriReference },
+  local.delegatePublic.attribs
+
+local.delegateSystem.attribs = _any.nsattribute*
+delegateSystem =
+  element delegateSystem { attlist.delegateSystem, empty }
+attlist.delegateSystem &=
+  common.attlist,
+  attribute systemIdStartString { string },
+  attribute catalog { uriReference },
+  local.delegateSystem.attribs
+
+local.delegateURI.attribs = _any.nsattribute*
+delegateURI = element delegateURI { attlist.delegateURI, empty }
+attlist.delegateURI &=
+  common.attlist,
+  attribute uriStartString { string },
+  attribute catalog { uriReference },
+  local.delegateURI.attribs
+
+local.nextCatalog.attribs = _any.nsattribute*
+nextCatalog = element nextCatalog { attlist.nextCatalog, empty }
+attlist.nextCatalog &=
+  common.attlist,
+  attribute catalog { uriReference },
+  local.nextCatalog.attribs
+
+local.group.mix = _any.element*
+local.group.attribs = _any.nsattribute*
+group =
+  element group {
+    attlist.group,
+    (public
+     | system
+     | uri
+     | rewriteSystem
+     | rewriteURI
+     | systemSuffix
+     | uriSuffix
+     | delegatePublic
+     | delegateSystem
+     | delegateURI
+     | nextCatalog
+     | local.group.mix)+
+  }
+attlist.group &=
+  common.attlist,
+  attribute prefer { systemOrPublic }?,
+  local.group.attribs

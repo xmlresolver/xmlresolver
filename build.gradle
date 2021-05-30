@@ -12,6 +12,12 @@ repositories {
   maven { url "https://maven.restlet.com" }
 }
 
+java {
+  registerFeature('validating') {
+    usingSourceSet(sourceSets.main)
+  }
+}
+
 configurations.all {
   resolutionStrategy {
     force 'xml-apis:xml-apis:1.4.01'
@@ -29,6 +35,10 @@ dependencies {
     [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
     [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ],
     [group: 'org.jetbrains', name: 'annotations', version: '20.1.0' ]
+  )
+
+  validatingImplementation (
+    [group: 'org.relaxng', name: 'jing', version: '20181222' ]
   )
 
   testImplementation (
