@@ -70,7 +70,7 @@ public class QuerySystem extends QueryCatalog {
             }
         }
         if (rewrite != null) {
-            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, systemId.substring(rewrite.systemIdStart.length()));
+            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, compareSystem.substring(rewriteStart.length()));
             return new QueryResult(resolved);
         }
 
