@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 
 /** Implements the {@link org.xml.sax.EntityResolver}, {@link org.xml.sax.ext.EntityResolver2},
  * {@link LSResourceResolver}
@@ -29,7 +30,7 @@ import java.io.Reader;
  */
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
     private static final ResolverLogger logger = new ResolverLogger(Resolver.class);
-    ResourceResolver resolver = null;
+    protected ResourceResolver resolver = null;
 
     /** Creates a new instance of Resolver.
      *
@@ -88,7 +89,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         } else {
             SAXSource source = new SAXSource(new InputSource(rsrc.body()));
-            source.setSystemId(rsrc.uri().toString());
+            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
+            String systemId = rsrc.uri().toString();
+            if (mask && (systemId.startsWith("jar:") || systemId.startsWith("classpath:"))) {
+                if (base == null) {
+                    systemId = href;
+                } else {
+                    systemId = URI.create(base).resolve(href).toString();
+                }
+            }
+            source.setSystemId(systemId);
             return source;
         }
     }
@@ -100,7 +110,12 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         } else {
             SAXSource source = new SAXSource(new InputSource(rsrc.body()));
-            source.setSystemId(rsrc.uri().toASCIIString());
+            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
+            String systemId = rsrc.uri().toString();
+            if (mask && (systemId.startsWith("jar:") || systemId.startsWith("classpath:"))) {
+                systemId = uri;
+            }
+            source.setSystemId(systemId);
             return source;
         }
     }
@@ -112,7 +127,12 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         } else {
             InputSource source = new InputSource(rsrc.body());
-            source.setSystemId(rsrc.uri().toASCIIString());
+            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
+            String resolvedSystemId = rsrc.uri().toString();
+            if (mask && (resolvedSystemId.startsWith("jar:") || resolvedSystemId.startsWith("classpath:"))) {
+                resolvedSystemId = systemId;
+            }
+            source.setSystemId(resolvedSystemId);
             return source;
         }
     }
@@ -124,7 +144,14 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         } else {
             InputSource source = new InputSource(rsrc.body());
-            source.setSystemId(rsrc.uri().toASCIIString());
+            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
+            String systemId = rsrc.uri().toString();
+            if (mask && (systemId.startsWith("jar:") || systemId.startsWith("classpath:"))) {
+                if (baseURI != null) {
+                    systemId = baseURI;
+                }
+            }
+            source.setSystemId(systemId);
             return source;
         }
     }
@@ -136,7 +163,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
            return null;
         } else {
             InputSource source = new InputSource(rsrc.body());
-            source.setSystemId(rsrc.uri().toASCIIString());
+            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
+            String resolvedSystemId = rsrc.uri().toString();
+            if (mask && (resolvedSystemId.startsWith("jar:") || resolvedSystemId.startsWith("classpath:"))) {
+                if (baseURI == null) {
+                    resolvedSystemId = systemId;
+                } else {
+                    resolvedSystemId = URI.create(baseURI).resolve(systemId).toString();
+                }
+            }
+            source.setSystemId(resolvedSystemId);
             return source;
         }
     }
@@ -147,17 +183,29 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         if (rsrc == null) {
             return null;
         } else {
-            return new ResolverLSInput(rsrc, publicId);
+            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
+            String resolvedSystemId = rsrc.uri().toString();
+            if (mask && (resolvedSystemId.startsWith("jar:") || resolvedSystemId.startsWith("classpath:"))) {
+                if (baseURI == null) {
+                    resolvedSystemId = systemId;
+                } else {
+                    resolvedSystemId = URI.create(baseURI).resolve(systemId).toString();
+                }
+            }
+
+            return new ResolverLSInput(rsrc, publicId, resolvedSystemId);
         }
     }
 
     static class ResolverLSInput implements LSInput {
-        Resource rsrc = null;
-        String publicId = null;
-        
-        public ResolverLSInput(Resource rsrc, String publicId) {
+        final Resource rsrc;
+        final String publicId;
+        final String systemId;
+
+        public ResolverLSInput(Resource rsrc, String publicId, String systemId) {
             this.rsrc = rsrc;
             this.publicId = publicId;
+            this.systemId = systemId;
         }
 
         public Reader getCharacterStream() {
@@ -186,7 +234,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         }
 
         public String getSystemId() {
-            return rsrc.uri().toString();
+            return systemId;
         }
 
         public void setSystemId(String string) {

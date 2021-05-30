@@ -163,4 +163,62 @@ public class ResolverFeature<T> {
     public static final ResolverFeature<Boolean> MERGE_HTTPS = new ResolverFeature<>(
             "http://xmlresolver.org/feature/merge-https", true);
 
+    /**
+     * Determines whether a classpath: or jar: URI is returned by the resolver.
+     *
+     * <p>When the resolver finds a resource, for example a schema or a stylesheet, it returns
+     * the location of the resolved resource as the base URI for the resource. This enables
+     * the following common scenario:</p>
+     *
+     * <ul>
+     *     <li>Download a distribution and store it locally.</li>
+     *     <li>Create a catalog that maps from the entry point(s) into the local
+     *     distribution: http://example.com/acme-schema/start/here -> /opt/acme-schema-1.0/here</li>
+     *     <li>Profit.</li>
+     * </ul>
+     *
+     * <p>A document requests <code>http://example.com/acme-schema/start/here</code>, the resolver
+     * returns <code>/opt/achme-schema-1.0/here</code>. When the schema attempts to import a library,
+     * the URI for that library is resolved against the base URI on the filesystem, a new path is
+     * constructed, and it all just works.</p>
+     *
+     * <p>Adding support for <code>classpath</code> and <code>jar:</code> URIs to XML Resolver 3.0 has enabled another
+     * very attractive scenario:</p>
+     *
+     * <ul>
+     *     <li>Put the distribution in a jar file with an included catalog.</li>
+     *     <li>Arrange for the project to depend on that jar file, so it'll be on the classpath.</li>
+     *     <li>Add <code>classpath:/org/example/acme-schema/catalog.xml</code> to your catalog list.</li>
+     *     <li>More profit!</li>
+     * </ul>
+     *
+     * <p>Trouble is, the resolved URI will be something like this:</p>
+     *
+     * <p><code>jar:file:///where/the/jar/is/acme-schema-1.0.jar!/org/example/acme-schema/here</code></p>
+     *
+     * <p>And the trouble with that is, Java doesn't think the <code>classpath:</code> and <code>jar:</code>
+     * URI schemes are hierarchical and won't resolve the URI for the imported library correctly. It will
+     * work just fine for any document that doesn't include parts with relative URIs. The DocBook schema,
+     * for example, is distributed as a single RELAX NG file, so it works. But the xslTNG stylesheets would
+     * not.</p>
+     *
+     * <p>If <code>MASK_JAR_URIS</code> is true, the resolver will return the local resource from the jar
+     * file, but will leave the URI unchanged. As long as the catalog has a mapping for all of the resources,
+     * and not just the entry point(s), this will do exactly the right thing.</p>
+     *
+     * <p>Often, this can be achieved with, for example, a rewrite rule:</p>
+     *
+     * <pre>&lt;rewriteURI uriStartString="http://example.com/acme-start/"
+     *             rewritePrefix="acme-start/"&gt;
+     * </pre>
+     *
+     * <p>Assuming the catalog is in a location where that rewrite prefix works, the entry point
+     * will be remapped and the local resource returned. The resource it imports will be resolved against
+     * the http: URI, but that will also be remapped, and everyone wins.</p>
+     *
+     * <p>You don't need to use a rewrite rule, you can use any combination of catalog rules you like
+     * as long as each of the requested URIs will be mapped.</p>
+     */
+    public static final ResolverFeature<Boolean> MASK_JAR_URIS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/mask-jar-uris", true);
 }

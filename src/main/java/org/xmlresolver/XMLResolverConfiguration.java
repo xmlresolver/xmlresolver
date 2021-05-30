@@ -83,7 +83,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.PREFER_PUBLIC, ResolverFeature.PREFER_PROPERTY_FILE,
             ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.CATALOG_ADDITIONS,
             ResolverFeature.CACHE_DIRECTORY, ResolverFeature.CACHE_UNDER_HOME,
-            ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS,
+            ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS, ResolverFeature.MASK_JAR_URIS,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM };
 
     private List<String> catalogs = new ArrayList<>();
@@ -96,6 +96,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private CatalogManager manager = ResolverFeature.CATALOG_MANAGER.getDefaultValue(); // also null
     private Boolean uriForSystem = ResolverFeature.URI_FOR_SYSTEM.getDefaultValue();
     private Boolean mergeHttps = ResolverFeature.MERGE_HTTPS.getDefaultValue();
+    private Boolean maskJarUris = ResolverFeature.MASK_JAR_URIS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
     public XMLResolverConfiguration() {
@@ -128,6 +129,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         }
         uriForSystem = current.uriForSystem;
         mergeHttps = current.mergeHttps;
+        maskJarUris = current.maskJarUris;
         showConfigChanges = current.showConfigChanges;
     }
 
@@ -292,24 +294,15 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             mergeHttps = isTrue(property);
         }
-    }
 
-    /*
-    private void loadPropertiesConfiguration(URL propertiesURL) {
-        try {
-            logger.log(ResolverLogger.CONFIG, "Load properties file: %s", propertiesURL);
-            Properties props = new Properties();
-            props.load(propertiesURL.openStream());
-            loadPropertiesConfiguration(propertiesURL, props);
-        } catch (IOException e) {
-            logger.log(ResolverLogger.ERROR, "Failed to load properties from %s", propertiesURL);
+        property = System.getProperty("xml.catalog.maskJarUris");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Mask-jar-URIs: %s", property);
+            }
+            maskJarUris = isTrue(property);
         }
     }
-
-    private void loadPropertiesConfiguration(Properties properties) {
-        loadPropertiesConfiguration(null, properties);
-    }
-    */
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
         boolean relative = true;
@@ -425,6 +418,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             mergeHttps = isTrue(property);
         }
+
+        property = properties.getProperty("mask-jar-uris");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Mask-jar-URIs: %s", property);
+            }
+            maskJarUris = isTrue(property);
+        }
     }
 
     private void showConfig() {
@@ -434,6 +435,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
         logger.log(ResolverLogger.CONFIG, "URI for system: %s", uriForSystem);
         logger.log(ResolverLogger.CONFIG, "Merge http/https: %s", mergeHttps);
+        logger.log(ResolverLogger.CONFIG, "Mask jar URIs: %s", maskJarUris);
         logger.log(ResolverLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
         logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
         for (String catalog: catalogs) {
@@ -483,6 +485,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             uriForSystem = (Boolean) value;
         } else if (feature == ResolverFeature.MERGE_HTTPS) {
             mergeHttps = (Boolean) value;
+        } else if (feature == ResolverFeature.MASK_JAR_URIS) {
+            maskJarUris = (Boolean) value;
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -513,6 +517,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) uriForSystem;
         } else if (feature == ResolverFeature.MERGE_HTTPS) {
             return (T) mergeHttps;
+        } else if (feature == ResolverFeature.MASK_JAR_URIS) {
+            return (T) maskJarUris;
         } else if (feature == ResolverFeature.CACHE) {
             if (cache == null) {
                 cache = new ResourceCache(this);
