@@ -156,7 +156,7 @@ public class Resource {
      * @return The URI
      */
     public URI localUri() {
-        return uri;
+        return localURI;
     }
 
     /** Return the resolved URI.
