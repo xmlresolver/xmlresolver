@@ -173,7 +173,7 @@ public class ResolverFeature<T> {
      * <ul>
      *     <li>Download a distribution and store it locally.</li>
      *     <li>Create a catalog that maps from the entry point(s) into the local
-     *     distribution: http://example.com/acme-schema/start/here -> /opt/acme-schema-1.0/here</li>
+     *     distribution: <code>http://example.com/acme-schema/start/here</code> -&gt; <code>/opt/acme-schema-1.0/here</code></li>
      *     <li>Profit.</li>
      * </ul>
      *
