@@ -925,6 +925,15 @@ public class ResourceCache extends CatalogManager {
     }
 
     private String pickSuffix(URI uri, String contentType) {
+        String suffix = uri.toASCIIString();
+        int pos = suffix.lastIndexOf(".");
+        if (pos > 0) {
+            suffix = suffix.substring(pos);
+            if (suffix.length() <= 5) {
+                return suffix;
+            }
+        }
+
         if (contentType == null) {
             return ".bin";
         }
