@@ -101,7 +101,7 @@ public class ResourceResolver {
                 return new Resource(uri.toString());
             } else {
                 FileInputStream fs = new FileInputStream(cached.file);
-                return new Resource(fs, uri, cached.contentType());
+                return new Resource(fs, uri, uri, cached.contentType());
             }
         } catch (IOException | URISyntaxException | IllegalArgumentException ex) {
             // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
@@ -425,7 +425,7 @@ public class ResourceResolver {
             try {
                 logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", resolved);
                 FileInputStream fs = new FileInputStream(cached.file);
-                return new Resource(fs, resolved, cached.contentType());
+                return new Resource(fs, resolved, cached.file.toURI(), cached.contentType());
             } catch (IOException ex) {
                 logger.log(ResolverLogger.ERROR, "Namespace URI resolution failed: %s: %s",
                         resolved, ex.getMessage());

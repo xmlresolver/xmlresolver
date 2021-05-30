@@ -31,16 +31,19 @@ import java.util.Base64;
 public class Resource {
     private final InputStream stream;
     private final URI uri;
+    private final URI localURI;
     private final String contentType;
 
     /** Creates a new instance of Resource.
      *
      * @param stream The stream from which the resource can be read
      * @param uri The URI
+     * @param localURI The local URI, irrespective of what will be reported as the URI.
      */
-    public Resource(InputStream stream, URI uri) {
+    public Resource(InputStream stream, URI uri, URI localURI) {
         this.stream = stream;
         this.uri = uri;
+        this.localURI = localURI;
         this.contentType = null;
     }
 
@@ -48,11 +51,13 @@ public class Resource {
      *
      * @param stream The stream from which the resource can be read
      * @param uri The URI
+     * @param localURI The local URI, irrespective of what will be reported as the URI.
      * @param contentType The content type
      */
-    public Resource(InputStream stream, URI uri, String contentType) {
+    public Resource(InputStream stream, URI uri, URI localURI, String contentType) {
         this.stream = stream;
         this.uri = uri;
+        this.localURI = localURI;
         this.contentType = contentType;
     }
 
@@ -60,6 +65,7 @@ public class Resource {
         if (href.startsWith("data:")) {
             // This is a little bit crude; see RFC 2397
             uri = URIUtils.newURI(href);
+            localURI = uri;
             String path = href.substring(5);
             int pos = path.indexOf(",");
             if (pos >= 0) {
@@ -107,6 +113,7 @@ public class Resource {
                 throw new IOException("Not found: " + href);
             } else {
                 uri = URIUtils.newURI(rsrc.toString());
+                localURI = uri;
                 stream = rsrc.openStream();
                 contentType = null;
                 return;
@@ -114,6 +121,7 @@ public class Resource {
         }
 
         uri = URIUtils.newURI(href);
+        localURI = uri;
         URLConnection conn = uri.toURL().openConnection();
         stream = conn.getInputStream();
         contentType = conn.getContentType();
@@ -132,11 +140,29 @@ public class Resource {
 
     /** Return the URI associated with the resource.
      *
+     * <p>For resources that are cached, or from a jar file, this may be the "original" URI
+     * instead of the actually resolved URI.</p>
+     *
      * @return The URI
      */
     public URI uri() {
         return uri;
     }
+
+    /** Return the local URI associated with the resource.
+     *
+     * <p>This is always the local URI, whether it's from a jar file or from the cache.</p>
+     *
+     * @return The URI
+     */
+    public URI localUri() {
+        return uri;
+    }
+
+    /** Return the resolved URI.
+     *
+     * <p>The resolved URI may be different from the local URI of the resource.</p>
+     */
 
     /** Return the MIME content type associated with the resource.
      *
