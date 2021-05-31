@@ -9,6 +9,7 @@ import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class RddlTest extends CacheManager {
     public static final String catalog = "src/test/resources/docker.xml";
@@ -49,6 +50,7 @@ public class RddlTest extends CacheManager {
 
     @Test
     public void xsdTest() {
+        resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, true);
         Resource xsd = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
@@ -58,6 +60,7 @@ public class RddlTest extends CacheManager {
 
     @Test
     public void xslTest() {
+        resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, true);
         Resource xsl = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
                 "http://www.w3.org/1999/XSL/Transform",
                 "http://www.rddl.org/purposes#transformation");
@@ -65,5 +68,22 @@ public class RddlTest extends CacheManager {
         assertEquals("application/xml", xsl.contentType());
     }
 
+    @Test
+    public void xsdTestNoRddl() {
+        resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, false);
+        Resource xsd = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+                "http://www.w3.org/2001/XMLSchema",
+                "http://www.rddl.org/purposes#schema-validation");
+        assertNull(xsd);
+    }
+
+    @Test
+    public void xslTestNoRddl() {
+        resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, false);
+        Resource xsl = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+                "http://www.w3.org/1999/XSL/Transform",
+                "http://www.rddl.org/purposes#transformation");
+        assertNull(xsl);
+    }
 }
 

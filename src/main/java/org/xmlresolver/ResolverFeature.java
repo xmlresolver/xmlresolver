@@ -230,4 +230,17 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<String> CATALOG_LOADER_CLASS = new ResolverFeature<>(
             "http://xmlresolver.org/feature/catalog-loader-class", "org.xmlresolver.loaders.XmlLoader");
+
+    /**
+     * Controls whether or not namespace documents will be parsed for RDDL annotations.
+     *
+     * <p>If this feature is enabled, then if an attempt to get a namespace returns an HTML document,
+     * and if a nature and purpose has been specified in the request, the HTML document will be parsed
+     * for RDDL annotations. If a matching entry is found, the annotated URI will be used.</p>
+     *
+     * <p>In the {@link org.w3c.dom.ls.LSResourceResolver}, if the type of the request is the XML
+     * Schema or RELAX NG namespace, the purpose is assumed to be validation.</p>
+     */
+    public static final ResolverFeature<Boolean> PARSE_RDDL = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/rddl", true);
 }

@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLConnection;
 import java.util.Stack;
 
@@ -367,7 +368,16 @@ public class ResourceResolver {
         } else {
             logger.log(ResolverLogger.TRACE, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
                     type, systemId, namespace, baseURI, publicId);
-            rsrc = resolveNamespaceURI(systemId, type, null);
+
+            String purpose = null;
+            // If it looks like it's going to be used for validation, ...
+            if ("http://www.w3.org/2001/XMLSchema".equals(type)
+                || "http://www.w3.org/XML/XMLSchema/v1.1".equals(type)
+                || "http://relaxng.org/ns/structure/1.0".equals(type)) {
+                purpose = "http://www.rddl.org/purposes#schema-validation";
+            }
+
+            rsrc = resolveNamespaceURI(systemId, type, purpose);
             if (rsrc == null && baseURI != null) {
                 try {
                     URI abs = URIUtils.newURI(baseURI).resolve(systemId);
@@ -401,58 +411,64 @@ public class ResourceResolver {
                 uri, nature, purpose);
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI resolved = catalog.lookupNamespaceURI(uri, nature, purpose);
-        if (resolved == null) {
-            try {
-                resolved = URIUtils.newURI(uri);
-            } catch (URISyntaxException ex) {
-                logger.log(ResolverLogger.ERROR, "URI syntax exception: " + uri);
-                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
-                return null;
-            }
-        }
+        CacheEntry cached = resolved == null ? null : cache.cachedNamespaceUri(resolved, nature, purpose);
 
-        CacheEntry cached = cache.cachedNamespaceUri(resolved, nature, purpose);
-        if (cached != null) {
-            // Wait, wait, what if this is a RDDL document?
-            if (nature != null && purpose != null
-                    && ("text/html".equals(cached.contentType())
-                    || "application/html+xml".equals(cached.contentType()))) {
-                URI rddl = checkRddl(cached, nature, purpose);
+        if (config.getFeature(ResolverFeature.PARSE_RDDL) && nature != null && purpose != null) {
+            URI rddl = null;
+            if (cached != null) {
+                rddl = checkRddl(cached.file.toURI(), nature, purpose, cached.contentType());
                 if (rddl != null) {
                     cached = cache.cachedUri(rddl);
                 }
+            } else {
+                try {
+                    rddl = checkRddl(URIUtils.newURI(uri), nature, purpose, null);
+                } catch (URISyntaxException ex) {
+                    logger.log(ResolverLogger.ERROR, "URI syntax exception: " + uri);
+                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
+                    return null;
+                }
             }
-            try {
-                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", resolved);
-                FileInputStream fs = new FileInputStream(cached.file);
-                return new Resource(fs, resolved, cached.file.toURI(), cached.contentType());
-            } catch (IOException ex) {
-                logger.log(ResolverLogger.ERROR, "Namespace URI resolution failed: %s: %s",
-                        resolved, ex.getMessage());
-                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
-                return null;
+
+            if (rddl != null) {
+                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", rddl);
+                return streamResult(rddl, cached);
             }
         }
 
-        logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
-        return null;
+        if (resolved != null) {
+            logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", resolved);
+            return streamResult(resolved, cache.cachedNamespaceUri(resolved, nature, purpose));
+        } else {
+            logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
+            return null;
+        }
     }
 
-    private URI checkRddl(CacheEntry cached, String nature, String purpose) {
+    private URI checkRddl(URI uri, String nature, String purpose, String contentType) {
         try {
             SAXParserFactory spf = SAXParserFactory.newInstance();
             spf.setNamespaceAware(true);
             spf.setValidating(false);
             spf.setXIncludeAware(false);
-            FileInputStream is = new FileInputStream(cached.file);
-            InputSource source = new InputSource(is);
-            RddlQuery handler = new RddlQuery(cached.location(), nature, purpose);
-            SAXParser parser = spf.newSAXParser();
-            parser.parse(source, handler);
-            return handler.href();
-        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            URLConnection conn = uri.toURL().openConnection();
+            if (contentType == null) {
+                contentType = conn.getContentType();
+            }
+            if (contentType != null
+                    && (contentType.startsWith("text/html")
+                        || contentType.startsWith("application/html+xml"))) {
+                InputSource source = new InputSource(conn.getInputStream());
+                RddlQuery handler = new RddlQuery(conn.getURL().toURI(), nature, purpose);
+                SAXParser parser = spf.newSAXParser();
+                parser.parse(source, handler);
+                return handler.href();
+            } else {
+                return null;
+            }
+        } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
             logger.log(ResolverLogger.ERROR, "RDDL parse failed: %s: %s",
-                    cached.file.getAbsolutePath(), ex.getMessage());
+                    uri, ex.getMessage());
             return null;
         }
     }

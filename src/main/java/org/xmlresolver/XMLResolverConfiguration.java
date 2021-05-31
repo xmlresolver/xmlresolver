@@ -85,7 +85,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CACHE_DIRECTORY, ResolverFeature.CACHE_UNDER_HOME,
             ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS, ResolverFeature.MASK_JAR_URIS,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
-            ResolverFeature.CATALOG_LOADER_CLASS};
+            ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL};
 
     private List<String> catalogs = new ArrayList<>();
     private Boolean preferPublic = ResolverFeature.PREFER_PUBLIC.getDefaultValue();
@@ -99,6 +99,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean mergeHttps = ResolverFeature.MERGE_HTTPS.getDefaultValue();
     private Boolean maskJarUris = ResolverFeature.MASK_JAR_URIS.getDefaultValue();
     private String catalogLoader = ResolverFeature.CATALOG_LOADER_CLASS.getDefaultValue();
+    private Boolean parseRddl = ResolverFeature.PARSE_RDDL.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
     public XMLResolverConfiguration() {
@@ -133,6 +134,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         mergeHttps = current.mergeHttps;
         maskJarUris = current.maskJarUris;
         catalogLoader = current.catalogLoader;
+        parseRddl = current.parseRddl;
         showConfigChanges = current.showConfigChanges;
     }
 
@@ -313,6 +315,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             catalogLoader = property;
         }
+
+        property = System.getProperty("xml.catalog.parseRddl");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Use RDDL: %s", property);
+            }
+            parseRddl = isTrue(property);
+        }
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
@@ -445,6 +455,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             catalogLoader = property;
         }
+
+        property = properties.getProperty("parse-rddl");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Parse RDDL: %s", property);
+            }
+            parseRddl = isTrue(property);
+        }
     }
 
     private void showConfig() {
@@ -452,6 +470,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Prefer public: %s", preferPublic);
         logger.log(ResolverLogger.CONFIG, "Prefer property file: %s", preferPropertyFile);
         logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
+        logger.log(ResolverLogger.CONFIG, "Parse RDDL: %s", parseRddl);
         logger.log(ResolverLogger.CONFIG, "URI for system: %s", uriForSystem);
         logger.log(ResolverLogger.CONFIG, "Merge http/https: %s", mergeHttps);
         logger.log(ResolverLogger.CONFIG, "Mask jar URIs: %s", maskJarUris);
@@ -509,6 +528,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             maskJarUris = (Boolean) value;
         } else if (feature == ResolverFeature.CATALOG_LOADER_CLASS) {
             catalogLoader = (String) value;
+        } else if (feature == ResolverFeature.PARSE_RDDL) {
+            parseRddl = (Boolean) value;
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -543,6 +564,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) maskJarUris;
         } else if (feature == ResolverFeature.CATALOG_LOADER_CLASS) {
             return (T) catalogLoader;
+        } else if (feature == ResolverFeature.PARSE_RDDL) {
+            return (T) parseRddl;
         } else if (feature == ResolverFeature.CACHE) {
             if (cache == null) {
                 cache = new ResourceCache(this);
