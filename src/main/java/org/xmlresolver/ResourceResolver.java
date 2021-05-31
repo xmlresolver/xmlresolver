@@ -422,7 +422,11 @@ public class ResourceResolver {
                 }
             } else {
                 try {
-                    rddl = checkRddl(URIUtils.newURI(uri), nature, purpose, null);
+                    if (resolved != null) {
+                        rddl = checkRddl(resolved, nature, purpose, null);
+                    } else {
+                        rddl = checkRddl(URIUtils.newURI(uri), nature, purpose, null);
+                    }
                 } catch (URISyntaxException ex) {
                     logger.log(ResolverLogger.ERROR, "URI syntax exception: " + uri);
                     logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");

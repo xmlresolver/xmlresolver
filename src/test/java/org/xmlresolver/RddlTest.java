@@ -1,6 +1,7 @@
 package org.xmlresolver;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlresolver.utils.URIUtils;
 
@@ -85,5 +86,34 @@ public class RddlTest extends CacheManager {
                 "http://www.rddl.org/purposes#transformation");
         assertNull(xsl);
     }
+
+    @Ignore
+    public void xmlTest() {
+        // This test is ignored because getting the XSD file from the W3C server takes ten seconds
+        // and the test doesn't really prove anything anyway.
+        resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, true);
+        Resource xsd = resolver.resolveNamespaceURI("http://www.w3.org/2001/xml.xsd",
+                "http://www.w3.org/2001/XMLSchema",
+                "http://www.rddl.org/purposes#schema-validation");
+        assertNull(xsd);
+    }
+
+    @Test
+    public void xmlTestResolved() {
+        // This test gets the xml.xsd file from the catalog, so it runs quickly and proves
+        // that we parse the resolved resource, not the original URI.
+        XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/catalog.xml");
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
+        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
+        config.setFeature(ResolverFeature.PARSE_RDDL, true);
+        ResourceResolver resolver = new ResourceResolver(config);
+
+        Resource xsd = resolver.resolveNamespaceURI("http://www.w3.org/2001/xml.xsd",
+                "http://www.w3.org/2001/XMLSchema",
+                "http://www.rddl.org/purposes#schema-validation");
+        assertNotNull(xsd);
+    }
+
+
 }
 

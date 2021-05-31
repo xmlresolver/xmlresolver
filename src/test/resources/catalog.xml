@@ -38,4 +38,6 @@
   <uri name="https://xmlresolver.org/ns/sample-as-uri/sample.dtd"
        uri="http://localhost:8222/docs/sample/sample.dtd"/>
 
+  <uri name="https://www.w3.org/2001/xml.xsd" uri="xml.xsd"/>
+
 </catalog>
