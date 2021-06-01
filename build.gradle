@@ -76,7 +76,7 @@ buildConfig {
 
 task stageData(type: SaxonXsltTask) {
   def baselen = "${projectDir}/src/data".length() + 1
-  def baseout = "${buildDir}/data/org/xmlresolver/data"
+  def baseout = "${buildDir}/data/org/xmlresolver"
 
   inputs.files fileTree(dir: "${projectDir}/src/data")
   outputs.files fileTree(dir: "${projectDir}/src/data").collect { source ->
@@ -91,7 +91,7 @@ task stageData(type: SaxonXsltTask) {
 
   doFirst {
     copy {
-      into "${buildDir}/data/org/xmlresolver/data"
+      into "${buildDir}/data/org/xmlresolver"
       from ("${projectDir}/src/data") {
         exclude "manifest.xml"
       }
@@ -99,7 +99,7 @@ task stageData(type: SaxonXsltTask) {
   }
 
   input "${projectDir}/src/data/manifest.xml"
-  output "${buildDir}/data/org/xmlresolver/data/catalog.xml"
+  output "${buildDir}/data/org/xmlresolver/catalog.xml"
   stylesheet "${projectDir}/tools/make-catalog.xsl"
 }
 
@@ -200,7 +200,7 @@ task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
 assemble.dependsOn sourcesJar
 
 task dataJar(type: Jar, dependsOn: ["stageData"]) {
-  archiveFileName = "xmlresolver-data-${resolverVersion}.zip"
+  archiveFileName = "xmlresolver-data-${resolverVersion}.jar"
   classifier = 'data'
   from "${buildDir}/data"
   manifest {
