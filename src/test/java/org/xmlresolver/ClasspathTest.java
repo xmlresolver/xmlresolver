@@ -29,7 +29,7 @@ import static org.junit.Assert.fail;
  * @author ndw
  */
 public class ClasspathTest {
-    public static final List<String> catalogs = Arrays.asList("classpath:org/xmlresolver/test/catalog.xml", "src/test/resources/cpcatalog.xml");
+    public static final List<String> catalogs = Arrays.asList("classpath:path/catalog.xml", "src/test/resources/cpcatalog.xml");
     public static XMLResolverConfiguration config = null;
     public static CatalogManager manager = null;
     private static ResourceResolver resolver = null;
@@ -123,7 +123,7 @@ public class ClasspathTest {
 
     @Test
     public void testClasspathCatalog() {
-        XMLResolverConfiguration config = new XMLResolverConfiguration("classpath:org/xmlresolver/test/no-such-catalog.xml;classpath:org/xmlresolver/test/catalog.xml");
+        XMLResolverConfiguration config = new XMLResolverConfiguration("classpath:org/xmlresolver/test/no-such-catalog.xml;classpath:path/catalog.xml");
         //CatalogManager cx = new CatalogManager(config);
         ResourceResolver cpres = new ResourceResolver(config);
 

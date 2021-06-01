@@ -22,7 +22,7 @@ public class Issue31Test {
 
     @Before
     public void setUp() {
-        URL rsrc = getClass().getClassLoader().getResource("org/xmlresolver/test/catalog.xml");
+        URL rsrc = getClass().getClassLoader().getResource("path/catalog.xml");
         assertNotNull(rsrc);
 
         exp = rsrc.toString();

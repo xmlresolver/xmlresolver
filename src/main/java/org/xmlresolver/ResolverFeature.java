@@ -243,4 +243,14 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> PARSE_RDDL = new ResolverFeature<>(
             "http://xmlresolver.org/feature/rddl", true);
+
+    /**
+     * Determines whether or not catalogs on the classpath should be loaded automatically.
+     *
+     * <p>If this feature is enabled, then the resolver will attempt to find and load all
+     * of the catalogs named <code>org/xmlresolver/catalog.xml</code> on the classpath.
+     * These will be added to the of the catalogs loaded from properties.</p>
+     */
+    public static final ResolverFeature<Boolean> CLASSPATH_CATALOGS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/classpath-catalogs", true);
 }

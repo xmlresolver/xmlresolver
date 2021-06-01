@@ -12,6 +12,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -85,7 +87,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CACHE_DIRECTORY, ResolverFeature.CACHE_UNDER_HOME,
             ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS, ResolverFeature.MASK_JAR_URIS,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
-            ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL};
+            ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL,
+            ResolverFeature.CLASSPATH_CATALOGS};
+    private static List<String> classpathCatalogList = null;
 
     private final List<String> catalogs;
     private Boolean preferPublic = ResolverFeature.PREFER_PUBLIC.getDefaultValue();
@@ -100,6 +104,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean maskJarUris = ResolverFeature.MASK_JAR_URIS.getDefaultValue();
     private String catalogLoader = ResolverFeature.CATALOG_LOADER_CLASS.getDefaultValue();
     private Boolean parseRddl = ResolverFeature.PARSE_RDDL.getDefaultValue();
+    private Boolean classpathCatalogs = ResolverFeature.CLASSPATH_CATALOGS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
     public XMLResolverConfiguration() {
@@ -136,6 +141,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         maskJarUris = current.maskJarUris;
         catalogLoader = current.catalogLoader;
         parseRddl = current.parseRddl;
+        classpathCatalogs = current.classpathCatalogs;
         showConfigChanges = current.showConfigChanges;
     }
 
@@ -324,6 +330,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             parseRddl = isTrue(property);
         }
+
+        property = System.getProperty("xml.catalog.classpathCatalogs");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", property);
+            }
+            classpathCatalogs = isTrue(property);
+        }
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
@@ -464,6 +478,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             parseRddl = isTrue(property);
         }
+
+        property = properties.getProperty("classpath-catalogs");
+        if (property != null) {
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", property);
+            }
+            classpathCatalogs = isTrue(property);
+        }
     }
 
     private void showConfig() {
@@ -478,8 +500,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
         logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
         logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", catalogLoader);
+        logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
         for (String catalog: catalogs) {
             logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
+        }
+        if (classpathCatalogs) {
+            for (String catalog : findClasspathCatalogFiles()) {
+                logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
+            }
         }
     }
 
@@ -538,9 +566,30 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             catalogLoader = (String) value;
         } else if (feature == ResolverFeature.PARSE_RDDL) {
             parseRddl = (Boolean) value;
+        } else if (feature == ResolverFeature.CLASSPATH_CATALOGS) {
+            classpathCatalogs = (Boolean) value;
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
+    }
+
+    private List<String> findClasspathCatalogFiles() {
+        if (classpathCatalogList == null) {
+            ArrayList<String> catalogs = new ArrayList<>();
+            try {
+                Enumeration<URL> resources = XMLResolverConfiguration.class.getClassLoader().getResources("org/xmlresolver/catalog.xml");
+                while (resources.hasMoreElements()) {
+                    URL catalog = resources.nextElement();
+                    catalogs.add(catalog.toString());
+                }
+            } catch (IOException ex) {
+                // nevermind
+            }
+
+            classpathCatalogList = Collections.unmodifiableList(catalogs);
+        }
+
+        return classpathCatalogList;
     }
 
     @Override
@@ -555,7 +604,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             return (T) manager;
         } else if (feature == ResolverFeature.CATALOG_FILES) {
-            return (T) catalogs;
+            List<String> cats = new ArrayList<>(catalogs);
+            if (classpathCatalogs) {
+                cats.addAll(findClasspathCatalogFiles());
+            }
+            return (T) cats;
         } else if (feature == ResolverFeature.PREFER_PUBLIC) {
             return (T) preferPublic;
         } else if (feature == ResolverFeature.PREFER_PROPERTY_FILE) {
@@ -574,6 +627,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) catalogLoader;
         } else if (feature == ResolverFeature.PARSE_RDDL) {
             return (T) parseRddl;
+        } else if (feature == ResolverFeature.CLASSPATH_CATALOGS) {
+            return (T) classpathCatalogs;
         } else if (feature == ResolverFeature.CACHE) {
             if (cache == null) {
                 cache = new ResourceCache(this);

@@ -27,12 +27,12 @@ public class ResolvingXMLReaderTest {
 
     @Test
     public void testReader(){
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        spf.setNamespaceAware(true);
-        spf.setValidating(true);
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, true);
+        Resolver resolver = new Resolver(config);
 
         try {
-            ResolvingXMLReader reader = new ResolvingXMLReader(spf);
+            ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
             reader.parse("src/test/resources/documents/pitest.xml");
         } catch (Exception ex) {
             fail();
