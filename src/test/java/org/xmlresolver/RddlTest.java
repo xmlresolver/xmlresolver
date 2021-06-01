@@ -11,6 +11,7 @@ import java.net.URI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class RddlTest extends CacheManager {
     public static final String catalog = "src/test/resources/docker.xml";
@@ -108,12 +109,11 @@ public class RddlTest extends CacheManager {
         config.setFeature(ResolverFeature.PARSE_RDDL, true);
         ResourceResolver resolver = new ResourceResolver(config);
 
-        Resource xsd = resolver.resolveNamespaceURI("http://www.w3.org/2001/xml.xsd",
+        Resource xsd = resolver.resolveNamespaceURI("http://www.w3.org/XML/1998/namespace",
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         assertNotNull(xsd);
+        assertTrue(xsd.uri().toString().endsWith("/xml.xsd"));
     }
-
-
 }
 

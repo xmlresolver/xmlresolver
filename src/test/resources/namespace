@@ -1,0 +1,145 @@
+<?xml version='1.0'?>
+<!DOCTYPE html PUBLIC "-//XML-DEV//DTD XHTML RDDL 1.0//EN" "http://www.w3.org/2001/rddl/rddl-xhtml.dtd" >
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rddl="http://www.rddl.org/" xml:lang="en" xml:base="http://www.w3.org/XML/1998/namespace">
+<head> 
+<title>The "xml:" Namespace</title> 
+<link href="http://rddl.org/xrd.css" type="text/css" rel="stylesheet"/> 
+</head> 
+<body> <h1>The "xml:" Namespace</h1>
+<p>This Version:
+<a href="http://www.w3.org/XML/1998/namespace.html">26 October 2009</a></p>
+<h2>Description</h2>
+<p>The namespace whose name is
+<code>http://www.w3.org/XML/1998/namespace</code> is bound by definition to
+the prefix <code>xml:</code> according to  
+<a href="http://www.w3.org/TR/xml-names/">Namespaces in XML</a> (and by <a href="http://www.w3.org/TR/xml-names11/">Namespaces in XML 1.1</a>).
+Note that unlike all other XML namespaces, both the name <strong>and</strong>
+the prefix are specified; 
+i.e., if you want XML 1.0 processors to recognize this namespace, you must use
+the reserved prefix <code>xml:</code>.
+</p>
+<h3><code>xml:lang</code> and <code>xml:space</code></h3>
+<p>As of the last update of this document, the 
+<a href="http://www.w3.org/TR/xml/">XML 1.0 Specification</a> (Fifth edition)
+(and also the <a href="http://www.w3.org/TR/xml11/">XML 1.1 Specification</a>
+Second edition)
+defines two attribute names in this namespace:</p>
+<dl><dt><a id="lang"><code>xml:lang</code></a></dt>
+<dd>Designed for identifying
+the human language used in the scope of the element to which it's
+attached.</dd>
+<dt><a id="space"><code>xml:space</code></a></dt>
+<dd>Designed to express whether or not the document's creator wishes white
+space to be considered as significant in the scope of the element to which
+it's attached.</dd>
+</dl>
+<h3><a id="base"><code>xml:base</code></a></h3>
+<p>The <a href="http://www.w3.org/TR/xmlbase/">XML Base specification</a>
+(Second edition)
+describes a facility, similar to that of HTML BASE, for defining base URIs for
+parts of XML documents.
+It defines a single attribute, <code>xml:base</code>, and describes in
+detail the procedure for its use in processing relative URI refeferences.
+</p>
+ <h3><a id="id"><code>xml:id</code></a></h3>
+ <p>The <a href="http://www.w3.org/TR/xml-id/">xml:id specification</a> defines
+a single attribute, <code>xml:id</code>, known to be of type <code>ID</code>
+independently of any DTD or schema.</p>
+ <h3><a id="Father">Father</a></h3>
+ <p>denotes Jon Bosak, the chair of 
+      the original XML Working Group.  This name is reserved by 
+      the following decision of the W3C XML Plenary and 
+      XML Coordination groups:</p>
+ <blockquote>
+<p>In appreciation for his vision, leadership and
+        dedication the W3C XML Plenary on this 10th day of
+        February, 2000, reserves for Jon Bosak in perpetuity
+        the XML name "xml:Father".</p>
+ </blockquote>
+    <h2>Namespace change policy</h2>
+<p>The <a href="http://www.w3.org/XML/Core/">XML Core Working
+	Group</a>
+      reserves the right to
+      bring additional names from this namespace into active use by
+      providing definitions for them in new specifications or
+      subsequent editions of existing specifications.  The Working
+      Group may also make modifications to the definitions of the
+      names already in use, although such changes will not normally
+      change the well-formedness or validity of existing documents
+      or significantly change their meaning.</p>
+    <p>All changes to the use of this namespace will be achieved by
+      the publication of documents governed by the W3C Process.</p>
+ <h2>Other names beginning 'xml'</h2>
+ <p>The <a href="http://www.w3.org/TR/xml/#sec-common-syn">XML specification</a>
+reserves all names beginning with the letters 'x', 'm', 'l' in any combination
+of upper- and lower-case for use by the W3C.  To date three such names have
+been given definitions&#x2014;although these names are <em>not</em> in the XML
+namespace, they are listed here as a convenience to readers and users:</p>
+ <dl>
+  <dt>xml</dt>
+  <dd>See <a href="http://www.w3.org/TR/xml/#NT-XMLDecl">the XML declaration</a> and <a href="http://www.w3.org/TR/xml-names/#xmlReserved">the XML namespace prefix</a></dd>
+  <dt>xmlns</dt>
+  <dd>See <a href="http://www.w3.org/TR/xml-names/#ns-decl">namespace declarations</a></dd>
+  <dt>xml-stylesheet</dt>
+  <dd>See <a href="http://www.w3.org/TR/xml-stylesheet/">The xml-stylesheet processing instruction</a></dd>
+ </dl>
+<h2>Related Resources</h2>
+<!-- no obvious "nature" for the XML spec... -->
+<rddl:resource xlink:title="Definition of xml:space" xlink:arcrole="http://www.rddl.org/purposes#normative-reference" xlink:href="http://www.w3.org/TR/xml/#sec-white-space">
+
+<div class="resource">
+<p><a href="http://www.w3.org/TR/xml/#sec-white-space">Section
+2.10</a> of the XML 1.0 specification describes the syntax and semantics of
+the <code>xml:space</code> attribute.</p>
+</div>
+</rddl:resource>
+<rddl:resource xlink:title="Definition of xml:lang" xlink:arcrole="http://www.rddl.org/purposes#normative-reference" xlink:href="http://www.w3.org/TR/xml/#sec-lang-tag">
+
+<div class="resource">
+<p><a href="http://www.w3.org/TR/xml/#sec-lang-tag">Section
+2.12</a> of the XML 1.0 specification describes the syntax and semantics of
+the <code>xml:lang</code> attribute.</p>
+</div>
+</rddl:resource>
+<rddl:resource xlink:title="XML Schema" xlink:role="http://www.w3.org/2001/XMLSchema" xlink:arcrole="http://www.rddl.org/purposes#schema-validation" xlink:href="http://www.w3.org/2001/xml.xsd">
+<div class="resource">
+<p>An <a href="http://www.w3.org/TR/xmlschema-0/">XML Schema</a>
+<a href="http://www.w3.org/2001/xml.xsd">fragment</a>
+is available which constrains the syntax of <code>xml:lang</code>, <code>xml:space</code>,
+<code>xml:base</code> and <code>xml:id</code> in the schema language defined by the <a href="http://www.w3.org/TR/xmlschema-1/">XML Schema</a> Recommendation, Second Edition,
+of 28 October 2004.</p>
+</div>
+</rddl:resource>
+<rddl:resource xlink:title="XML Schema (CR version)" xlink:role="http://www.w3.org/2000/10/XMLSchema" xlink:arcrole="http://www.rddl.org/purposes#schema-validation" xlink:href="http://www.w3.org/XML/1998/namespace.xsd">
+<div class="resource">
+<p>(An XML Schema
+<a href="http://www.w3.org/XML/1998/namespace.xsd">fragment</a>
+for the <a href="http://www.w3.org/TR/2000/CR-xmlschema-1-20001024/">CR version
+of XML Schema</a> is still available as well.)</p>
+</div>
+</rddl:resource>
+<!-- what's the nature for an RFC? -->
+ <rddl:resource xlink:title="IETF BCP 47" xlink:role="http://www.ietf.org/rfc/rfc2026.txt" xlink:arcrole="http://www.rddl.org/purposes#normative-reference" xlink:href="ftp://ftp.rfc-editor.org/in-notes/bcp/bcp47.txt">
+<div class="resource">
+<p>The value of the <code>xml:lang</code> attribute must be as specified
+by <a href="ftp://ftp.rfc-editor.org/in-notes/bcp/bcp47.txt">BCP 47</a>,
+or be empty.
+</p>
+</div>
+</rddl:resource>
+<rddl:resource xlink:title="XML Base Specification" xlink:arcrole="http://www.rddl.org/purposes#normative-reference" xlink:href="http://www.w3.org/TR/xmlbase/">
+<div class="resource">
+<p>The W3C <a href="http://www.w3.org/TR/xmlbase/">XML Base</a>
+specification for the <code>xml:base</code> attribute.</p>
+</div>
+</rddl:resource>
+ <rddl:resource xlink:title="xml:id Specification" xlink:arcrole="http://www.rddl.org/purposes#normative-reference" xlink:href="http://www.w3.org/TR/xml-id/">
+<div class="resource">
+<p>The W3C <a href="http://www.w3.org/TR/xml-id/">xml:id</a>
+specification for the <code>xml:id</code> attribute.</p>
+</div>
+</rddl:resource>
+
+</body>
+<!-- $Id: namespace.html,v 1.14 2009/10/26 14:28:38 ht Exp $ -->
+</html>

@@ -435,8 +435,14 @@ public class ResourceResolver {
             }
 
             if (rddl != null) {
-                logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", rddl);
-                return streamResult(rddl, cached);
+                Resource local = resolveURI(rddl.toString(), uri.toString());
+                if (local != null) {
+                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", local.localUri());
+                    return local;
+                } else {
+                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", rddl);
+                    return streamResult(rddl, cached);
+                }
             }
         }
 
@@ -530,7 +536,6 @@ public class ResourceResolver {
             if (found == null && ResolverConstants.RDDL_NS.equals(uri) && "resource".equals(localName)) {
                 String rnature = attributes.getValue(ResolverConstants.XLINK_NS, "role");
                 String rpurpose = attributes.getValue(ResolverConstants.XLINK_NS, "arcrole");
-                System.err.println("CHECK: " + rnature + ": " + rpurpose);
                 String href = attributes.getValue(ResolverConstants.XLINK_NS, "href");
                 if (nature.equals(rnature) && purpose.equals(rpurpose) && href != null) {
                     found = baseUriStack.peek().resolve(href);

@@ -87,7 +87,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
             ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL};
 
-    private List<String> catalogs = new ArrayList<>();
+    private final List<String> catalogs;
     private Boolean preferPublic = ResolverFeature.PREFER_PUBLIC.getDefaultValue();
     private Boolean preferPropertyFile = ResolverFeature.PREFER_PROPERTY_FILE.getDefaultValue();
     private Boolean allowCatalogPI = ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue();
@@ -113,6 +113,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     public XMLResolverConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
         logger.log(ResolverLogger.CONFIG, "XMLResolver version %s", BuildConfig.VERSION);
         showConfigChanges = false;
+        catalogs = new ArrayList<>();
         loadConfiguration(propertyFiles, catalogFiles);
         showConfigChanges = true;
     }
@@ -216,7 +217,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog cleared");
+                logger.log(ResolverLogger.CONFIG, "Catalog list cleared");
             }
             catalogs.clear();
             while (tokens.hasMoreTokens()) {
@@ -340,15 +341,15 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             catalogs.clear();
             if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog cleared");
+                logger.log(ResolverLogger.CONFIG, "Catalog list cleared");
             }
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
-                    if (relative && propertiesURL != null) {
+                    if (!relative && propertiesURL != null) {
                         try {
-                            token = new URL(propertiesURL, token).toURI().toASCIIString();
-                        } catch (URISyntaxException | MalformedURLException e) {
+                            token = new URL(propertiesURL, token).toString();
+                        } catch (MalformedURLException e) {
                             logger.log(ResolverLogger.ERROR, "Cannot make absolute: " + token);
                         }
                     }
@@ -366,9 +367,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
-                    if (relative && propertiesURL != null) {
+                    if (!relative && propertiesURL != null) {
                         try {
-                            token = new URL(propertiesURL, token).toURI().toASCIIString();
+                            token = new URL(propertiesURL, token).toURI().toString();
                         } catch (URISyntaxException | MalformedURLException e) {
                             logger.log(ResolverLogger.ERROR, "Cannot make absolute: " + token);
                         }
@@ -483,12 +484,16 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     public void addCatalog(String catalog) {
-        catalogs.add(catalog);
+        synchronized (catalogs) {
+            catalogs.add(catalog);
+        }
     }
 
     public void addCatalog(URI catalog, InputSource data) {
         URI uri = URIUtils.cwd().resolve(catalog);
-        catalogs.add(uri.toString());
+        synchronized (catalogs) {
+            catalogs.add(uri.toString());
+        }
         if (manager == null) {
             manager = getFeature(ResolverFeature.CATALOG_MANAGER);
         }
@@ -503,7 +508,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     @SuppressWarnings("unchecked")
     public <T> void setFeature(ResolverFeature<T> feature, T value) {
         if (feature == ResolverFeature.CATALOG_FILES) {
-            catalogs = (List<String>) value;
+            synchronized (catalogs) {
+                catalogs.clear();
+                catalogs.addAll((List<String>) value);
+            }
         } else if (feature == ResolverFeature.PREFER_PUBLIC) {
             preferPublic = (Boolean) value;
         } else if (feature == ResolverFeature.PREFER_PROPERTY_FILE) {

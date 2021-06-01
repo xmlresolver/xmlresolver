@@ -81,19 +81,21 @@ public class XmlLoader implements CatalogLoader {
             throw new IllegalArgumentException("Catalog URIs must be absolute: " + catalog);
         }
 
-        try {
-            SAXParserFactory spf = SAXParserFactory.newInstance();
-            spf.setNamespaceAware(true);
-            spf.setValidating(false);
-            spf.setXIncludeAware(false);
-            SAXParser parser = spf.newSAXParser();
-            CatalogContentHandler handler = new CatalogContentHandler(catalog, preferPublic);
-            parser.parse(source, handler);
-            EntryCatalog entry = handler.catalog();
-            catalogMap.put(catalog, entry);
-        } catch (ParserConfigurationException | SAXException | IOException ex) {
-            logger.log(ResolverLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
+        synchronized (catalogMap) {
+            try {
+                SAXParserFactory spf = SAXParserFactory.newInstance();
+                spf.setNamespaceAware(true);
+                spf.setValidating(false);
+                spf.setXIncludeAware(false);
+                SAXParser parser = spf.newSAXParser();
+                CatalogContentHandler handler = new CatalogContentHandler(catalog, preferPublic);
+                parser.parse(source, handler);
+                EntryCatalog entry = handler.catalog();
+                catalogMap.put(catalog, entry);
+            } catch (ParserConfigurationException | SAXException | IOException ex) {
+                logger.log(ResolverLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
+            }
         }
 
         return catalogMap.get(catalog);
