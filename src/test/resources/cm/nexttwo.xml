@@ -1,0 +1,17 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//EXAMPLE//DTD Example Next//EN"
+          uri="/tmp/public-next.dtd"/>
+
+  <system systemId="http://example.com/system-next.dtd"
+          uri="/tmp/system-next.dtd"/>
+
+  <uri name="http://example.com/document.xml"
+       uri="/tmp/found-in-two.xml"/>
+
+  <!-- This one *is* seen because deltwo.xml loads nexttwo.xml via nextCatalog -->
+  <system systemId="http://example.com/delegated/five/system.dtd"
+          uri="/tmp/five-from-two.dtd"/>
+
+</catalog>

@@ -1,0 +1,16 @@
+<!DOCTYPE catalog
+  PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+         "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+  <uri name="http://example.com/example.txt"
+       uri="data:,A%20short%20note."/>
+  <uri name="http://example.com/example.xml"
+       uri="data:application/xml;base64,PGRvYz5JIHdhcyBhIGRhdGEgVVJJPC9kb2M+Cg=="/>
+  <uri name="http://example.com/greek.txt"
+       uri="data:text/plain;charset=iso-8859-7,%be%f7%be"/>
+  <uri name="http://example.com/classpath"
+       uri="classpath:path/example-doc.xml"/>
+</catalog>
+
+

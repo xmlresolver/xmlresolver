@@ -1,0 +1,20 @@
+<!DOCTYPE catalog
+  PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+         "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <!-- These entries are for tests about how classpath:/path URIs are
+       resolved and used. They are equivalent to classpath:path; the
+       leading "/" is ignored because all classpath: URIs are searches
+       against the roots in the classpath. -->
+
+  <uri name="http://example.com/test.txt"
+       uri="classpath:/path/test.txt"/>
+  <uri name="http://example.com/example.xml"
+       uri="classpath:path/example-doc.xml"/>
+  <uri name="classpath:/path/test.txt"
+       uri="classpath:/path/test.txt"/>
+  <uri name="classpath:/path/example-doc.xml"
+       uri="classpath:path/example-doc.xml"/>
+</catalog>

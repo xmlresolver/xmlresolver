@@ -1,0 +1,20 @@
+#!/usr/bin/perl -- # -*- Perl -*-
+
+use strict;
+use English;
+use POSIX qw(strftime);
+use Digest::SHA qw(sha256_hex);
+use CGI::Carp qw(fatalsToBrowser);
+
+my $CGI = exists $ENV{'GATEWAY_INTERFACE'} ? 1 : 0;
+
+my $now = strftime("%a, %d %b %Y %H:%M:%S GMT", gmtime());
+my $etag = sha256_hex($now);
+
+print "ETag: \"$etag\"\n";
+print "Content-type: application/xml\n\n";
+print "<constant>";
+print "What never changes but is always different?";
+print "</constant>\n";
+
+exit(0);

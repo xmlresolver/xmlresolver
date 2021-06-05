@@ -3,12 +3,19 @@ plugins {
   id "maven-publish"
   id "signing"
   id 'com.github.gmazzo.buildconfig' version "2.0.2"
+  id 'com.nwalsh.saxon-gradle' version '0.9.1-beta3'
 }
 
 repositories {
   mavenLocal()
   mavenCentral()
   maven { url "https://maven.restlet.com" }
+}
+
+java {
+  registerFeature('validating') {
+    usingSourceSet(sourceSets.main)
+  }
 }
 
 configurations.all {
@@ -26,7 +33,12 @@ dependencies {
     [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
     [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'],
     [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
+    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ],
+    [group: 'org.jetbrains', name: 'annotations', version: '20.1.0' ]
+  )
+
+  validatingImplementation (
+    [group: 'org.relaxng', name: 'jing', version: '20181222' ]
   )
 
   testImplementation (
@@ -34,8 +46,16 @@ dependencies {
     [group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.1'],
     [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'],
     files("src/test/resources/data1.jar"),
-    files("src/test/resources/data2.jar")
+    files("src/test/resources/data2.jar"),
+    files("src/test/resources/xmlresolver-data.jar")
   )
+}
+
+import com.nwalsh.SaxonXsltTask
+import Docker
+
+ext {
+  c_restest = "restest"
 }
 
 def EXCP="${projectDir}/build/classes/java/main"
@@ -51,6 +71,39 @@ buildConfig {
   buildConfigField('String', 'appName', "\"org.xmlresolver\"")
   buildConfigField('String', 'VERSION', "\"${resolverVersion}\"")
 }
+
+// ============================================================
+
+task stageData(type: SaxonXsltTask) {
+  def baselen = "${projectDir}/src/data".length() + 1
+  def baseout = "${buildDir}/data/org/xmlresolver"
+
+  inputs.files fileTree(dir: "${projectDir}/src/data")
+  outputs.files fileTree(dir: "${projectDir}/src/data").collect { source ->
+    "${baseout}/${source.getAbsolutePath().substring(baselen)}"
+  }
+  outputs.file "${baseout}/cat-entities.xml"
+  outputs.file "${baseout}/cat-mathml2.xml"
+  outputs.file "${baseout}/cat-mathml3.xml"
+  outputs.file "${baseout}/cat-rddl.xml"
+  outputs.file "${baseout}/cat-svg.xml"
+  outputs.file "${baseout}/cat-xhtml.xml"
+
+  doFirst {
+    copy {
+      into "${buildDir}/data/org/xmlresolver"
+      from ("${projectDir}/src/data") {
+        exclude "manifest.xml"
+      }
+    }
+  }
+
+  input "${projectDir}/src/data/manifest.xml"
+  output "${buildDir}/data/org/xmlresolver/catalog.xml"
+  stylesheet "${projectDir}/tools/make-catalog.xsl"
+}
+
+// ============================================================
 
 jar {
   exclude("org/xmlresolver/apps/**")
@@ -71,10 +124,11 @@ task appJar(type: Jar) {
   manifest {
     attributes "Built-By": "Norman Walsh"
     attributes "Implementation-Vendor": "Norman Walsh"
-    attributes "Implementation-Title": "XML Resolver Apps"
+    attributes "Implementation-Title": "XML Resolver applications"
     attributes "Implementation-Version": resolverVersion
   }
 }
+assemble.dependsOn appJar
 
 task copyJars(type: Copy, dependsOn: ["jar", "appJar"]) {
   from "build/libs"
@@ -99,21 +153,64 @@ task copyDocs(type: Copy) {
   }
 }
 
-task dist(dependsOn: ["copyDocs", "copyJars"], type: Zip) {
+task dist(dependsOn: ["copyDocs", "copyJars", "test"], type: Zip) {
   from("build/${basename}-${resolverVersion}")
   into 'xmlresolver-' + resolverVersion
   archiveFileName = "xmlresolver-${resolverVersion}.zip"
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  classifier = 'javadoc'
-  from javadoc.destinationDir
+javadoc {
+  title 'XML Catalog Resolver API'
+  exclude 'org/xmlresolver/utils/**'
+  exclude 'org/xmlresolver/BuildConfig.java'
+  exclude 'org/xmlresolver/ResourceConnection.java'
+  exclude 'org/xmlresolver/cache/CacheEntryCatalog.java'
+  exclude 'org/xmlresolver/catalog/**'
+  options.showFromPublic()
+  options.overview = 'src/main/java/overview.html'
+  options.encoding('utf-8')
+  options.docEncoding('utf-8')
+  options.charSet('utf-8')
 }
 
-task sourcesJar(type: Jar) {
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  archiveFileName = "xmlresolver-javadoc-${resolverVersion}.zip"
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver API documentation"
+    attributes "Implementation-Version": resolverVersion
+  }
+}
+assemble.dependsOn javadocJar
+
+task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
+  archiveFileName = "xmlresolver-sources-${resolverVersion}.zip"
   classifier = 'sources'
   from sourceSets.main.allSource
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver sources"
+    attributes "Implementation-Version": resolverVersion
+  }
 }
+assemble.dependsOn sourcesJar
+
+task dataJar(type: Jar, dependsOn: ["stageData"]) {
+  archiveFileName = "xmlresolver-data-${resolverVersion}.jar"
+  classifier = 'data'
+  from "${buildDir}/data"
+  manifest {
+    attributes "Built-By": "Norman Walsh"
+    attributes "Implementation-Vendor": "Norman Walsh"
+    attributes "Implementation-Title": "XML Resolver data"
+    attributes "Implementation-Version": resolverVersion
+  }
+}
+assemble.dependsOn dataJar
 
 signing {
   sign publishing.publications
@@ -126,12 +223,12 @@ publishing {
         name = 'XML Resolver'
         packaging = 'jar'
         description = 'An XML entity/uri resolver'
-        url = 'https://github.com/ndw/xmlresolver'
+        url = 'https://github.com/xmlresolver/xmlresolver'
 
         scm {
-          url = 'scm:git@github.com:ndw/xmlresolver.git'
-          connection = 'scm:git@github.com:ndw/xmlresolver.git'
-          developerConnection = 'scm:git@github.com:ndw/xmlresolver.git'
+          url = 'scm:git@github.com:xmlresolver/xmlresolver.git'
+          connection = 'scm:git@github.com:xmlresolver/xmlresolver.git'
+          developerConnection = 'scm:git@github.com:xmlresolver/xmlresolver.git'
         }
 
         licenses {
@@ -155,6 +252,7 @@ publishing {
       from components.java
       artifact javadocJar
       artifact sourcesJar
+      artifact dataJar
     }
   }
 
@@ -187,6 +285,54 @@ task deleteBuild() {
 }
 
 clean.dependsOn deleteBuild
+
+// ======================================================================
+
+tasks.register("dockerup") {
+  doLast {
+    Docker.assertRunning(c_restest)
+  }
+}
+
+tasks.register("dockerdown") {
+  doLast {
+    Docker.assertNotRunning(c_restest)
+  }
+}
+
+tasks.register("start") {
+  dependsOn "dockerdown"
+
+  doFirst {
+    Docker.assertDockerAvailable()
+    Docker.assertDockerComposeAvailable()
+  }
+
+  doLast {
+    exec {
+      workingDir "docker"
+      commandLine Docker.dockerCompose(), "up", "-d"
+    }
+    exec {
+      commandLine Docker.docker(), "ps", "-a", "--format={{.ID}} {{.Names}} {{.Status}}"
+    }
+  }
+}
+
+tasks.register("stop") {
+  doFirst {
+    Docker.assertDockerComposeAvailable()
+  }    
+
+  doLast {
+    exec {
+      workingDir "docker"
+      commandLine Docker.dockerCompose(), "down"
+    }
+  }
+}
+
+// ======================================================================
 
 task helloWorld() {
   // My task for testing

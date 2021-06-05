@@ -1,0 +1,21 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//OASIS//DTD XML Catalogs V1.1//EN"
+          uri="oasis-xml-catalog-1.1.dtd"/>
+
+  <system systemId="http://www.oasis-open.org/committees/entity/release/1.1/catalog.dtd"
+          uri="oasis-xml-catalog-1.1.dtd"/>
+
+  <public publicId="-//OASIS//DTD XML Catalogs V1.0//EN"
+          uri="oasis-xml-catalog-1.0.dtd"/>
+
+  <system systemId="http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd"
+          uri="oasis-xml-catalog-1.0.dtd"/>
+
+  <uriSuffix uriSuffix="/oasis-xml-catalog-1.1.rnc"
+             uri="oasis-xml-catalog-1.1.rnc"/>
+
+  <uriSuffix uriSuffix="/oasis-xml-catalog-1.1.rng"
+             uri="oasis-xml-catalog-1.1.rng"/>
+</catalog>

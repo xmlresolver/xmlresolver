@@ -5,6 +5,11 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xmlresolver/xmlresolver/badge.svg)](https://search.maven.org/search?q=g:org.xmlresolver)
 
+*Attention: On 22 May 2021, I moved this repository from my personal
+account to a new `xmlresolver` organization. GitHub should provide redirects,
+but you may want to update your git remote if you forked it before the
+move.*
+
 *Attention: On 7 August 2020, I changed the default branch in this repository to `main`. 
 If you’ve got a clone of this repo, you may want to update it. Apologies for the inconvenience.*
 
@@ -106,10 +111,6 @@ maps the URI `http://example.com/example.xml` to a document with the path `path/
 the classpath. (Searches always begin at the root of the classpath segments, so
 `path/example-doc.xml` and `/path/example-doc.xml` are equivalent.)
 
-(For what it’s worth, the resolver also supports `classpath*:` but
-since that’s defined as concatenating the resources identified, it’s of
-comparatively little use in the XML case.)
-
 Suppose, for example, that your classpath
 includes `/home/ndw/java/libs/example.jar`:
 
@@ -166,3 +167,7 @@ To make this easier, the 2.0 release adds a new system property,
 `catalog-additions`. Both properties take a list of catalog files.
 Those files will be added to the list defined by the normal catalog
 settings.
+
+xxxxxxx
+
+document xmlresolver.offline

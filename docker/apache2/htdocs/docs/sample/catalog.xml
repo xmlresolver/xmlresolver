@@ -1,0 +1,37 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//Sample//DTD Simple 1.0//EN"
+          uri="sample.dtd"/>
+
+  <system systemId="https://xmlresolver.org/ns/sample/sample.dtd"
+          uri="sample.dtd"/>
+
+  <public publicId="-//Sample//DTD Simple Blocks 1.0//EN"
+          uri="blocks.dtd"/>
+
+  <system systemId="https://xmlresolver.org/ns/sample/blocks.dtd"
+          uri="sample.dtd"/>
+
+  <uri name="https://xmlresolver.org/ns/sample/sample.rng"
+       uri="sample.rng"/>
+
+  <uri name="https://xmlresolver.org/ns/sample/blocks.rng"
+       uri="blocks.rng"/>
+
+  <uri name="https://xmlresolver.org/ns/sample/sample.rnc"
+       uri="sample.rnc"/>
+
+  <uri name="https://xmlresolver.org/ns/sample/blocks.rnc"
+       uri="blocks.rnc"/>
+
+  <uri name="https://xmlresolver.org/ns/sample/sample.xsd"
+       uri="sample.xsd"/>
+
+  <uri name="https://xmlresolver.org/ns/sample/blocks.xsd"
+       uri="blocks.xsd"/>
+
+  <uri name="https://xmlresolver.org/ns/sample/xlink.xsd"
+       uri="xlink.xsd"/>
+
+</catalog>

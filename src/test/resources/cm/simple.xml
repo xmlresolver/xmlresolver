@@ -1,0 +1,65 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+	 xmlns:rddl="http://www.rddl.org/"
+         prefer="system">
+
+  <group xml:base="file:///tmp/" prefer="public">
+
+    <public publicId="-//EXAMPLE//DTD Example//EN"
+            uri="public.dtd"/>
+
+    <system systemId="http://example.com/system.dtd"
+            uri="system.dtd"/>
+
+    <rewriteSystem systemIdStartString="http://example.com/rewrite/"
+            rewritePrefix="local/"/>
+
+    <systemSuffix systemIdSuffix="base.dtd"
+            uri="suffix/base-short.dtd"/>
+
+    <systemSuffix systemIdSuffix="/path/base.dtd"
+            uri="suffix/base-long.dtd"/>
+
+    <!-- delegatePublic -->
+
+    <!-- delegateSystem -->
+
+    <uri name="http://example.com/document.xml"
+         uri="/path/document.xml"/>
+
+    <uri name="http://example.com/rddl.xml"
+         rddl:nature="nature"
+         rddl:purpose="purpose"
+         uri="/path/rddl.xml"/>
+
+    <rewriteURI uriStartString="http://example.com/rewrite/"
+                rewritePrefix="/path/local/"/>
+
+    <uriSuffix uriSuffix="base.xml"
+               uri="suffix/base-short.xml"/>
+
+    <uriSuffix uriSuffix="/path/base.xml"
+               uri="suffix/base-long.xml"/>
+
+    <!-- delegateURI -->
+
+    <doctype name="book"
+             uri="path/docbook.dtd"/>
+
+    <document uri="path/default.xml"/>
+
+    <!-- dtddecl -->
+
+    <entity name="chap01"
+            uri="chap01.xml"/>
+
+    <!-- linktype -->
+
+    <notation name="notename"
+              uri="notation.xml"/>
+
+    <!-- sgmldecl -->
+
+  </group>
+
+  <!-- nextCatalog -->
+</catalog>

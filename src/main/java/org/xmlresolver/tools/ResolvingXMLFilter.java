@@ -15,38 +15,47 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.Catalog;
 import org.xmlresolver.Resolver;
-import org.xmlresolver.helpers.FileURI;
+import org.xmlresolver.ResolverLogger;
+import org.xmlresolver.XMLResolverConfiguration;
+import org.xmlresolver.utils.URIUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
 
 /** An implementation of {@link org.xml.sax.XMLFilter} that performs catalog resolution.
  *
  * <p>This class implements the <code>oasis-xml-catalog</code> processing instruction if the underlying
  * resolver allows it.</p>
  *
+ * <p>Each instance constructed with the zero-argument constructor uses a shared, static
+ * resolver. This avoids paying the instantiation cost each time a parse is created.</p>
+ *
  * @author ndw
  */
 public class ResolvingXMLFilter extends XMLFilterImpl {
+    protected static ResolverLogger logger = new ResolverLogger(ResolvingXMLFilter.class);
+
     /** Are oasis-xml-catalog PIs allowed by this catalog? */
     private boolean allowXMLCatalogPI = true;
 
     /** Are we in the prolog? Is an oasis-xml-catalog PI valid now? */
     private boolean processXMLCatalogPI = false;
-
-    private Resolver resolver = new Resolver();
+    private static Resolver staticResolver = null;
+    private Resolver resolver = null;
     
     /** The base URI of the input document, if known. */
-    private URL baseURL = null;
+    private URI baseURI = null;
 
     /** Construct a filter with the default resolver. */
     public ResolvingXMLFilter() {
         super();
-        allowXMLCatalogPI = resolver.getCatalog().getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
+        if (staticResolver == null) {
+            staticResolver = new Resolver();
+        }
+        resolver = staticResolver;
+        allowXMLCatalogPI = resolver.getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
     }
 
     /** Construct an XML filter with the specified resolver.
@@ -56,7 +65,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     public ResolvingXMLFilter(Resolver resolver) {
         super();
         this.resolver = resolver;
-        allowXMLCatalogPI = resolver.getCatalog().getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
+        allowXMLCatalogPI = resolver.getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
     }
 
     /** Construct an XML filter with the specified parent and resolver.
@@ -79,30 +88,34 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     }
 
     /**
-     * SAX XMLReader API.
+     * Parse a document.
      *
-     * <p>Note that the JAXP 1.1ea2 parser crashes with an InternalError if
-     * it encounters a system identifier that appears to be a relative URI
-     * that begins with a slash. For example, the declaration:</p>
-     *
-     * <pre>
-     * &lt;!DOCTYPE book SYSTEM "/path/to/dtd/on/my/system/docbookx.dtd"&gt;
-     * </pre>
-     *
-     * <p>would cause such an error. As a convenience, this method catches
-     * that error and prints an explanation. (Unfortunately, it's not possible
-     * to identify the particular system identifier that causes the problem.)
-     * </p>
-     *
-     * <p>The underlying error is forwarded after printing the explanatory
-     * message. The message is only every printed once and if
-     * <code>suppressExplanation</code> is set to <code>false</code> before
-     * parsing, it will never be printed.</p>
+     * <p>If the input doesn't have an associated open stream, this class will
+     * attempt to find the URI of the input in the catalog.</p>
      */
     public void parse(InputSource input) throws IOException, SAXException {
-        processXMLCatalogPI = allowXMLCatalogPI;
-        setupBaseURI(input.getSystemId());
-        super.parse(input);
+        Resolver localResolver = resolver;
+        try {
+            if (allowXMLCatalogPI) {
+                // The parse may change the catalog list; isolate this configuration to this parse
+                XMLResolverConfiguration config = resolver.getConfiguration();
+                config = new XMLResolverConfiguration(config);
+                resolver = new Resolver(config);
+            }
+            processXMLCatalogPI = allowXMLCatalogPI;
+            setupBaseURI(input.getSystemId());
+
+            if (input.getByteStream() == null && input.getCharacterStream() == null) {
+                InputSource src = resolver.resolveEntity(null, input.getSystemId());
+                if (src != null) {
+                    input.setByteStream(src.getByteStream());
+                }
+            }
+
+            super.parse(input);
+        } finally {
+            resolver = localResolver;
+        }
     }
 
     /** SAX XMLReader API.
@@ -110,9 +123,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * @see #parse(InputSource)
      */
     public void parse(String systemId) throws IOException, SAXException {
-        processXMLCatalogPI = allowXMLCatalogPI;
-        setupBaseURI(systemId);
-        super.parse(systemId);
+        parse(new InputSource(systemId));
     }
 
     /**
@@ -144,8 +155,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * we can ignore subsequent oasis-xml-catalog PIs. Otherwise
      * the events are just passed through.</p>
      */
-    public void notationDecl(String name, String publicId, String systemId)
-    throws SAXException {
+    public void notationDecl(String name, String publicId, String systemId) throws SAXException {
         processXMLCatalogPI = false;
         super.notationDecl(name,publicId,systemId);
     }
@@ -181,7 +191,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      */
     public void processingInstruction(String target, String pidata) throws SAXException {
         if (processXMLCatalogPI && target.equals("oasis-xml-catalog")) {
-            URL catalog = null;
+            URI catalog = null;
             String data = pidata;
 
             int pos = data.indexOf("catalog=");
@@ -194,16 +204,15 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
                     if (pos >= 0) {
                         data = data.substring(0, pos);
                         try {
-                            if (baseURL != null) {
-                                catalog = new URL(baseURL, data);
+                            if (baseURI != null) {
+                                catalog = baseURI.resolve(data);
                             } else {
-                                catalog = new URL(data);
+                                catalog = URIUtils.newURI(data);
                             }
-                            
-                            Catalog newCatalog = new Catalog(resolver.getCatalog().catalogList()+";"+catalog.toString());
-                            resolver = new Resolver(newCatalog);
-                        } catch (MalformedURLException mue) {
-                            // nevermind
+
+                            resolver.getConfiguration().addCatalog(catalog.toString());
+                        } catch (URISyntaxException mue) {
+                            logger.log(ResolverLogger.WARNING, "URI syntax exception resolving PI catalog: %s", data);
                         }
                     }
                 }
@@ -215,31 +224,13 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
 
     /** Save the base URI of the document being parsed. */
     private void setupBaseURI(String systemId) {
-        URL cwd = null;
-
         try {
-            URI furi = FileURI.makeURI("basename");
-            if (furi != null) {
-                cwd = furi.toURL();
+            baseURI = URIUtils.newURI(systemId);
+            if (!baseURI.isAbsolute()) {
+                baseURI = URIUtils.cwd().resolve(baseURI);
             }
-        } catch (MalformedURLException mue) {
-            // nevermind
-        }
-
-        try {
-            baseURL = new URL(systemId);
-        } catch (MalformedURLException mue) {
-            if (cwd != null) {
-                try {
-                    baseURL = new URL(cwd, systemId);
-                } catch (MalformedURLException mue2) {
-                    // give up
-                    baseURL = null;
-                }
-            } else {
-                // give up
-                baseURL = null;
-            }
+        } catch (URISyntaxException use) {
+            baseURI = URIUtils.cwd().resolve(systemId);
         }
     }
 }

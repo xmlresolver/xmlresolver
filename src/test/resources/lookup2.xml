@@ -1,0 +1,24 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <uri name="https://xmlresolver.org/ns/sample/sample.rng"
+       uri="sample/sample.rng"/>
+
+  <rewriteURI uriStartString="https://example.com/path1/"
+              rewritePrefix="https://example.com/path2/"/>
+
+  <uriSuffix uriSuffix="/suffix.rnc"
+             uri="sample20/sample-suffix.rnc"/>
+
+  <!-- The entries below never match because delegation doesn't continue after failure -->
+
+  <public publicId="-//Sample Delegated//DTD Sample 3.0//EN"
+          uri="sample30/fail.dtd"/>
+
+  <system systemId="https://example.com/delegated/sample/3.0/sample.dtd"
+          uri="sample30/fail.dtd"/>
+
+  <uri name="https://example.com/delegated/sample/3.0/sample.rng"
+       uri="sample30/fail.rng"/>
+
+</catalog>

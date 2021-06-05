@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://xmlresolver.com/ns/sample" xmlns:sample="http://xmlresolver.com/ns/sample" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <xs:include schemaLocation="blocks.xsd"/>
+  <xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="xlink.xsd"/>
+  <xs:element name="book">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sample:title"/>
+        <xs:choice>
+          <xs:element maxOccurs="unbounded" ref="sample:article"/>
+          <xs:element maxOccurs="unbounded" ref="sample:chapter"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="article">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="sample:title"/>
+        <xs:element maxOccurs="unbounded" ref="sample:p"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="chapter">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sample:title"/>
+        <xs:element maxOccurs="unbounded" ref="sample:p"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="title" type="xs:string"/>
+</xs:schema>

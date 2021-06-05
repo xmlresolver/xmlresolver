@@ -10,7 +10,6 @@ package org.xmlresolver;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
 
 import javax.xml.parsers.SAXParser;
@@ -29,13 +28,15 @@ public class Resolver2Test {
         SAXParserFactory spfactory = SAXParserFactory.newInstance();
         spfactory.setValidating(true);
         SAXParser parser = spfactory.newSAXParser();
-        XMLReader reader = parser.getXMLReader();
-        Catalog c = new Catalog("src/test/resources/catalogs/resolver2.xml");
-        parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new Resolver(c)));
+
+        XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
+        //Catalog c = new Catalog(config);
+        //CatalogManager cx = new CatalogManager(config); // FIXME:
+        parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new Resolver(config)));
         // If we didn't get an exception, we passed!
     }
     
-    private class DevNullHandler extends DefaultHandler2 {
+    private static class DevNullHandler extends DefaultHandler2 {
         private Resolver resolver = null;
 
         public DevNullHandler(Resolver resolver) {

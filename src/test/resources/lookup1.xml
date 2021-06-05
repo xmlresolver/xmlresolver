@@ -1,0 +1,65 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//Sample//DTD Sample 1.0//EN"
+          uri="sample10/sample-public.dtd"/>
+
+  <system systemId="https://example.com/sample/1.0/sample.dtd"
+          uri="sample10/sample-system.dtd"/>
+
+  <group prefer="system">
+    <public publicId="-//Sample//DTD Sample Prefer System 1.0//EN"
+            uri="sample10/sample-public.dtd"/>
+
+    <system systemId="https://example.com/sample-system/1.0/sample.dtd"
+            uri="sample10/sample-system.dtd"/>
+  </group>
+
+  <!-- ============================================================ -->
+
+  <rewriteSystem systemIdStartString="https://example.com/path1/"
+                 rewritePrefix="https://example.com/path2/"/>
+
+  <systemSuffix systemIdSuffix="/suffix.dtd"
+                uri="sample20/sample-suffix.dtd"/>
+
+  <!-- Longer prefixes are searched first, irrespective of the order
+       in the catalog -->
+
+  <!-- -//Sample Delegated//DTD Sample 1.0//EN is in lookup-delegated -->
+  <!-- -//Sample Delegated//DTD Sample 2.0//EN is in lookup-shorter -->
+  <!-- -//Sample Delegated//DTD Sample 3.0//EN is in lookup2 -->
+
+  <delegatePublic publicIdStartString="-//Sample Delegated//"
+                  catalog="lookup-shorter.xml"/>
+
+  <delegatePublic publicIdStartString="-//Sample Delegated//DTD"
+                  catalog="lookup-delegated.xml"/>
+
+  <!-- Longer prefixes are searched first, irrespective of the order
+       in the catalog -->
+
+  <!-- https://example.com/delegated/sample/1.0/sample.dtd is in lookup-delegated -->
+  <!-- https://example.com/delegated/sample/2.0/sample.dtd is in lookup-shorter -->
+  <!-- https://example.com/delegated/sample/3.0/sample.dtd is in lookup2 -->
+
+  <delegateSystem systemIdStartString="https://example.com/delegated/"
+                  catalog="lookup-shorter.xml"/>
+
+  <delegateSystem systemIdStartString="https://example.com/delegated/sample/"
+                  catalog="lookup-delegated.xml"/>
+
+  <!-- Longer prefixes are searched first, irrespective of the order
+       in the catalog -->
+
+  <!-- https://example.com/delegated/sample/1.0/sample.rng is in lookup-delegated -->
+  <!-- https://example.com/delegated/sample/2.0/sample.rng is in lookup-shorter -->
+  <!-- https://example.com/delegated/sample/3.0/sample.rng is in lookup2 -->
+
+  <delegateURI uriStartString="https://example.com/delegated/"
+               catalog="lookup-shorter.xml"/>
+
+  <delegateURI uriStartString="https://example.com/delegated/sample/"
+               catalog="lookup-delegated.xml"/>
+
+</catalog>

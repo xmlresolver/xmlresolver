@@ -1,0 +1,18 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//EXAMPLE//DTD Example//EN"
+          uri="/tmp/public.dtd"/>
+
+  <system systemId="http://example.com/system.dtd"
+          uri="/tmp/system.dtd"/>
+
+  <!-- longest first -->
+  <delegateSystem systemIdStartString="http://example.com/delegated/"
+                  catalog="deltwo.xml"/>
+  <delegateSystem systemIdStartString="http://example.com/delegated/one/"
+                  catalog="delone.xml"/>
+
+  <nextCatalog catalog="nextone.xml"/>
+  <nextCatalog catalog="nexttwo.xml"/>
+</catalog>

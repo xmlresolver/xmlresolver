@@ -1,0 +1,14 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <system systemId="http://example.com/delegated/two/system.dtd"
+          uri="/tmp/delegated-to-two.dtd"/>
+
+  <system systemId="http://example.com/delegated/one/test/system.dtd"
+          uri="/tmp/test-from-two.dtd"/>
+
+  <system systemId="http://example.com/delegated/three/system.dtd"
+          uri="/tmp/three-from-two.dtd"/>
+
+  <nextCatalog catalog="nexttwo.xml"/>
+</catalog>

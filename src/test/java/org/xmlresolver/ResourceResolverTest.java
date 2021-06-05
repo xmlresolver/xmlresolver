@@ -1,67 +1,48 @@
-/*
- * ResourceResolverTest.java
- * JUnit based test
- *
- * Created on December 30, 2006, 1:32 AM
- */
-
 package org.xmlresolver;
 
-
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Test;
+import org.xml.sax.InputSource;
 
-import static org.junit.Assert.assertNotNull;
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
-/**
- *
- * @author ndw
- */
 public class ResourceResolverTest {
-    private static Catalog catalog = null;
-    private static ResourceResolver resolver = null;
-    private static Resolver entityResolver = null;
+    public static final String catalog = "src/test/resources/catalog.xml";
+
+    XMLResolverConfiguration config = null;
+    Resolver resolver = null;
 
     @Before
-    public void setUp() throws Exception {
-        catalog = new Catalog("resources/test/catalogs/catalog.xml");
-        resolver = new ResourceResolver(catalog);
-        entityResolver = new Resolver(resolver);
-        resolver.setEntityResolver(entityResolver);
+    public void setup() {
+        config = new XMLResolverConfiguration(catalog);
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, "/tmp/y/cache");
+        resolver = new Resolver(config);
     }
 
-    /**
-     * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
-     */
-    public void testResolveURI() {
-        String href = ".bibliography.xml";
-        String base = "file:///home/nosuchuser/";
-        
-        Resource result = resolver.resolveURI(href, base);
-        assertNotNull(result);
+    @Test
+    public void uriForSystemFail() {
+        config.setFeature(ResolverFeature.URI_FOR_SYSTEM, false);
+        try {
+            InputSource is = resolver.resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
+            assertNull(is);
+        } catch (Exception ex) {
+            fail();
+        }
     }
 
-    /**
-     * Test of resolveURI method, of class org.xmlresolver.ResourceResolver.
-     */
-    public void testResolveEntity() {
-        String href = ".bibliography.xml";
-        String base = "file:///home/nosuchuser/";
-
-        Resource result = resolver.resolveEntity("bibliography", base + href,null);
-        assertNotNull(result);
+    @Test
+    public void uriForSystemSuccess() {
+        config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+        try {
+            InputSource is = resolver.resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
+            assertEquals("http://localhost:8222/docs/sample/sample.dtd", is.getSystemId());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail();
+        }
     }
 
-    /* Test of resolveNamespaceURI method, of class org.xmlresolver.ResourceResolver.
-     */
-    public void testResolveNamespaceURI() throws Exception {
-        ResourceResolver myResolver = new ResourceResolver(new Catalog("documents/catalog.xml"));
-        
-        String uri = "http://www.w3.org/2001/XMLSchema";
-        String nature = "http://www.isi.edu/in-notes/iana/assignments/media-types/application/xml-dtd";
-        String purpose = "http://www.rddl.org/purposes#validation";
-        Resource result = myResolver.resolveNamespaceURI(uri, nature, purpose);
-        
-        assertNotNull(result);
-    }
 }
+

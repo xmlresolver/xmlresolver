@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+    xtserver:
+      image: ghcr.io/ndw/3.0-test-suite/xproctest:0.9.0
+      container_name: restest
+      ports:
+        - 8222:80
+      working_dir: /src
+      volumes:
+        - ./apache2/htdocs:/usr/local/apache2/htdocs
+        - ./apache2/cache:/usr/local/apache2/cache
+        - ./apache2/cgi-bin:/usr/local/apache2/cgi-bin
+        - ./apache2/service:/usr/local/apache2/service
+        - ./apache2/conf:/usr/local/apache2/conf
+      stdin_open: true
+      tty: true
+      networks:
+        - external_net
+
+networks:
+  external_net: {}

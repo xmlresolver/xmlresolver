@@ -1,0 +1,22 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+	 xmlns:rddl="http://www.rddl.org/"
+         prefer="system">
+
+  <group xml:base="file:///tmp/" prefer="system">
+
+    <public publicId="-//EXAMPLE//DTD Example//EN"
+            uri="/tmp/prefer-system.dtd"/>
+
+  </group>
+
+  <group xml:base="file:///tmp/" prefer="public">
+
+    <public publicId="-//EXAMPLE//DTD Example//EN"
+            uri="/tmp/prefer-public.dtd"/>
+
+  </group>
+
+  <system systemId="http://example.com/system.dtd"
+          uri="file:///tmp/system.dtd"/>
+
+</catalog>

@@ -1,0 +1,11 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <uri name="http://example.com/document.xml"
+       uri="/tmp/found-in-one.xml"/>
+
+  <!-- This one is never seen because search never continues after delegation. -->
+  <system systemId="http://example.com/delegated/four/system.dtd"
+          uri="/tmp/four-from-one.dtd"/>
+
+</catalog>

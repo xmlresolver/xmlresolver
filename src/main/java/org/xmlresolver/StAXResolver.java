@@ -9,8 +9,7 @@
 
 package org.xmlresolver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
@@ -18,12 +17,23 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/** Implements {@link javax.xml.stream.XMLResolver}.
+/** Implements the {@link javax.xml.stream.XMLResolver} interface.
  *
- * @author ndw
+ * <blockquote>
+ *     <p>This interface is used to resolve resources during an XML parse. If an application wishes to perform
+ *     custom entity resolution it must register an instance of this interface with the <code>XMLInputFactory</code>
+ *     using the <code>setXMLResolver</code> method.</p>
+ * </blockquote>
+ *
+ * This class is distinct from the {@link Resolver} class because the <code>resolveEntity</code> method
+ * of the <code>XMLResolver</code> interface isn't compatible with the <code>EntityResolver2</code>
+ * method of the same name.
+ *
+ * @see Resolver
+ *
  */
 public class StAXResolver implements XMLResolver {
-    protected static Logger logger = LoggerFactory.getLogger(StAXResolver.class);
+    protected static ResolverLogger logger = new ResolverLogger(StAXResolver.class);
     ResourceResolver resolver = null;
     
     /** Creates a new instance of StAXResolver.
@@ -32,20 +42,16 @@ public class StAXResolver implements XMLResolver {
      */
     public StAXResolver() {
         resolver = new ResourceResolver();
-        Resolver ordinaryResolver = new Resolver(resolver);
-        resolver.setEntityResolver(ordinaryResolver);
     }
 
     /** Creates a new instance of a StAXResolver.
      *
      * Creates a resolver using a specific Catalog.
      *
-     * @param catalog The catalog to use.
+     * @param config The XML Resolver configuration to use.
      */
-    public StAXResolver(Catalog catalog) {
-        resolver = new ResourceResolver(catalog);
-        Resolver ordinaryResolver = new Resolver(resolver);
-        resolver.setEntityResolver(ordinaryResolver);
+    public StAXResolver(XMLResolverConfiguration config) {
+        resolver = new ResourceResolver(config);
     }
 
     /** Creates a new instance of a StAXResolver.
@@ -58,12 +64,12 @@ public class StAXResolver implements XMLResolver {
         this.resolver = resolver;
     }
 
-    /** Get the Catalog used by this resolver.
+    /** Get the configuration used by this resolver.
      *
      * @return The catalog
      */
-    public Catalog getCatalog() {
-        return resolver.getCatalog();
+    public XMLResolverConfiguration getConfiguration() {
+        return resolver.getConfiguration();
     }
 
     /** Implements the {@link javax.xml.stream.XMLResolver} interface. */
@@ -73,8 +79,8 @@ public class StAXResolver implements XMLResolver {
         String absSystem = systemId;
         if (baseURI != null) {
             try {
-                URI auri = new URI(baseURI);
-                auri = auri.resolve(new URI(systemId));
+                URI auri = URIUtils.newURI(baseURI);
+                auri = auri.resolve(URIUtils.newURI(systemId));
                 absSystem = auri.toURL().toString();
             } catch (URISyntaxException | MalformedURLException use) {
                 // nop;
@@ -84,14 +90,16 @@ public class StAXResolver implements XMLResolver {
             }
         }
 
-        logger.trace("resolveEntity(" + publicId + "," + absSystem + "," + namespace + ")");
+        logger.log(ResolverLogger.REQUEST, "resolveEntity: %s/%s (%s)", absSystem, namespace, publicId);
 
         Resource rsrc = resolver.resolvePublic(absSystem, publicId);
+
         if (rsrc == null) {
-            logger.trace("  not resolved locally");
+            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (%s) → null", absSystem, namespace, publicId);
             return null;
         } else {
-            logger.trace("  resolved locally: "  + rsrc.uri());
+            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (%s) → %s",
+                    absSystem, namespace, publicId, rsrc.uri());
             return rsrc.body();
         }
     }

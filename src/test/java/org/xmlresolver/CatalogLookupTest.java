@@ -1,162 +1,284 @@
-/*
- * CatalogLookupTest.java
- *
- * Created on December 30, 2006, 9:57 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.xmlresolver;
 
-import java.io.IOException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.After;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-import org.xmlresolver.helpers.DOMUtils;
-import static org.junit.Assert.*;
+import org.xmlresolver.utils.URIUtils;
 
-/**
- *
- * @author ndw
- */
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class CatalogLookupTest {
-    private Catalog catalog = null;
-    private String method = null;    // Not thread safe! Not particularly well designed! But convenient!
-    private String expected = null;
-    private DocumentBuilderFactory dbfactory = null;
+    public static final String catalog1 = "src/test/resources/lookup1.xml";
+    public static final String catalog2 = "src/test/resources/lookup2.xml";
+    public static final @NotNull URI catloc = URIUtils.cwd().resolve(catalog1);
+
+    public static XMLResolverConfiguration config = null;
+    public static CatalogManager manager = null;
 
     @Before
-    public void setUp() throws Exception {
-        dbfactory = DocumentBuilderFactory.newInstance();
-        dbfactory.setNamespaceAware(true);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @Test
-    public void testCatalog1() {
-        runCatalogTests("src/test/resources/catalogs/catalog.xml");
+    public void setup() {
+        config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+        config.setFeature(ResolverFeature.CATALOG_FILES, Arrays.asList(catalog1, catalog2));
+        config.setFeature(ResolverFeature.URI_FOR_SYSTEM, false);
+        manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
     }
 
     @Test
-    public void testCatalog2() {
-        runCatalogTests("src/test/resources/catalogs/prefer-public.xml");
+    public void lookupSystem() {
+        URI result = manager.lookupSystem("https://example.com/sample/1.0/sample.dtd");
+        assertEquals(URIUtils.cwd().resolve(catalog1).resolve("sample10/sample-system.dtd"), result);
     }
 
     @Test
-    public void testCatalog3() {
-        runCatalogTests("src/test/resources/catalogs/prefer-system.xml");
+    public void lookupSystemMiss() {
+        URI result = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.rng");
+        assertNull(result);
+    }
+
+    // ============================================================
+    // See https://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html#attrib.prefer
+    // Note that the N/A entries in column three are a bit misleading.
+
+    @Test
+    public void lookupPublic_prefer_public_nosystem_public1() {
+        // Catalog contains a matching public entry, but not a matching system entry
+        URI result = manager.lookupPublic(null, "-//Sample//DTD Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
     }
 
     @Test
-    public void testCatalog4() {
-        runCatalogTests("src/test/resources/catalogs/sgmlcatalog.xml");
+    public void lookupPublic_prefer_public_nosystem_public2() {
+        // Catalog contains a matching system entry, but not a matching public entry
+        assertTrue(true); // N/A
     }
 
-    private void runCatalogTests(String catalogFile) {
-        catalog = new Catalog(catalogFile);
-        DocumentBuilder builder = null;
-        Document doc = null;
-        
-        try {
-            builder = dbfactory.newDocumentBuilder();
-            doc = builder.parse(catalogFile);
-        } catch (ParserConfigurationException pce) {
-            pce.printStackTrace();
-            throw new RuntimeException("Parser configuration exception? What the ...!?");
-        } catch (SAXException ex) {
-            ex.printStackTrace();
-            throw new RuntimeException("SAX exception? What the ...!?");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            throw new RuntimeException("I/O exception? What the ...!?");
-        }
-        
-        NodeList tests = doc.getElementsByTagNameNS(Catalog.NS_XMLRESOURCE_EXT, "testCase");
-        for (int pos = 0; pos < tests.getLength(); pos++) {
-            Element test = (Element) tests.item(pos);
-            method = test.getAttribute("method");
-            expected = test.getAttribute("expected");
-            
-            if ("lookupEntity".equals(method)) {
-                runLookupEntity(DOMUtils.attr(test,"name"),DOMUtils.attr(test,"systemId"),DOMUtils.attr(test,"publicId"));
-            } else if ("lookupURI".equals(method)) {
-                runLookupURI(DOMUtils.attr(test,"uri"));
-            } else if ("lookupNamespaceURI".equals(method)) {
-                runLookupNamespaceURI(DOMUtils.attr(test,"uri"), DOMUtils.attr(test,"nature"), DOMUtils.attr(test,"purpose"));
-            } else if ("lookupPublic".equals(method)) {
-                runLookupPublic(DOMUtils.attr(test,"systemId"), DOMUtils.attr(test,"publicId"));
-            } else if ("lookupSystem".equals(method)) {
-                runLookupSystem(DOMUtils.attr(test,"systemId"));
-            } else if ("lookupDoctype".equals(method)) {
-                runLookupDoctype(DOMUtils.attr(test,"name"), DOMUtils.attr(test,"systemId"), DOMUtils.attr(test,"publicId"));
-            } else if ("lookupNotation".equals(method)) {
-                runLookupNotation(DOMUtils.attr(test,"name"), DOMUtils.attr(test,"systemId"), DOMUtils.attr(test,"publicId"));
-            } else if ("lookupDocument".equals(method)) {
-                runLookupDocument();
-            } else {
-                throw new RuntimeException("Unexpected method name: " + method);
-            }
-        }
+    @Test
+    public void lookupPublic_prefer_public_nosystem_public3() {
+        // Catalog contains both a matching system entry and a matching public entry
+        assertTrue(true); // N/A
     }
 
-    private void runLookupEntity(String name, String sysid, String pubid) {
-        CatalogResult result = catalog.lookupEntity(name,sysid,pubid);
-        checkEqual("lookupEntity", name + "," + sysid + "," + pubid, result.uri());
+    @Test
+    public void lookupPublic_prefer_public_system_nopublic1() {
+        // Catalog contains a matching public entry, but not a matching system entry
+        assertTrue(true); // N/A
     }
 
-    private void runLookupURI(String name) {
-        CatalogResult result = catalog.lookupURI(name);
-        checkEqual("lookupURI", name, result.uri());
-    }
-    
-    private void runLookupNamespaceURI(String uri, String nature, String purpose) {
-        CatalogResult result = catalog.lookupNamespaceURI(uri, nature, purpose);
-        checkEqual("lookupNamespaceURI", uri + "," + nature + "," + purpose, result.uri());
+    @Test
+    public void lookupPublic_prefer_public_system_nopublic2() {
+        // Catalog contains a matching system entry, but not a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", null);
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
     }
 
-    private void runLookupPublic(String systemId, String publicId) {
-        CatalogResult result = catalog.lookupPublic(systemId, publicId);
-        checkEqual("lookupPublic", systemId + "," + publicId, result.uri());
+    @Test
+    public void lookupPublic_prefer_public_system_nopublic3() {
+        // Catalog contains both a matching system entry and a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", null);
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
     }
 
-    private void runLookupSystem(String systemId) {
-        CatalogResult result = catalog.lookupSystem(systemId);
-        checkEqual("lookupSystem", systemId, result.uri());
+    @Test
+    public void lookupPublic_prefer_public_system_public1() {
+        // Catalog contains a matching public entry, but not a matching system entry
+        URI result = manager.lookupPublic("https://example.com/not-sample/1.0/sample.dtd", "-//Sample//DTD Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
     }
 
-    private void runLookupDoctype(String name, String systemId, String publicId) {
-        CatalogResult result = catalog.lookupDoctype(name, systemId, publicId);
-        checkEqual("lookupDoctype", name + "," + systemId + "," + publicId, result.uri());
+    @Test
+    public void lookupPublic_prefer_public_system_public2() {
+        // Catalog contains a matching system entry, but not a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", "-//Sample//DTD Not Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
     }
 
-    private void runLookupNotation(String name, String systemId, String publicId) {
-        CatalogResult result = catalog.lookupNotation(name, systemId, publicId);
-        checkEqual("lookupNotation", name + "," + systemId + "," + publicId, result.uri());
+    @Test
+    public void lookupPublic_prefer_public_system_public3() {
+        // Catalog contains both a matching system entry and a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", "-//Sample//DTD Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
     }
 
-    private void runLookupDocument() {
-        CatalogResult result = catalog.lookupDocument();
-        checkEqual("lookupDocument", null, result.uri());
+    @Test
+    public void lookupPublic_prefer_system_nosystem_public1() {
+        // Catalog contains a matching public entry, but not a matching system entry
+        URI result = manager.lookupPublic(null, "-//Sample//DTD Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
     }
-    
-    private void checkEqual(String name, String args, String result) {
-        if ( ! ((expected == null && result == null) || (expected != null && expected.equals(result)))) {
-            System.out.println("Test failed: " + name + "(" + args + ")");
-            System.out.println("  => " + expected + " =/= " + result);
-        }
 
+    @Test
+    public void lookupPublic_prefer_system_nosystem_public2() {
+        // Catalog contains a matching system entry, but not a matching public entry
+        assertTrue(true); // N/A
+    }
+
+    @Test
+    public void lookupPublic_prefer_system_nosystem_public3() {
+        // Catalog contains both a matching system entry and a matching public entry
+        assertTrue(true); // N/A
+    }
+
+    @Test
+    public void lookupPublic_prefer_system_system_nopublic1() {
+        // Catalog contains a matching public entry, but not a matching system entry
+        assertTrue(true); // N/A
+    }
+
+    @Test
+    public void lookupPublic_prefer_system_system_nopublic2() {
+        // Catalog contains a matching system entry, but not a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", null);
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
+    }
+
+    @Test
+    public void lookupPublic_prefer_system_system_nopublic3() {
+        // Catalog contains both a matching system entry and a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", null);
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
+    }
+
+    @Test
+    public void lookupPublic_prefer_system_system_public1() {
+        // Catalog contains a matching public entry, but not a matching system entry
+        URI result = manager.lookupPublic("https://example.com/not-sample/1.0/sample.dtd", "-//Sample//DTD Prefer Sample 1.0//EN");
+        assertNull(result);
+    }
+
+    @Test
+    public void lookupPublic_prefer_system_system_public2() {
+        // Catalog contains a matching system entry, but not a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", "-//Sample//DTD Not Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
+    }
+
+    @Test
+    public void lookupPublic_prefer_system_system_public3() {
+        // Catalog contains both a matching system entry and a matching public entry
+        URI result = manager.lookupPublic("https://example.com/sample/1.0/sample.dtd", "-//Sample//DTD Prefer Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-system.dtd"), result);
+    }
+
+    // ============================================================
+
+    @Test
+    public void rewriteSystem() {
+        URI result = manager.lookupSystem("https://example.com/path1/sample/3.0/sample.dtd");
+        URI expected = URI.create("https://example.com/path2/sample/3.0/sample.dtd");
         assertEquals(expected, result);
     }
+
+    @Test
+    public void systemSuffix() {
+        URI result = manager.lookupSystem("https://example.com/whatever/you/want/suffix.dtd");
+        assertEquals(catloc.resolve("sample20/sample-suffix.dtd"), result);
+    }
+
+    @Test
+    public void delegatePublicLong() {
+        URI result = manager.lookupPublic(null, "-//Sample Delegated//DTD Sample 1.0//EN");
+        assertEquals(catloc.resolve("sample10/sample-delegated.dtd"), result);
+    }
+
+    @Test
+    public void delegatePublicShort() {
+        URI result = manager.lookupPublic(null, "-//Sample Delegated//DTD Sample 2.0//EN");
+        assertEquals(catloc.resolve("sample20/sample-shorter.dtd"), result);
+    }
+
+    @Test
+    public void delegatePublicFail() {
+        URI result = manager.lookupPublic(null, "-//Sample Delegated//DTD Sample 3.0//EN");
+        assertNull(result);
+    }
+
+    @Test
+    public void delegateSystemLong() {
+        URI result = manager.lookupPublic("https://example.com/delegated/sample/1.0/sample.dtd", null);
+        assertEquals(catloc.resolve("sample10/sample-delegated.dtd"), result);
+    }
+
+    @Test
+    public void delegateSystemShort() {
+        URI result = manager.lookupPublic("https://example.com/delegated/sample/2.0/sample.dtd", null);
+        assertEquals(catloc.resolve("sample20/sample-shorter.dtd"), result);
+    }
+    @Test
+    public void delegateSystemFail() {
+        URI result = manager.lookupPublic("https://example.com/delegated/sample/3.0/sample.dtd", null);
+        assertNull(result);
+    }
+
+    @Test
+    public void undelegated() {
+        // If there aren't any delegate entries, the entries in lookup2.xml really do match.
+        XMLResolverConfiguration uconfig = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+        uconfig.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList(catalog2));
+        CatalogManager umanager = new CatalogManager(uconfig);
+
+        URI result = umanager.lookupPublic(null, "-//Sample Delegated//DTD Sample 3.0//EN");
+        assertEquals(catloc.resolve("sample30/fail.dtd"), result);
+
+        result = umanager.lookupPublic("https://example.com/delegated/sample/3.0/sample.dtd", null);
+        assertEquals(catloc.resolve("sample30/fail.dtd"), result);
+    }
+
+    // ============================================================
+
+    @Test
+    public void lookupUri() {
+        URI result = manager.lookupURI("https://xmlresolver.org/ns/sample/sample.rng");
+        assertEquals(URIUtils.cwd().resolve(catalog1).resolve("sample/sample.rng"), result);
+    }
+
+    @Test
+    public void rewriteUri() {
+        URI result = manager.lookupURI("https://example.com/path1/sample/sample.rng");
+        URI expected = URI.create("https://example.com/path2/sample/sample.rng");
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void uriSuffix() {
+        URI result = manager.lookupURI("https://example.com/whatever/you/want/suffix.rnc");
+        assertEquals(catloc.resolve("sample20/sample-suffix.rnc"), result);
+    }
+
+    @Test
+    public void delegateUriLong() {
+        URI result = manager.lookupURI("https://example.com/delegated/sample/1.0/sample.rng");
+        assertEquals(catloc.resolve("sample10/sample-delegated.rng"), result);
+    }
+
+    @Test
+    public void delegateUriShort() {
+        URI result = manager.lookupURI("https://example.com/delegated/sample/2.0/sample.rng");
+        assertEquals(catloc.resolve("sample20/sample-shorter.rng"), result);
+    }
+
+    @Test
+    public void delegateUriFail() {
+        URI result = manager.lookupURI("https://example.com/delegated/sample/3.0/sample.rng");
+        assertNull(result);
+    }
+
+    @Test
+    public void undelegatedUri() {
+        // If there aren't any delegate entries, the entries in lookup2.xml really do match.
+        XMLResolverConfiguration uconfig = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+        uconfig.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList(catalog2));
+        CatalogManager umanager = new CatalogManager(uconfig);
+
+        URI result = umanager.lookupURI("https://example.com/delegated/sample/3.0/sample.rng");
+        assertEquals(catloc.resolve("sample30/fail.rng"), result);
+    }
+
+
 }
+

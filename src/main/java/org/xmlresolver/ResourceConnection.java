@@ -13,6 +13,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -23,9 +24,11 @@ import java.util.Date;
 import java.util.List;
 
 public class ResourceConnection {
+    private static final ResolverLogger logger = new ResolverLogger(ResourceConnection.class);
+
     private InputStream stream = null;
-    private String absuri = null;
-    private String redirect = null;
+    private URI uri = null;
+    private URI redirect = null;
     private int statusCode = -1;
     private String contentType = null;
     private String etag = null;
@@ -43,30 +46,29 @@ public class ResourceConnection {
 
     public ResourceConnection(String resolved, boolean headOnly) {
         try {
-            URI uri = new URI(resolved);
+            uri = org.xmlresolver.utils.URIUtils.newURI(resolved);
             URL url = uri.toURL();
 
-            absuri = url.toString();
-
-            if (absuri.startsWith("http:") || absuri.startsWith("https:")) {
+            if ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) {
                 // Use Apache HttpClient so that we can follow the redirect
                 httpclient = HttpClients.createDefault();
                 HttpClientContext context = HttpClientContext.create();
 
                 HttpRequestBase httpreq = null;
                 if (headOnly) {
-                    httpreq = new HttpHead(absuri);
+                    httpreq = new HttpHead(uri);
                 } else {
-                    httpreq = new HttpGet(absuri);
+                    httpreq = new HttpGet(uri);
                 }
 
                 HttpResponse httpResponse = httpclient.execute(httpreq, context);
                 HttpHost target = context.getTargetHost();
                 List<URI> redirectLocations = context.getRedirectLocations();
                 URI location = URIUtils.resolve(httpreq.getURI(), target, redirectLocations);
-                redirect = location.toASCIIString();
-                if (absuri.equals(redirect)) {
+                if (uri.equals(location)) {
                     redirect = null;
+                } else {
+                    redirect = location;
                 }
 
                 statusCode = httpResponse.getStatusLine().getStatusCode();
@@ -110,10 +112,18 @@ public class ResourceConnection {
                 etag = connection.getHeaderField("Etag");
                 lastModified = connection.getLastModified();
                 date = connection.getDate();
-                statusCode = 200;
+
+                try {
+                    // This is almost always going to be an http URL
+                    HttpURLConnection http = (HttpURLConnection) connection;
+                    statusCode = http.getResponseCode();
+                } catch (ClassCastException ex) {
+                    // Assume it's ok?
+                    statusCode = 200;
+                }
             }
         } catch (URISyntaxException | IOException | IllegalArgumentException use) {
-            // nop
+            logger.log(ResolverLogger.WARNING, "Failed to %s: %s: %s", headOnly ? "HEAD" : "GET", resolved, use.getMessage());
         }
     }
 
@@ -129,11 +139,11 @@ public class ResourceConnection {
         return etag;
     }
 
-    public String getURI() {
-        return absuri;
+    public URI getURI() {
+        return uri;
     }
     
-    public String getRedirect() {
+    public URI getRedirect() {
         return redirect;
     }
 

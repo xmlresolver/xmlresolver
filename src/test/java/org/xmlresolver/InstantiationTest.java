@@ -9,11 +9,9 @@
 
 package org.xmlresolver;
 
-import junit.framework.TestCase;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import javax.xml.transform.URIResolver;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -24,7 +22,7 @@ public class InstantiationTest {
     public void testInstantiate() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         String className = "org.xmlresolver.Resolver";
         Class rClass = Class.forName(className);
-        Object resolver = (URIResolver) rClass.newInstance();
+        Object resolver = rClass.newInstance();
         assertNotNull(resolver);
     }
 }
