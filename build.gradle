@@ -30,8 +30,8 @@ configurations {
 
 dependencies {
   implementation (
-    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'],
-    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'],
+    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'],
+    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'],
     [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
     [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ],
     [group: 'org.jetbrains', name: 'annotations', version: '20.1.0' ]
