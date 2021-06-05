@@ -24,6 +24,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
 
+/** An XML catalog loader.
+ *
+ * <p>This loader understands the XML Catalogs 1.1 specification XML catalog syntax.</p>
+ */
 public class XmlLoader implements CatalogLoader {
     protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
 
@@ -34,10 +38,18 @@ public class XmlLoader implements CatalogLoader {
         catalogMap = new HashMap<>();
     }
 
+    /** Set the default "prefer public" status for this catalog.
+     *
+     * @param prefer True if public identifiers are to be preferred.
+     */
     public void setPreferPublic(boolean prefer) {
         preferPublic = prefer;
     }
 
+    /** Return the current "prefer public" status.
+     *
+     * @return The current "prefer public" status of this catalog loader.
+     */
     public boolean getPreferPublic() {
         return preferPublic;
     }
