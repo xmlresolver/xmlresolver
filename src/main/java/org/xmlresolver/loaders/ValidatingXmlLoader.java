@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayReader;
 import java.io.CharArrayWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -30,6 +31,11 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 
+/** A validating catalog loader.
+ *
+ * This loader will raise an exception if the catalog file cannot be read, is not
+ * well-formed XML, or is not valid according to the XML Catalogs 1.1 schema.
+ */
 public class ValidatingXmlLoader implements CatalogLoader {
     protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
     protected final HashMap<URI, EntryCatalog> catalogMap;
@@ -49,6 +55,13 @@ public class ValidatingXmlLoader implements CatalogLoader {
         catalogMap = new HashMap<>();
     }
 
+    /** Load the specified catalog.
+     *
+     * @param catalog The catalog URI.
+     * @return The parsed catalog, if it was available and valid.
+     * @throws CatalogUnavailableException if the catalog could not be read.
+     * @throws CatalogInvalidException if the catalog is invalid.
+     */
     @Override
     public EntryCatalog loadCatalog(URI catalog) {
         if (catalogMap.containsKey(catalog)) {
@@ -60,6 +73,11 @@ public class ValidatingXmlLoader implements CatalogLoader {
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(catalog.toString());
             return loadCatalog(catalog, source);
+        } catch (FileNotFoundException fex) {
+            // Throwing an exception for a simple file not found error seems a little too aggressive
+            logger.log(ResolverLogger.ERROR, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
+            catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
+            return catalogMap.get(catalog);
         } catch (IOException | URISyntaxException ex) {
             logger.log(ResolverLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
             catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
@@ -67,6 +85,12 @@ public class ValidatingXmlLoader implements CatalogLoader {
         }
     }
 
+    /** Load the specified catalog from the specified stream.
+     *
+     * @param catalog The catalog URI.
+     * @return The parsed catalog, if it was available and valid.
+     * @throws CatalogInvalidException if the catalog is invalid.
+     */
     @Override
     public EntryCatalog loadCatalog(URI catalog, InputSource source) {
         try {
@@ -136,11 +160,19 @@ public class ValidatingXmlLoader implements CatalogLoader {
         return underlyingLoader.loadCatalog(catalog, source);
     }
 
+    /** Set the default "prefer public" status for this catalog.
+     *
+     * @param prefer True if public identifiers are to be preferred.
+     */
     @Override
     public void setPreferPublic(boolean prefer) {
         preferPublic = prefer;
     }
 
+    /** Return the current "prefer public" status.
+     *
+     * @return The current "prefer public" status of this catalog loader.
+     */
     @Override
     public boolean getPreferPublic() {
         return preferPublic;
