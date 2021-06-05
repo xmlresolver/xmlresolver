@@ -107,14 +107,53 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean classpathCatalogs = ResolverFeature.CLASSPATH_CATALOGS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
+    /** Construct a default configuration.
+     *
+     * <p>The default configuration uses system properties and searches the classpath for
+     * an <code>xmlcatalog.properties</code> file. It uses the settings found there to
+     * configure the resolver.</p>
+     */
     public XMLResolverConfiguration() {
         this(null, null);
     }
 
+    /** Construct a configuration from a delimited string of catalog files.
+     *
+     * <p>The default configuration uses system properties and searches the classpath for
+     * an <code>xmlcatalog.properties</code> file. It uses the settings found there to
+     * configure the resolver, but replaces any list of catalog files found there with the
+     * catalog files provided in the constructor.</p>
+     *
+     * @param catalogFiles A semi-colon (;) delimited list of catalog files
+     */
     public XMLResolverConfiguration(String catalogFiles) {
         this(null, Arrays.asList(catalogFiles.split("\\s*;\\s*")));
     }
 
+    /** Construct a configuration from a list of catalog files.
+     *
+     * <p>The default configuration uses system properties and searches the classpath for
+     * an <code>xmlcatalog.properties</code> file. It uses the settings found there to
+     * configure the resolver, but replaces any list of catalog files found there with the
+     * catalog files provided in the constructor.</p>
+     *
+     * @param catalogFiles A list of catalog files.
+     */
+    public XMLResolverConfiguration(List<String> catalogFiles) {
+        this(null, catalogFiles);
+    }
+
+    /** Construct a resolver configuration with specific properties and catalog files.
+     *
+     * <p>The default configuration uses system properties and the properties found
+     * in the first <code>propertyFiles</code> property file that it can read. (It uses at
+     * most one property file.) It uses those settings to
+     * configure the resolver, but replaces any list of catalog files found there with the
+     * catalog files provided in the constructor.</p>
+     *
+     * @param propertyFiles A list of property files from which to attempt to load configuration properties.
+     * @param catalogFiles A list of catalog files.
+     */
     public XMLResolverConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
         logger.log(ResolverLogger.CONFIG, "XMLResolver version %s", BuildConfig.VERSION);
         showConfigChanges = false;
@@ -123,6 +162,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         showConfigChanges = true;
     }
 
+    /** A copying constructor.
+     *
+     * <p>This constructor creates a new resolver configuration with the same properties
+     * as an existing configuration. It gets its own copy of the catalog file list and
+     * {@link CatalogManager}.</p>
+     *
+     * @param current The configuration to copy.
+     */
     public XMLResolverConfiguration(XMLResolverConfiguration current) {
         catalogs = new ArrayList<>(current.catalogs);
         preferPublic = current.preferPublic;

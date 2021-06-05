@@ -39,6 +39,10 @@ public class CatalogManager {
     protected final ResolverConfiguration resolverConfiguration;
     protected CatalogLoader catalogLoader;
 
+    /** Construct a catalog manager for the specified configuration.
+     *
+     * @param config The resolver configuration for this catalog manager.
+     */
     protected CatalogManager(ResolverConfiguration config) {
         resolverConfiguration = config;
         String loaderClassName = config.getFeature(ResolverFeature.CATALOG_LOADER_CLASS);
@@ -56,6 +60,14 @@ public class CatalogManager {
         catalogLoader.setPreferPublic(config.getFeature(ResolverFeature.PREFER_PUBLIC));
     }
 
+    /** Constructs a catalog manager from the current one and a configuration.
+     *
+     * <p>This constructor creates a new catalog manager using the catalog loader of the current
+     * manager and the specified configuration as its resolver configuration.</p>
+     *
+     * @param current The manager to copy.
+     * @param newConfig The resolver configuration of the copied constructor.
+     */
     protected CatalogManager(CatalogManager current, ResolverConfiguration newConfig) {
         catalogLoader = current.catalogLoader;
         resolverConfiguration = newConfig;
