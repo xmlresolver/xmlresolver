@@ -1,1 +1,1 @@
-include 'core', 'apps'
+rootProject.name = "XMLResolver"
