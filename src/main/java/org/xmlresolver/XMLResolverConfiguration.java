@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -622,11 +623,16 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
     private List<String> findClasspathCatalogFiles() {
         if (classpathCatalogList == null) {
+            logger.log(ResolverLogger.CONFIG, "Searching for catalogs on classpath:");
+            for (URL url : ((URLClassLoader) XMLResolverConfiguration.class.getClassLoader()).getURLs()) {
+                logger.log(ResolverLogger.CONFIG, "    " + url.toString());
+            }
             ArrayList<String> catalogs = new ArrayList<>();
             try {
                 Enumeration<URL> resources = XMLResolverConfiguration.class.getClassLoader().getResources("org/xmlresolver/catalog.xml");
                 while (resources.hasMoreElements()) {
                     URL catalog = resources.nextElement();
+                    logger.log(ResolverLogger.CONFIG, "Catalog: " + catalog.toString());
                     catalogs.add(catalog.toString());
                 }
             } catch (IOException ex) {

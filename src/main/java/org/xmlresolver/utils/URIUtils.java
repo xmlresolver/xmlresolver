@@ -9,7 +9,6 @@
 
 package org.xmlresolver.utils;
 
-import org.jetbrains.annotations.NotNull;
 import org.xmlresolver.ResolverLogger;
 
 import java.net.URI;
@@ -32,7 +31,7 @@ public abstract class URIUtils {
      *
      * @return a file: URI for the current working directory
      */
-    public static @NotNull URI cwd() {
+    public static URI cwd() {
         String dir = System.getProperty("user.dir");
         if (!dir.endsWith("/")) {
             dir += "/";

@@ -7,7 +7,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class CMNextTest {
     private final URI baseURI = URI.create("file:///tmp/");
@@ -18,6 +20,7 @@ public class CMNextTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
         config.addCatalog("src/test/resources/cm/nextroot.xml");
+        config.addCatalog("src/test/resources/cm/following.xml");
         manager = new CatalogManager(config);
     }
 
@@ -62,6 +65,21 @@ public class CMNextTest {
         URI expected = baseURI.resolve("found-in-one.xml");
         URI result = manager.lookupURI("http://example.com/document.xml");
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void nextTest7() {
+        // After looking in the next catalogs, continue in the following catalogs
+        URI result = manager.lookupSystem("http://example.com/found-in-following.dtd");
+        assertNotNull(result);
+        assertTrue(result.toString().endsWith("cm/following.dtd"));
+    }
+
+    @Test
+    public void nextTest8() {
+        // After looking in the delegated catalogs, do not return to the following catalogs
+        URI result = manager.lookupSystem("http://example.com/delegated/but/not/found/in/delegated/catalogs.dtd");
+        assertNull(result);
     }
 
     @Test

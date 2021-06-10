@@ -18,7 +18,7 @@ public class RddlTest extends CacheManager {
     public static final URI catloc = URIUtils.cwd().resolve(catalog);
 
     XMLResolverConfiguration config = null;
-    ResourceResolver resolver = null;
+    ResourceResolverImpl resolver = null;
 
     @Before
     public void setup() {
@@ -26,7 +26,7 @@ public class RddlTest extends CacheManager {
 
         config = new XMLResolverConfiguration(catalog);
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, cache.getAbsolutePath());
-        resolver = new ResourceResolver(config);
+        resolver = new ResourceResolverImpl(config);
 
         // Make sure the Docker container is running where we expect.
         ResourceConnection conn = new ResourceConnection("http://localhost:8222/docs/sample/sample.dtd", true);
@@ -36,44 +36,62 @@ public class RddlTest extends CacheManager {
     @Test
     public void cacheTest() {
         // Not yet cached
-        Resource dtd = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+        ResolvedResource dtd = resolver.resolveNamespace("http://localhost:8222/docs/sample",
+                null,
                 "http://www.isi.edu/in-notes/iana/assignments/media-types/application/xml-dtd",
                 "http://www.rddl.org/purposes#validation");
+
         assertNotNull(dtd);
-        assertEquals("application/xml-dtd", dtd.contentType());
+        assertEquals("application/xml-dtd", dtd.getContentType());
 
         // Should now be cached
-        dtd = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+       dtd = resolver.resolveNamespace("http://localhost:8222/docs/sample",
+                null,
                 "http://www.isi.edu/in-notes/iana/assignments/media-types/application/xml-dtd",
                 "http://www.rddl.org/purposes#validation");
+
         assertNotNull(dtd);
-        assertEquals("application/xml-dtd", dtd.contentType());
+        assertEquals("application/xml-dtd", dtd.getContentType());
     }
 
     @Test
     public void xsdTest() {
         resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, true);
-        Resource xsd = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+        ResolvedResource xsd = resolver.resolveNamespace("http://localhost:8222/docs/sample",
+                null,
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         assertNotNull(xsd);
-        assertEquals("application/xml", xsd.contentType());
+        assertEquals("application/xml", xsd.getContentType());
     }
 
     @Test
     public void xslTest() {
         resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, true);
-        Resource xsl = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+        ResolvedResource xsl = resolver.resolveNamespace("http://localhost:8222/docs/sample",
+                null,
                 "http://www.w3.org/1999/XSL/Transform",
                 "http://www.rddl.org/purposes#transformation");
         assertNotNull(xsl);
-        assertEquals("application/xml", xsl.contentType());
+        assertEquals("application/xml", xsl.getContentType());
+    }
+
+    @Test
+    public void xslTestBaseURI() {
+        resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, true);
+        ResolvedResource xsl = resolver.resolveNamespace("sample",
+                "http://localhost:8222/docs/",
+                "http://www.w3.org/1999/XSL/Transform",
+                "http://www.rddl.org/purposes#transformation");
+        assertNotNull(xsl);
+        assertEquals("application/xml", xsl.getContentType());
     }
 
     @Test
     public void xsdTestNoRddl() {
         resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, false);
-        Resource xsd = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+        ResolvedResource xsd = resolver.resolveNamespace("http://localhost:8222/docs/sample",
+                null,
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         assertNull(xsd);
@@ -82,7 +100,8 @@ public class RddlTest extends CacheManager {
     @Test
     public void xslTestNoRddl() {
         resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, false);
-        Resource xsl = resolver.resolveNamespaceURI("http://localhost:8222/docs/sample",
+        ResolvedResource xsl = resolver.resolveNamespace("http://localhost:8222/docs/sample",
+                null,
                 "http://www.w3.org/1999/XSL/Transform",
                 "http://www.rddl.org/purposes#transformation");
         assertNull(xsl);
@@ -93,7 +112,8 @@ public class RddlTest extends CacheManager {
         // This test is ignored because getting the XSD file from the W3C server takes ten seconds
         // and the test doesn't really prove anything anyway.
         resolver.getConfiguration().setFeature(ResolverFeature.PARSE_RDDL, true);
-        Resource xsd = resolver.resolveNamespaceURI("http://www.w3.org/2001/xml.xsd",
+        ResolvedResource xsd = resolver.resolveNamespace("http://www.w3.org/2001/xml.xsd",
+                null,
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         assertNull(xsd);
@@ -107,13 +127,14 @@ public class RddlTest extends CacheManager {
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
         config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         config.setFeature(ResolverFeature.PARSE_RDDL, true);
-        ResourceResolver resolver = new ResourceResolver(config);
+        ResourceResolverImpl resolver = new ResourceResolverImpl(config);
 
-        Resource xsd = resolver.resolveNamespaceURI("http://www.w3.org/XML/1998/namespace",
+        ResolvedResource xsd = resolver.resolveNamespace("http://www.w3.org/XML/1998/namespace",
+                null,
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         assertNotNull(xsd);
-        assertTrue(xsd.uri().toString().endsWith("/xml.xsd"));
+        assertTrue(xsd.getResolvedURI().toString().endsWith("/xml.xsd"));
     }
 }
 

@@ -1,6 +1,5 @@
 package org.xmlresolver;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.xmlresolver.utils.PublicId;
@@ -15,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 public class UrnPublicTest {
     public static final String catalog1 = "src/test/resources/lookup1.xml";
     public static final String catalog2 = "src/test/resources/lookup2.xml";
-    public static final @NotNull URI catloc = URIUtils.cwd().resolve(catalog1);
+    public static final URI catloc = URIUtils.cwd().resolve(catalog1);
     public static String urnPublicId = PublicId.encodeURN("-//Sample//DTD Sample 1.0//EN").toString();
     public static String urnNotPublicId = PublicId.encodeURN("-//Sample//DTD Not Sample 1.0//EN").toString();
 

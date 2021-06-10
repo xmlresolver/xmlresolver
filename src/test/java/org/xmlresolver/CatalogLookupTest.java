@@ -1,6 +1,5 @@
 package org.xmlresolver;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.xmlresolver.utils.URIUtils;
@@ -16,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 public class CatalogLookupTest {
     public static final String catalog1 = "src/test/resources/lookup1.xml";
     public static final String catalog2 = "src/test/resources/lookup2.xml";
-    public static final @NotNull URI catloc = URIUtils.cwd().resolve(catalog1);
+    public static final URI catloc = URIUtils.cwd().resolve(catalog1);
 
     public static XMLResolverConfiguration config = null;
     public static CatalogManager manager = null;

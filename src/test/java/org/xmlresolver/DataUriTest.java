@@ -22,12 +22,12 @@ import static org.junit.Assert.assertEquals;
  * @author ndw
  */
 public class DataUriTest {
-    private static ResourceResolver resolver = null;
+    private static ResourceResolverImpl resolver = null;
 
     @Before
     public void setUp() throws Exception {
         XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/datauri.xml");
-        resolver = new ResourceResolver(config);
+        resolver = new ResourceResolverImpl(config);
     }
 
     @Test
@@ -37,8 +37,8 @@ public class DataUriTest {
 
         String line = null;
         try {
-            Resource result = resolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.body()));
+            ResolvedResource result = resolver.resolveURI(href, base);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -53,8 +53,8 @@ public class DataUriTest {
 
         String line = null;
         try {
-            Resource result = resolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.body()));
+            ResolvedResource result = resolver.resolveURI(href, base);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -69,8 +69,8 @@ public class DataUriTest {
 
         String line = null;
         try {
-            Resource result = resolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.body()));
+            ResolvedResource result = resolver.resolveURI(href, base);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore

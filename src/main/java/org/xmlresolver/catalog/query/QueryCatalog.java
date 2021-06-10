@@ -1,23 +1,17 @@
 package org.xmlresolver.catalog.query;
 
-import org.jetbrains.annotations.NotNull;
-import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.CatalogManager;
-import org.xmlresolver.catalog.entry.Entry;
+import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.catalog.entry.EntryCatalog;
-import org.xmlresolver.catalog.entry.EntryNextCatalog;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
 
 public abstract class QueryCatalog extends QueryResult {
     protected static ResolverLogger logger = new ResolverLogger(QueryCatalog.class);
-    protected final ArrayList<URI> catalogs = new ArrayList<>();
 
-    public QueryCatalog(List<URI> catalogs) {
+    public QueryCatalog() {
         super();
-        this.catalogs.addAll(catalogs);
     }
 
     @Override
@@ -26,32 +20,28 @@ public abstract class QueryCatalog extends QueryResult {
     }
 
     public QueryResult search(CatalogManager manager) {
+        ArrayList<URI> catalogs = new ArrayList<>(manager.catalogs());
         while (!catalogs.isEmpty()) {
             EntryCatalog catalog = manager.loadCatalog(catalogs.remove(0));
             boolean done = false;
-            QueryResult result = lookup(manager, catalog);
+            QueryCatalog query = this;
             while (!done) {
-                if (result.resolved()) {
-                    return result;
-                }
+                QueryResult result = query.lookup(manager, catalog);
+                done = result.resolved();
+                catalogs = result.updatedCatalogSearchList(catalog, catalogs);
+
                 if (result.query()) {
-                    result = manager.search((QueryCatalog) result);
+                    query = (QueryCatalog) result;
                 } else {
                     done = true;
+                    if (result.resolved()) {
+                        return result;
+                    }
                 }
             }
         }
         return QueryResult.EMPTY_RESULT;
     }
 
-    public List<URI> nextCatalogs(EntryCatalog catalog) {
-        // <nextCatalog>
-        ArrayList<URI> next = new ArrayList<>();
-        for (Entry raw : catalog.entries(Entry.Type.NEXT_CATALOG)) {
-            next.add(((EntryNextCatalog) raw).catalog);
-        }
-        return next;
-    }
-
-    protected abstract @NotNull QueryResult lookup(CatalogManager manager, EntryCatalog catalog);
+    protected abstract QueryResult lookup(CatalogManager manager, EntryCatalog catalog);
 }

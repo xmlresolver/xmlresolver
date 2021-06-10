@@ -1,7 +1,7 @@
 package org.xmlresolver.catalog.query;
 
-import org.jetbrains.annotations.NotNull;
 import org.xmlresolver.CatalogManager;
+import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryDelegateSystem;
@@ -12,35 +12,17 @@ import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class QuerySystem extends QueryCatalog {
     public final String systemId;
-    public final boolean localOnly;
 
-    public QuerySystem(String systemId, List<URI> catalogs, boolean local) {
-        super(catalogs);
-
-        if (systemId.startsWith("classpath:/")) {
-            this.systemId = "classpath:" + systemId.substring(11);
-        } else {
-            this.systemId = systemId;
-        }
-
-        this.localOnly = local;
-    }
-
-    public QuerySystem(String systemId, EntryCatalog catalog) {
-        this(systemId, Collections.singletonList(catalog.baseURI), true);
-    }
-
-    public QuerySystem(String systemId, List<URI> catalogs) {
-        this(systemId, catalogs, false);
+    public QuerySystem(String systemId) {
+        super();
+        this.systemId = systemId;
     }
 
     @Override
-    public @NotNull QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
+    public QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
         String compareSystem = manager.normalizedForComparison(systemId);
 
         String osname = System.getProperty("os.name").toLowerCase();
@@ -113,12 +95,9 @@ public class QuerySystem extends QueryCatalog {
             return new QueryDelegateSystem(systemId, catalogs);
         }
 
-        // <nextCatalog>
-        if (!localOnly) {
-            List<URI> next = nextCatalogs(catalog);
-            if (!next.isEmpty()) {
-                return new QuerySystem(systemId, next);
-            }
+        if (manager.getResolverConfiguration().getFeature(ResolverFeature.URI_FOR_SYSTEM)) {
+            QueryUri query = new QueryUri(systemId);
+            return query.lookup(manager, catalog);
         }
 
         return QueryResult.EMPTY_RESULT;

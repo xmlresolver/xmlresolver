@@ -11,7 +11,7 @@
     <p>This is ok, but note that catalog entries in here are ignored</p>
   </div>
 
-  <system systemId="https://xmlresolver.com/ns/sample/sample.dtd"
+  <system systemId="https://xmlresolver.org/ns/sample/sample.dtd"
           uri="sample10/sample.dtd"/>
 
   <group prefer="system">

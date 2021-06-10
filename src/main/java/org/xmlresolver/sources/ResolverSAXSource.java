@@ -10,7 +10,11 @@ public class ResolverSAXSource extends SAXSource {
     /** The underlying, resolved URI. */
     public final URI resolvedURI;
 
-    /** Construct a {@link javax.xml.transform.sax.SAXSource} while preserving the local URI. */
+    /** Construct a {@link javax.xml.transform.sax.SAXSource} while preserving the local URI.
+     *
+     * @param localURI The local URI.
+     * @param source The input source to return for this source.
+     * */
     public ResolverSAXSource(URI localURI, InputSource source) {
         super(source);
         resolvedURI = localURI;

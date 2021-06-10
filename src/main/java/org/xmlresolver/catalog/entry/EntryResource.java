@@ -1,8 +1,8 @@
 package org.xmlresolver.catalog.entry;
 
-import java.net.URI;
-
 import org.xmlresolver.utils.URIUtils;
+
+import java.net.URI;
 
 // A catalog entry that represents a resource that might be cached on disk.
 public abstract class EntryResource extends Entry {

@@ -29,7 +29,7 @@ public abstract class Entry {
         if (baseURI.isAbsolute()) {
             this.baseURI = baseURI;
         } else {
-            throw new IllegalArgumentException("Base URI of catalog entry must be absolute");
+            throw new IllegalArgumentException("Base URI of catalog entry must be absolute: " + baseURI);
         }
     }
 

@@ -1,6 +1,5 @@
 package org.xmlresolver.catalog.query;
 
-import org.jetbrains.annotations.NotNull;
 import org.xmlresolver.CatalogManager;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
@@ -12,22 +11,28 @@ import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
 
 public class QueryUri extends QueryCatalog {
     public final String uri;
     public final String nature;
     public final String purpose;
 
-    public QueryUri(String uri, String nature, String purpose, List<URI> catalogs) {
-        super(catalogs);
+    public QueryUri(String uri, String nature, String purpose) {
+        super();
         this.uri = uri;
         this.nature = nature;
         this.purpose = purpose;
     }
 
+    public QueryUri(String uri) {
+        super();
+        this.uri = uri;
+        this.nature = null;
+        this.purpose = null;
+    }
+
     @Override
-    protected @NotNull QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
+    protected QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
         String compareUri = manager.normalizedForComparison(uri);
         String compareNature = manager.normalizedForComparison(nature);
         String comparePurpose = manager.normalizedForComparison(purpose);
@@ -37,9 +42,9 @@ public class QueryUri extends QueryCatalog {
             EntryUri entry = (EntryUri) raw;
             if (compareUri.equals(manager.normalizedForComparison(entry.name))
                     && (nature == null || entry.nature == null
-                        || compareNature.equals(manager.normalizedForComparison(entry.nature)))
+                    || compareNature.equals(manager.normalizedForComparison(entry.nature)))
                     && (purpose == null || entry.purpose == null
-                        || comparePurpose.equals(manager.normalizedForComparison(entry.purpose)))) {
+                    || comparePurpose.equals(manager.normalizedForComparison(entry.purpose)))) {
                 return new QueryResult(entry.uri);
             }
         }
@@ -99,12 +104,6 @@ public class QueryUri extends QueryCatalog {
                 catalogs.add(entry.catalog);
             }
             return new QueryDelegateUri(uri, nature, purpose, catalogs);
-        }
-
-        // <nextCatalog>
-        List<URI> next = nextCatalogs(catalog);
-        if (!next.isEmpty()) {
-            return new QueryUri(uri, nature, purpose, next);
         }
 
         return QueryResult.EMPTY_RESULT;

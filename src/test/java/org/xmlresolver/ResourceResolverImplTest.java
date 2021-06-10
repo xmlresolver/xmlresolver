@@ -1,5 +1,6 @@
 package org.xmlresolver;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -8,7 +9,7 @@ import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-public class ResourceResolverTest {
+public class ResourceResolverImplTest {
     public static final String catalog = "src/test/resources/catalog.xml";
 
     XMLResolverConfiguration config = null;
@@ -19,6 +20,10 @@ public class ResourceResolverTest {
         config = new XMLResolverConfiguration(catalog);
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, "/tmp/y/cache");
         resolver = new Resolver(config);
+
+        // Make sure the Docker container is running where we expect.
+        ResourceConnection conn = new ResourceConnection("http://localhost:8222/docs/sample/sample.dtd", true);
+        Assert.assertEquals(200, conn.getStatusCode());
     }
 
     @Test

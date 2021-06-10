@@ -2,17 +2,14 @@ package org.xmlresolver;
 
 import org.xml.sax.InputSource;
 import org.xmlresolver.catalog.entry.EntryCatalog;
-import org.xmlresolver.catalog.query.QueryCatalog;
 import org.xmlresolver.catalog.query.QueryDoctype;
 import org.xmlresolver.catalog.query.QueryDocument;
 import org.xmlresolver.catalog.query.QueryEntity;
 import org.xmlresolver.catalog.query.QueryNotation;
 import org.xmlresolver.catalog.query.QueryPublic;
-import org.xmlresolver.catalog.query.QueryResult;
 import org.xmlresolver.catalog.query.QuerySystem;
 import org.xmlresolver.catalog.query.QueryUri;
 import org.xmlresolver.loaders.CatalogLoader;
-import org.xmlresolver.loaders.XmlLoader;
 import org.xmlresolver.utils.PublicId;
 import org.xmlresolver.utils.URIUtils;
 
@@ -73,7 +70,11 @@ public class CatalogManager {
         resolverConfiguration = newConfig;
     }
 
-    private List<URI> catalogs() {
+    public ResolverConfiguration getResolverConfiguration() {
+        return resolverConfiguration;
+    }
+
+    public List<URI> catalogs() {
         ArrayList<URI> catlist = new ArrayList<>();
         for (String cat : resolverConfiguration.getFeature(ResolverFeature.CATALOG_FILES)) {
             catlist.add(URIUtils.cwd().resolve(cat));
@@ -137,7 +138,7 @@ public class CatalogManager {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public URI lookupNamespaceURI(String uri, String nature, String purpose) {
-        return search(new QueryUri(uri, nature, purpose, catalogs())).uri();
+        return new QueryUri(uri, nature, purpose).search(this).uri();
     }
 
     /**
@@ -160,7 +161,7 @@ public class CatalogManager {
      */
     public URI lookupPublic(String systemId, String publicId) {
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
-        return search(new QueryPublic(external.systemId, external.publicId, catalogs())).uri();
+        return new QueryPublic(external.systemId, external.publicId).search(this).uri();
     }
 
     /**
@@ -180,16 +181,11 @@ public class CatalogManager {
      */
     public URI lookupSystem(String systemId) {
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, null);
-
         if (external.systemId == null) {
-            if (external.publicId == null) {
-                return null;
-            } else {
-                return lookupPublic(null, external.publicId);
-            }
+            return null;
         }
 
-        return search(new QuerySystem(systemId, catalogs())).uri();
+        return new QuerySystem(systemId).search(this).uri();
     }
 
     /**
@@ -210,8 +206,7 @@ public class CatalogManager {
      */
     public URI lookupDoctype(String entityName, String systemId, String publicId) {
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
-
-        return search(new QueryDoctype(entityName, external.systemId, external.publicId, catalogs())).uri();
+        return new QueryDoctype(entityName, external.systemId, external.publicId).search(this).uri();
     }
 
     /**
@@ -223,7 +218,7 @@ public class CatalogManager {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public URI lookupDocument() {
-        return search(new QueryDocument(catalogs())).uri();
+        return new QueryDocument().search(this).uri();
     }
 
     /**
@@ -241,7 +236,7 @@ public class CatalogManager {
      */
     public URI lookupEntity(String entityName, String systemId, String publicId) {
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
-        return search(new QueryEntity(entityName, external.systemId, external.publicId, catalogs())).uri();
+        return new QueryEntity(entityName, external.systemId, external.publicId).search(this).uri();
     }
 
     /**
@@ -259,15 +254,7 @@ public class CatalogManager {
      */
     public URI lookupNotation(String notationName, String systemId, String publicId) {
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
-        return search(new QueryNotation(notationName, external.systemId, external.publicId, catalogs())).uri();
-    }
-
-    public QueryResult search(QueryCatalog query) {
-        QueryResult result = query.search(this);
-        while (result.query()) {
-            result = result.search(this);
-        }
-        return result;
+        return new QueryNotation(notationName, external.systemId, external.publicId).search(this).uri();
     }
 
     private static class ExternalIdentifiers {
@@ -299,18 +286,6 @@ public class CatalogManager {
         }
 
         return new ExternalIdentifiers(systemId, publicId);
-    }
-
-    public URI normalizedForComparison(URI uri) {
-        if (uri == null) {
-            return null;
-        }
-
-        if ("http".equals(uri.getScheme()) || "classpath".equals(uri.getScheme())) {
-            return URI.create(normalizedForComparison(uri.toString()));
-        }
-
-        return uri;
     }
 
     public String normalizedForComparison(String uri) {

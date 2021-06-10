@@ -1,0 +1,10 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="system">
+
+    <system systemId="http://example.com/found-in-following.dtd"
+            uri="following.dtd"/>
+
+    <system systemId="http://example.com/delegated/but/not/found/in/delegated/catalogs.dtd"
+            uri="following.dtd"/>
+
+</catalog>

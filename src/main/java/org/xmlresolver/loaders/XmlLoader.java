@@ -12,10 +12,12 @@ import org.xmlresolver.Resource;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryNull;
+import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -64,6 +66,10 @@ public class XmlLoader implements CatalogLoader {
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(catalog.toString());
             return loadCatalog(catalog, source);
+        } catch (FileNotFoundException fex) {
+            logger.log(ResolverLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
+            catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
+            return catalogMap.get(catalog);
         } catch (IOException | URISyntaxException ex) {
             logger.log(ResolverLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
             catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
@@ -199,7 +205,7 @@ public class XmlLoader implements CatalogLoader {
 
             URI baseURI = baseURIStack.peek();
             if (attributes.getValue("xml:base") != null) {
-                baseURI = baseURI.resolve(attributes.getValue("xml:base"));
+                baseURI = URIUtils.resolve(baseURI, attributes.getValue("xml:base"));
             }
 
             boolean preferPublic = preferPublicStack.peek();

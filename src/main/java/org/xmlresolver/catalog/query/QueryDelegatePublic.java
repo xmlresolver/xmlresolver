@@ -1,14 +1,17 @@
 package org.xmlresolver.catalog.query;
 
-import org.xmlresolver.CatalogManager;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 public class QueryDelegatePublic extends QueryPublic {
+    protected final List<URI> catalogs;
+
     public QueryDelegatePublic(String systemId, String publicId, List<URI> catalogs) {
-        super(systemId, publicId, catalogs);
+        super(systemId, publicId);
+        this.catalogs = catalogs;
     }
 
     @Override
@@ -16,25 +19,8 @@ public class QueryDelegatePublic extends QueryPublic {
         return true;
     }
 
-    @Override
-    public QueryResult search(CatalogManager manager) {
-        while (!catalogs.isEmpty()) {
-            EntryCatalog catalog = manager.loadCatalog(catalogs.remove(0));
-            boolean done = false;
-            QueryResult result = lookup(manager, catalog);
-            while (!done) {
-                if (result.resolved()) {
-                    return result;
-                }
-                if (result.query()) {
-                    result = manager.search((QueryCatalog) result);
-                } else {
-                    done = true;
-                }
-            }
-        }
-
-        // If the delegated search fails, do not continue from where delegation started
-        return QueryResult.FINAL_RESULT;
+    protected ArrayList<URI> updatedCatalogSearchList(EntryCatalog catalog, ArrayList<URI> oldCatalogs) {
+        // Delegation replaces the catalog list
+        return new ArrayList<>(catalogs);
     }
 }

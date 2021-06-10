@@ -1,42 +1,29 @@
 package org.xmlresolver.catalog.query;
 
-import org.jetbrains.annotations.NotNull;
 import org.xmlresolver.CatalogManager;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryDelegatePublic;
 import org.xmlresolver.catalog.entry.EntryPublic;
-import org.xmlresolver.utils.PublicId;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class QueryPublic extends QueryCatalog {
     public final String systemId;
     public final String publicId;
-    public final boolean localOnly;
 
-    public QueryPublic(String systemId, String publicId, List<URI> catalogs, boolean local) {
-        super(catalogs);
+    public QueryPublic(String systemId, String publicId) {
+        super();
         this.systemId = systemId;
-        this.publicId = publicId == null ? null : PublicId.normalize(publicId);
-        this.localOnly = local;
-    }
-
-    public QueryPublic(String systemId, String publicId, EntryCatalog catalog) {
-        this(systemId, publicId, Collections.singletonList(catalog.baseURI), true);
-    }
-
-    public QueryPublic(String systemId, String publicId, List<URI> catalogs) {
-        this(systemId, publicId, catalogs, false);
+        this.publicId = publicId;
     }
 
     @Override
-    protected @NotNull QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
+    protected QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
         if (systemId != null) {
-            QueryResult result = manager.search(new QuerySystem(systemId, catalog));
+            QuerySystem query = new QuerySystem(systemId);
+            QueryResult result = query.lookup(manager, catalog);
             if (result.resolved()) {
                 return result;
             }
@@ -76,14 +63,7 @@ public class QueryPublic extends QueryCatalog {
             }
         }
 
-        // <nextCatalog>
-        if (!localOnly) {
-            List<URI> next = nextCatalogs(catalog);
-            if (!next.isEmpty()) {
-                return new QueryPublic(systemId, publicId, next);
-            }
-        }
-
         return QueryResult.EMPTY_RESULT;
     }
+
 }

@@ -75,7 +75,7 @@ public class ValidatingXmlLoader implements CatalogLoader {
             return loadCatalog(catalog, source);
         } catch (FileNotFoundException fex) {
             // Throwing an exception for a simple file not found error seems a little too aggressive
-            logger.log(ResolverLogger.ERROR, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
+            logger.log(ResolverLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
             catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
             return catalogMap.get(catalog);
         } catch (IOException | URISyntaxException ex) {

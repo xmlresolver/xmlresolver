@@ -14,29 +14,17 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import java.io.IOException;
-import java.net.URI;
 
-/** Implements the {@link org.xml.sax.EntityResolver}, {@link org.xml.sax.ext.EntityResolver2},
- * {@link LSResourceResolver}
- * and {@link org.xmlresolver.NamespaceResolver}, and {@link javax.xml.transform.URIResolver} interfaces.
- *
- * <p>The StAX {@link javax.xml.stream.XMLResolver} interface is implemented by the
- * {@link org.xmlresolver.StAXResolver} class because the <code>resolveEntity</code> method
- * of the <code>XMLResolver</code> interface isn't compatible with the <code>EntityResolver2</code>
- * method of the same name.</p>
- *
- * @see org.xmlresolver.StAXResolver
- */
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
     private static final ResolverLogger logger = new ResolverLogger(Resolver.class);
-    protected ResourceResolver resolver = null;
+    protected ResourceResolverImpl resolver = null;
 
     /** Creates a new instance of Resolver.
      *
      * The default resolver is a new ResourceResolver that uses a static catalog shared by all threads.
      */
     public Resolver() {
-        resolver = new ResourceResolver();
+        resolver = new ResourceResolverImpl();
     }
 
     /** Creates a new instance of a Resolver.
@@ -46,7 +34,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
      * @param config The configuration to use.
      */
     public Resolver(XMLResolverConfiguration config) {
-        resolver = new ResourceResolver(config);
+        resolver = new ResourceResolverImpl(config);
     }
 
     /** Creates a new instance of a Resolver.
@@ -55,7 +43,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
      *
      * @param resolver The resource resolver to use.
      */
-    public Resolver(ResourceResolver resolver) {
+    public Resolver(ResourceResolverImpl resolver) {
         this.resolver = resolver;
     }
 
@@ -77,118 +65,92 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return resolver.getConfiguration();
     }
 
-    /** Implements the {@link javax.xml.transform.URIResolver} interface. */
+    @Override
     public Source resolve(String href, String base) throws TransformerException {
-        Resource rsrc = resolver.resolveURI(href, base);
+        ResolvedResource rsrc = resolver.resolveURI(href, base);
         if (rsrc == null) {
             return null;
-        } else {
-            ResolverSAXSource source = new ResolverSAXSource(rsrc.localUri(), new InputSource(rsrc.body()));
-            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
-            String systemId = rsrc.uri().toString();
-            if (mask && (systemId.startsWith("jar:") || systemId.startsWith("classpath:"))) {
-                if (base == null) {
-                    systemId = href;
-                } else {
-                    systemId = URI.create(base).resolve(href).toString();
-                }
-            }
-            source.setSystemId(systemId);
-            return source;
         }
+
+        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getStream()));
+        source.setSystemId(rsrc.getResolvedURI().toString());
+        return source;
     }
 
-    /** Implements the {@link org.xmlresolver.NamespaceResolver} interface. */
-    public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
-        Resource rsrc = resolver.resolveNamespaceURI(uri, nature, purpose);
+    @Override
+    public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
+        ResolvedResource rsrc = null;
+        if (type == null || "http://www.w3.org/TR/REC-xml".equals(type)) {
+            logger.log(ResolverLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
+                    systemId, baseURI, publicId);
+            rsrc = resolver.resolveEntity(null, publicId, systemId, baseURI);
+        } else {
+            logger.log(ResolverLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
+                    type, systemId, namespaceURI, baseURI, publicId);
+
+            String purpose = null;
+            // If it looks like it's going to be used for validation, ...
+            if ("http://www.w3.org/2001/XMLSchema".equals(type)
+                    || "http://www.w3.org/XML/XMLSchema/v1.1".equals(type)
+                    || "http://relaxng.org/ns/structure/1.0".equals(type)) {
+                purpose = "http://www.rddl.org/purposes#schema-validation";
+            }
+
+            rsrc = resolver.resolveNamespace(systemId, baseURI, type, purpose);
+        }
+
         if (rsrc == null) {
             return null;
-        } else {
-            ResolverSAXSource source = new ResolverSAXSource(rsrc.localUri(), new InputSource(rsrc.body()));
-            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
-            String systemId = rsrc.uri().toString();
-            if (mask && (systemId.startsWith("jar:") || systemId.startsWith("classpath:"))) {
-                systemId = uri;
-            }
-            source.setSystemId(systemId);
-            return source;
         }
+
+        return new ResolverLSInput(rsrc, publicId);
     }
 
-    /** Implements the {@link org.xml.sax.EntityResolver} interface. */
-    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        Resource rsrc = resolver.resolvePublic(systemId, publicId);
-        if (rsrc == null) {
-            return null;
-        } else {
-            ResolverInputSource source = new ResolverInputSource(rsrc.localUri(), rsrc.body());
-            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
-            String resolvedSystemId = rsrc.uri().toString();
-            if (mask && (resolvedSystemId.startsWith("jar:") || resolvedSystemId.startsWith("classpath:"))) {
-                resolvedSystemId = systemId;
-            }
-            source.setSystemId(resolvedSystemId);
-            return source;
-        }
-    }
-
-    /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface. */
+    @Override
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-        Resource rsrc = resolver.resolveDoctype(name);
+        ResolvedResource rsrc = resolver.resolveEntity(name, null, null, baseURI);
         if (rsrc == null) {
             return null;
-        } else {
-            ResolverInputSource source = new ResolverInputSource(rsrc.localUri(), rsrc.body());
-            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
-            String systemId = rsrc.uri().toString();
-            if (mask && (systemId.startsWith("jar:") || systemId.startsWith("classpath:"))) {
-                if (baseURI != null) {
-                    systemId = baseURI;
-                }
-            }
-            source.setSystemId(systemId);
-            return source;
         }
+
+        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getStream());
+        source.setSystemId(rsrc.getResolvedURI().toString());
+        return source;
     }
 
-    /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface. */
+    @Override
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-        Resource rsrc = resolver.resolveEntity(name, publicId, systemId, baseURI);
-        if (rsrc == null) {
-           return null;
-        } else {
-            ResolverInputSource source = new ResolverInputSource(rsrc.localUri(), rsrc.body());
-            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
-            String resolvedSystemId = rsrc.uri().toString();
-            if (mask && (resolvedSystemId.startsWith("jar:") || resolvedSystemId.startsWith("classpath:"))) {
-                if (baseURI == null) {
-                    resolvedSystemId = systemId;
-                } else {
-                    resolvedSystemId = URI.create(baseURI).resolve(systemId).toString();
-                }
-            }
-            source.setSystemId(resolvedSystemId);
-            return source;
-        }
-    }
-
-    /** Implements the {@link org.w3c.dom.ls.LSResourceResolver} interface. */
-    public LSInput resolveResource(String type, String namespace, String publicId, String systemId, String baseURI) {
-        Resource rsrc = resolver.resolveResource(type, namespace, publicId, systemId, baseURI);
+        ResolvedResource rsrc = resolver.resolveEntity(name, publicId, systemId, baseURI);
         if (rsrc == null) {
             return null;
-        } else {
-            boolean mask = resolver.getConfiguration().getFeature(ResolverFeature.MASK_JAR_URIS);
-            String resolvedSystemId = rsrc.uri().toString();
-            if (mask && (resolvedSystemId.startsWith("jar:") || resolvedSystemId.startsWith("classpath:"))) {
-                if (baseURI == null) {
-                    resolvedSystemId = systemId;
-                } else {
-                    resolvedSystemId = URI.create(baseURI).resolve(systemId).toString();
-                }
-            }
-
-            return new ResolverLSInput(rsrc, publicId, resolvedSystemId);
         }
+
+        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getStream());
+        source.setSystemId(rsrc.getResolvedURI().toString());
+        return source;
+    }
+
+    @Override
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        ResolvedResource rsrc = resolver.resolveEntity(null, publicId, systemId, null);
+        if (rsrc == null) {
+            return null;
+        }
+
+        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getStream());
+        source.setSystemId(rsrc.getResolvedURI().toString());
+        return source;
+    }
+
+    @Override
+    public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
+        ResolvedResource rsrc = resolver.resolveNamespace(uri, null, nature, purpose);
+        if (rsrc == null) {
+            return null;
+        }
+
+        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getStream()));
+        source.setSystemId(rsrc.getResolvedURI().toString());
+        return source;
     }
 }

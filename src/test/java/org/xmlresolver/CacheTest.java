@@ -18,7 +18,6 @@ public class CacheTest extends CacheManager {
     private static final String cacheDir = "build/test-cache";
 
     XMLResolverConfiguration config = null;
-    ResourceResolver resolver = null;
     ResourceCache cache = null;
 
     @Before

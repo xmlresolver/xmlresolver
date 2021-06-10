@@ -9,13 +9,8 @@
 
 package org.xmlresolver;
 
-import org.xmlresolver.utils.URIUtils;
-
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /** Implements the {@link javax.xml.stream.XMLResolver} interface.
  *
@@ -41,7 +36,7 @@ public class StAXResolver implements XMLResolver {
      * The default resolver is a new ResourceResolver that uses a static catalog shared by all threads.
      */
     public StAXResolver() {
-        resolver = new ResourceResolver();
+        resolver = new ResourceResolverImpl();
     }
 
     /** Creates a new instance of a StAXResolver.
@@ -51,7 +46,7 @@ public class StAXResolver implements XMLResolver {
      * @param config The XML Resolver configuration to use.
      */
     public StAXResolver(XMLResolverConfiguration config) {
-        resolver = new ResourceResolver(config);
+        resolver = new ResourceResolverImpl(config);
     }
 
     /** Creates a new instance of a StAXResolver.
@@ -68,39 +63,25 @@ public class StAXResolver implements XMLResolver {
      *
      * @return The catalog
      */
-    public XMLResolverConfiguration getConfiguration() {
+    public ResolverConfiguration getConfiguration() {
         return resolver.getConfiguration();
     }
 
     /** Implements the {@link javax.xml.stream.XMLResolver} interface. */
     public Object resolveEntity(String publicId, String systemId, String baseURI, String namespace) throws XMLStreamException {
-        // We can do better than this, but for now...just get an absolute URI
+        logger.log(ResolverLogger.REQUEST, "resolveEntity: %s/%s (baseURI: %s, %s)",
+                systemId, namespace, baseURI, publicId);
 
-        String absSystem = systemId;
-        if (baseURI != null) {
-            try {
-                URI auri = URIUtils.newURI(baseURI);
-                auri = auri.resolve(URIUtils.newURI(systemId));
-                absSystem = auri.toURL().toString();
-            } catch (URISyntaxException | MalformedURLException use) {
-                // nop;
-            } catch (IllegalArgumentException iae) {
-                // In case someone uses baseURI=null, systemId="../some/local/path"
-                // nop;
-            }
-        }
-
-        logger.log(ResolverLogger.REQUEST, "resolveEntity: %s/%s (%s)", absSystem, namespace, publicId);
-
-        Resource rsrc = resolver.resolvePublic(absSystem, publicId);
+        ResolvedResource rsrc = resolver.resolveEntity(null, publicId, systemId, baseURI);
 
         if (rsrc == null) {
-            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (%s) → null", absSystem, namespace, publicId);
+            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (baseURI: %s, %s) → null",
+                    systemId, namespace, baseURI, publicId);
             return null;
         } else {
-            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (%s) → %s",
-                    absSystem, namespace, publicId, rsrc.uri());
-            return rsrc.body();
+            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (baseURI: %s, %s) → %s",
+                    systemId, namespace, baseURI, publicId, rsrc.getResolvedURI());
+            return rsrc.getStream();
         }
     }
 }

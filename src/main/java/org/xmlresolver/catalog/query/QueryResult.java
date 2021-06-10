@@ -1,9 +1,11 @@
 package org.xmlresolver.catalog.query;
 
-import org.xmlresolver.CatalogManager;
+import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
+import org.xmlresolver.catalog.entry.EntryNextCatalog;
 
 import java.net.URI;
+import java.util.ArrayList;
 
 public class QueryResult {
     public static final QueryResult EMPTY_RESULT = new QueryResult();
@@ -32,7 +34,13 @@ public class QueryResult {
         return result;
     }
 
-    public QueryResult search(CatalogManager manager) {
-        return this;
+    protected ArrayList<URI> updatedCatalogSearchList(EntryCatalog catalog, ArrayList<URI> catalogs) {
+        // <nextCatalog>
+        ArrayList<URI> next = new ArrayList<>();
+        for (Entry raw : catalog.entries(Entry.Type.NEXT_CATALOG)) {
+            next.add(((EntryNextCatalog) raw).catalog);
+        }
+        next.addAll(catalogs);
+        return next;
     }
 }
