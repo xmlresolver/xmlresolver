@@ -127,7 +127,7 @@ public class ResolvedResourceImpl extends ResolvedResource {
     }
 
     @Override
-    public InputStream getStream() {
+    public InputStream getInputStream() {
         return inputStream;
     }
 

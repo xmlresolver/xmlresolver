@@ -72,7 +72,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         }
 
-        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getStream()));
+        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getInputStream()));
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -113,7 +113,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         }
 
-        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getStream());
+        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream());
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -125,7 +125,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         }
 
-        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getStream());
+        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream());
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -137,7 +137,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         }
 
-        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getStream());
+        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream());
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -149,7 +149,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         }
 
-        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getStream()));
+        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getInputStream()));
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }

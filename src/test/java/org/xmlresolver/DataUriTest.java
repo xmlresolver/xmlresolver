@@ -38,7 +38,7 @@ public class DataUriTest {
         String line = null;
         try {
             ResolvedResource result = resolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -54,7 +54,7 @@ public class DataUriTest {
         String line = null;
         try {
             ResolvedResource result = resolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -70,7 +70,7 @@ public class DataUriTest {
         String line = null;
         try {
             ResolvedResource result = resolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore

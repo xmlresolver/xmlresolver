@@ -8,6 +8,6 @@ public abstract class ResolvedResource {
     public abstract String getRequestURI();
     public abstract URI getResolvedURI();
     public abstract URI getLocalURI();
-    public abstract InputStream getStream();
+    public abstract InputStream getInputStream();
     public abstract String getContentType();
 }

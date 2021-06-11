@@ -1,7 +1,6 @@
 package org.xmlresolver.sources;
 
 import org.w3c.dom.ls.LSInput;
-import org.xml.sax.InputSource;
 import org.xmlresolver.ResolvedResource;
 import org.xmlresolver.Resource;
 
@@ -45,7 +44,7 @@ public class ResolverLSInput implements LSInput {
      * */
     public ResolverLSInput(ResolvedResource rsrc, String publicId) {
         resolvedURI = rsrc.getResolvedURI();
-        this.body = rsrc.getStream();
+        this.body = rsrc.getInputStream();
         this.systemId = rsrc.getResolvedURI().toString();
         this.publicId = publicId;
         this.uri = rsrc.getResolvedURI();

@@ -81,7 +81,7 @@ public class StAXResolver implements XMLResolver {
         } else {
             logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (baseURI: %s, %s) → %s",
                     systemId, namespace, baseURI, publicId, rsrc.getResolvedURI());
-            return rsrc.getStream();
+            return rsrc.getInputStream();
         }
     }
 }
