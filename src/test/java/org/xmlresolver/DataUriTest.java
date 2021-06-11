@@ -22,12 +22,12 @@ import static org.junit.Assert.assertEquals;
  * @author ndw
  */
 public class DataUriTest {
-    private static ResourceResolverImpl resolver = null;
+    private static CatalogResolver resolver = null;
 
     @Before
     public void setUp() throws Exception {
         XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/datauri.xml");
-        resolver = new ResourceResolverImpl(config);
+        resolver = new CatalogResolver(config);
     }
 
     @Test

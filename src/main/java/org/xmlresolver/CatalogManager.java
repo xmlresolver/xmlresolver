@@ -40,7 +40,7 @@ import java.util.List;
  * indicated by the catalog, or <code>null</code> to indicate that no match was found.</p>
  */
 
-public class CatalogManager implements CatalogResolver {
+public class CatalogManager implements XMLCatalogResolver {
     protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
     protected final ResolverConfiguration resolverConfiguration;
     protected CatalogLoader catalogLoader;

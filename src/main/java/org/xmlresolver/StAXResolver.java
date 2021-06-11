@@ -36,7 +36,7 @@ public class StAXResolver implements XMLResolver {
      * The default resolver is a new ResourceResolver that uses a static catalog shared by all threads.
      */
     public StAXResolver() {
-        resolver = new ResourceResolverImpl();
+        resolver = new CatalogResolver();
     }
 
     /** Creates a new instance of a StAXResolver.
@@ -46,7 +46,7 @@ public class StAXResolver implements XMLResolver {
      * @param config The XML Resolver configuration to use.
      */
     public StAXResolver(XMLResolverConfiguration config) {
-        resolver = new ResourceResolverImpl(config);
+        resolver = new CatalogResolver(config);
     }
 
     /** Creates a new instance of a StAXResolver.

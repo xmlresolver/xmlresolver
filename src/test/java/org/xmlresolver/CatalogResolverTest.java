@@ -9,7 +9,7 @@ import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-public class ResourceResolverImplTest {
+public class CatalogResolverTest {
     public static final String catalog = "src/test/resources/catalog.xml";
 
     XMLResolverConfiguration config = null;

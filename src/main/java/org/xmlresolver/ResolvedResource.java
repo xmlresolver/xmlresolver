@@ -5,7 +5,7 @@ import java.net.URI;
 
 /** A resolved resource represents a successfully resolved resource.
  *
- * <p>While the {@link CatalogResolver} interface simply maps from request parameters to URIs,
+ * <p>While the {@link XMLCatalogResolver} interface simply maps from request parameters to URIs,
  * the resolver interfaces defined by SAX, DOM, etc. expect open streams to be returned. This
  * abstract class provides the information necessary to support those APIs.</p>
  *

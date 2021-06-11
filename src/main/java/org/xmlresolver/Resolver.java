@@ -37,14 +37,14 @@ import java.io.IOException;
 
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
     private static final ResolverLogger logger = new ResolverLogger(Resolver.class);
-    protected ResourceResolverImpl resolver = null;
+    protected CatalogResolver resolver = null;
 
     /** Creates a new instance of Resolver.
      *
      * The default resolver is a new ResourceResolver that uses a static catalog shared by all threads.
      */
     public Resolver() {
-        resolver = new ResourceResolverImpl();
+        resolver = new CatalogResolver();
     }
 
     /** Creates a new instance of a Resolver.
@@ -54,7 +54,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
      * @param config The configuration to use.
      */
     public Resolver(XMLResolverConfiguration config) {
-        resolver = new ResourceResolverImpl(config);
+        resolver = new CatalogResolver(config);
     }
 
     /** Creates a new instance of a Resolver.
@@ -63,7 +63,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
      *
      * @param resolver The resource resolver to use.
      */
-    public Resolver(ResourceResolverImpl resolver) {
+    public Resolver(CatalogResolver resolver) {
         this.resolver = resolver;
     }
 

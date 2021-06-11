@@ -18,7 +18,7 @@ public class RddlTest extends CacheManager {
     public static final URI catloc = URIUtils.cwd().resolve(catalog);
 
     XMLResolverConfiguration config = null;
-    ResourceResolverImpl resolver = null;
+    CatalogResolver resolver = null;
 
     @Before
     public void setup() {
@@ -26,7 +26,7 @@ public class RddlTest extends CacheManager {
 
         config = new XMLResolverConfiguration(catalog);
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, cache.getAbsolutePath());
-        resolver = new ResourceResolverImpl(config);
+        resolver = new CatalogResolver(config);
 
         // Make sure the Docker container is running where we expect.
         ResourceConnection conn = new ResourceConnection("http://localhost:8222/docs/sample/sample.dtd", true);
@@ -127,7 +127,7 @@ public class RddlTest extends CacheManager {
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
         config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         config.setFeature(ResolverFeature.PARSE_RDDL, true);
-        ResourceResolverImpl resolver = new ResourceResolverImpl(config);
+        CatalogResolver resolver = new CatalogResolver(config);
 
         ResolvedResource xsd = resolver.resolveNamespace("http://www.w3.org/XML/1998/namespace",
                 null,
