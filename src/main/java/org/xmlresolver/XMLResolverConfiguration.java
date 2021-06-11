@@ -625,6 +625,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
      * by reading from the specified input source.</p>
      *
      * @param catalog The catalog file.
+     * @param data The input source that provides the catalog content.
      * @throws NullPointerException if either catalog or data is null.
      */
     public void addCatalog(URI catalog, InputSource data) {
