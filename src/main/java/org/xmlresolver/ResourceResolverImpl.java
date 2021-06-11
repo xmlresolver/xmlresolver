@@ -11,11 +11,17 @@ import org.xmlresolver.utils.URIUtils;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Stack;
 
 public class ResourceResolverImpl implements ResourceResolver {
@@ -47,26 +53,6 @@ public class ResourceResolverImpl implements ResourceResolver {
      */
     public XMLResolverConfiguration getConfiguration() {
         return config;
-    }
-
-    private ResolvedResourceImpl resource(String requestURI, URI responseURI, CacheEntry cached) {
-        try {
-            if (cached == null) {
-                return new ResolvedResourceImpl(config, URIUtils.newURI(requestURI), responseURI);
-            } else {
-                FileInputStream fs = new FileInputStream(cached.file);
-                URI localURI = cached.file.toURI();
-                boolean mask = config.getFeature(ResolverFeature.MASK_JAR_URIS);
-                if (mask && ("jar".equals(localURI.getScheme()) || "classpath".equals(localURI.getScheme()))) {
-                    localURI = responseURI;
-                }
-               return new ResolvedResourceImpl(requestURI, localURI, cached.file.toURI(), fs, cached.contentType());
-            }
-        } catch (IOException | URISyntaxException | IllegalArgumentException ex) {
-            // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
-            logger.log(ResolverLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
-            return null;
-        }
     }
 
     /** Resolve a URI.
@@ -192,7 +178,6 @@ public class ResourceResolverImpl implements ResourceResolver {
 
         if (result != null) {
             logger.log(ResolverLogger.RESPONSE, "resolveEntity: %s", resolved);
-            result.setName(name);
             return result;
         }
 
@@ -220,9 +205,6 @@ public class ResourceResolverImpl implements ResourceResolver {
         } else {
             logger.log(ResolverLogger.RESPONSE, "resolveDoctype: %s", resolved);
             ResolvedResourceImpl result = resource(null, resolved, cache.cachedSystem(resolved, null));
-            if (result != null) {
-                result.setName(name);
-            }
             return result;
         }
     }
@@ -311,6 +293,96 @@ public class ResourceResolverImpl implements ResourceResolver {
             logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
             return null;
         }
+    }
+
+    private ResolvedResourceImpl resource(String requestURI, URI responseURI, CacheEntry cached) {
+        try {
+            if (cached == null) {
+                return uncachedResource(URIUtils.newURI(requestURI), responseURI);
+            } else {
+                FileInputStream fs = new FileInputStream(cached.file);
+                URI localURI = cached.file.toURI();
+                boolean mask = config.getFeature(ResolverFeature.MASK_JAR_URIS);
+                if (mask && ("jar".equals(localURI.getScheme()) || "classpath".equals(localURI.getScheme()))) {
+                    localURI = responseURI;
+                }
+                return new ResolvedResourceImpl(localURI, cached.file.toURI(), fs, cached.contentType());
+            }
+        } catch (IOException | URISyntaxException | IllegalArgumentException ex) {
+            // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
+            logger.log(ResolverLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
+            return null;
+        }
+    }
+
+    private ResolvedResourceImpl uncachedResource(URI req, URI res) throws IOException, URISyntaxException {
+        boolean mask = config.getFeature(ResolverFeature.MASK_JAR_URIS);
+        URI showResolvedURI = res;
+        if (mask && ("jar".equals(showResolvedURI.getScheme()) || "classpath".equals(showResolvedURI.getScheme()))) {
+            showResolvedURI = req;
+        }
+
+        InputStream inputStream = null;
+
+        if ("data".equals(res.getScheme())) {
+            // This is a little bit crude; see RFC 2397
+
+            String contentType = null;
+            // Can't use URI accessors because they percent decode the string incorrectly.
+            String path = res.toString().substring(5);
+            int pos = path.indexOf(",");
+            if (pos >= 0) {
+                String mediatype = path.substring(0, pos);
+                String data = path.substring(pos + 1);
+                if (mediatype.endsWith(";base64")) {
+                    // Base64 decode it
+                    inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(data));
+                    contentType = mediatype.substring(0, mediatype.length() - 7);
+                } else {
+                    // URL decode it
+                    String charset = "UTF-8";
+                    pos = mediatype.indexOf(";charset=");
+                    if (pos > 0) {
+                        charset = mediatype.substring(pos + 9);
+                        pos = charset.indexOf(";");
+                        if (pos >= 0) {
+                            charset = charset.substring(0, pos);
+                        }
+                    }
+                    data = URLDecoder.decode(data, charset);
+                    inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+                    contentType = "".equals(mediatype) ? null : mediatype;
+                }
+
+                return new ResolvedResourceImpl(showResolvedURI, res, inputStream, contentType);
+            } else {
+                throw new URISyntaxException(res.toString(), "Comma separator missing");
+            }
+        }
+
+        if ("classpath".equals(res.getScheme())) {
+            String path = res.getSchemeSpecificPart();
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            // The URI class throws exceptions if you attempt to manipulate
+            // classpath: URIs. Fair enough, given their ad hoc invention
+            // by the Spring framework. We're going to cheat a little bit here
+            // and replace the classpath: URI with the actual URI of the resource
+            // found (if one is found). That means downstream processes will
+            // have a "useful" URI. It still might not work, due to class loaders and
+            // such, but at least it won't immediately blow up.
+            URL rsrc = getClass().getClassLoader().getResource(path);
+            if (rsrc == null) {
+                throw new IOException("Not found: " + res);
+            } else {
+                inputStream = rsrc.openStream();
+                return new ResolvedResourceImpl(showResolvedURI, res, inputStream, null);
+            }
+        }
+
+        URLConnection conn = res.toURL().openConnection();
+        return new ResolvedResourceImpl(showResolvedURI, res, conn.getInputStream(), conn.getContentType());
     }
 
     private URI checkRddl(URI uri, String nature, String purpose, String contentType) {
