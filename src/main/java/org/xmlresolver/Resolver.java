@@ -15,6 +15,26 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import java.io.IOException;
 
+/** An implementation of many resolver interfaces.
+ *
+ * <p>This class is probably the most common entry point to the XML Catalog resolver. It has a zero
+ * argument constructor so it can be instantiated directly from its class name (for example, passed to
+ * an application as a commend line argument or stored in a configuration file). When instantiated
+ * this way, it will automatically be configured by system properties and an <code>xmlresolver.properties</code>
+ * configuration file, if one exists.</p>
+ *
+ * <p>This class implements the {@link org.xml.sax.EntityResolver}, {@link org.xml.sax.ext.EntityResolver2},
+ * {@link LSResourceResolver}
+ * and {@link org.xmlresolver.NamespaceResolver}, and {@link javax.xml.transform.URIResolver} interfaces.</p>
+ *
+ * <p>The StAX {@link javax.xml.stream.XMLResolver} interface is implemented by the
+ * {@link org.xmlresolver.StAXResolver} class because the <code>resolveEntity</code> method
+ * of the <code>XMLResolver</code> interface isn't compatible with the <code>EntityResolver2</code>
+ * method of the same name.</p>
+ *
+ * @see org.xmlresolver.StAXResolver
+ */
+
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
     private static final ResolverLogger logger = new ResolverLogger(Resolver.class);
     protected ResourceResolverImpl resolver = null;
@@ -65,6 +85,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return resolver.getConfiguration();
     }
 
+    /** Implements the {@link javax.xml.transform.URIResolver} interface. */
     @Override
     public Source resolve(String href, String base) throws TransformerException {
         ResolvedResource rsrc = resolver.resolveURI(href, base);
@@ -77,6 +98,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return source;
     }
 
+    /** Implements the {@link org.w3c.dom.ls.LSResourceResolver} interface. */
     @Override
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
         ResolvedResource rsrc = null;
@@ -106,6 +128,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return new ResolverLSInput(rsrc, publicId);
     }
 
+    /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface. */
     @Override
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
         ResolvedResource rsrc = resolver.resolveEntity(name, null, null, baseURI);
@@ -118,6 +141,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return source;
     }
 
+    /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface. */
     @Override
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
         ResolvedResource rsrc = resolver.resolveEntity(name, publicId, systemId, baseURI);
@@ -130,6 +154,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return source;
     }
 
+    /** Implements the {@link org.xml.sax.EntityResolver} interface. */
     @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         ResolvedResource rsrc = resolver.resolveEntity(null, publicId, systemId, null);
@@ -142,6 +167,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return source;
     }
 
+    /** Implements the {@link org.xmlresolver.NamespaceResolver} interface. */
     @Override
     public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
         ResolvedResource rsrc = resolver.resolveNamespace(uri, null, nature, purpose);

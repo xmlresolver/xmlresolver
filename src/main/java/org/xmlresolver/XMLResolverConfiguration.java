@@ -21,63 +21,108 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
- *Implements the OASIS XML Catalog Standard.
+ * Configures an XML resolver.
  *
- * <p>This class loads OASIS XML Catalog files and provides methods for
- * searching the catalog. All of the XML Catalog entry types defined in
- * §6 (catalog, group, public, system, rewriteSystem, systemSuffix,
- * delegatePublic, delegateSystem, uri, rewriteURI, uriSuffix,
- * delegateURI, and nextCatalog) are supported. In addition, the
- * following TR9401 Catalog entry types from §D are supported: doctype,
- * document, entity, and notation. (The other types do not apply to
- * XML.)</p>
- *
- * <p>Many aspects of catalog processing can be configured when the
- * <code>Catalog</code> class is instantiated. The <code>Catalog</code>
+ * <p>Many aspects of catalog processing can be configured. This
  * class examines both system properties and the properties specified in
- * a separate resource. The initial list of catalog files can be provided
- * as a property or directly when the <code>Catalog</code> is
+ * a separate properties file. The initial list of catalog files can be provided
+ * as a property or directly when the configuration is
  * created.</p>
  *
- * <p>If the list of property files is not specified, the default list is
- * "<code>XMLResolver.properties;CatalogManager.properties</code>".
- * </p>
+ * <p>The following table lays out the features recognized by this class
+ * and the system properties and configuration file properties that can be
+ * used to specify them.</p>
  *
- * <p>The following properties are recognized:</p>
- *
- * <dl>
- * <dt><code>cache</code> (system property <code>xml.catalog.cache</code>)</dt>
- * <dd>Identifies a directory where caching will be performed. If not specified,
- * no caching is performed. The directory specified must be writable by the application.
- * The default is not to cache.
- * </dd>
- * <dt><code>cacheUnderHome</code> (system property <code>xml.catalog.cacheUnderHome</code>)</dt>
- * <dd>If set to "true/yes/1" and no cache directory was specified then the cache
- * directory "&lt;home&gt;/.xmlresolver/cache" is used.
- * </dd>
- * <dt><code>catalogs</code> (system property <code>xml.catalog.files</code>)</dt>
- * <dd>A semi-colon delimited list of catalog files. Each of these files will be
- * loaded, in turn and as necessary, when searching for entries. Additional files
- * may be loaded if referenced from the initial files. The default is
- * "<code>./catalog.xml</code>".
- * </dd>
- * <dt><code>relative-catalogs</code></dt>
- * <dd>This property only applies when loaded from a property file. If set to
- * "<code>true</code>" or "<code>yes</code>" then relative file names
- * in the property file will be used. Otherwise, they will be made absolute with
- * respect to the property file. The default is "<code>yes</code>".
- * </dd>
- * <dt><code>prefer</code> (system property <code>xml.catalog.prefer</code>)</dt>
- * <dd>Sets the default value of the XML Catalogs "prefer" setting.
- * </dd>
- * <dt><code>cache-<em>scheme</em>-uri</code> (system property <code>xml.catalog.cache.<em>scheme</em></code>)</dt>
- * <dd>Determines whether URIs of a particular <em>scheme</em> will be cached.
- * If nothing is said about a particular scheme then the default is "false" for
- * <code>file</code>-scheme URIs and "true" for everything else.
- * </dd>
- * </dl>
- *
- * @author ndw
+ * <table>
+ * <caption>Resolver features and properties that set them</caption>
+ * <thead>
+ * <tr>
+ * <th>Feature</th>
+ * <th>System property</th>
+ * <th>File property</th>
+ * <th>Type</th>
+ * </tr>
+ * </thead>
+ * <tbody>
+ * <tr><th>{@link ResolverFeature#ALLOW_CATALOG_PI}</th>
+ * <td>xml.catalog.allowPI</td>
+ * <td>allow-oasis-xml-catalog-pi</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#CACHE_DIRECTORY}</th>
+ * <td>xml.catalog.cache</td>
+ * <td>cache</td>
+ * <td>String</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#CACHE_UNDER_HOME}</th>
+ * <td>xml.catalog.cacheUnderHome</td>
+ * <td>cache-under-home</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#CATALOG_ADDITIONS}</th>
+ * <td>xml.catalog.additions</td>
+ * <td>catalog-additions</td>
+ * <td>List of strings²</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#CATALOG_FILES}</th>
+ * <td>xml.catalog.files</td>
+ * <td>catalogs</td>
+ * <td>List of strings²</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#CATALOG_LOADER_CLASS}</th>
+ * <td>xml.catalog.catalogLoaderClass</td>
+ * <td>catalog-loader-class</td>
+ * <td>String</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#CLASSPATH_CATALOGS}</th>
+ * <td>xml.catalog.classpathCatalogs</td>
+ * <td>classpath-catalogs</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#MASK_JAR_URIS}</th>
+ * <td>xml.catalog.maskJarUris</td>
+ * <td>mask-jar-uris</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#MERGE_HTTPS}</th>
+ * <td>xml.catalog.mergeHttps</td>
+ * <td>merge-https</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#PARSE_RDDL}</th>
+ * <td>xml.catalog.parseRddl</td>
+ * <td>parse-rddl</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#PREFER_PROPERTY_FILE}</th>
+ * <td>xml.catalog.preferPropertyFile</td>
+ * <td>prefer-property-file</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#PREFER_PUBLIC}</th>
+ * <td>xml.catalog.prefer</td>
+ * <td>prefer</td>
+ * <td>“<code>public</code>” or “<code>system</code>”³</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#URI_FOR_SYSTEM}</th>
+ * <td>xml.catalog.uriForSystem</td>
+ * <td>uri-for-system</td>
+ * <td>Boolean¹</td>
+ * </tr>
+ * </tbody>
+ * <tfoot>
+ * <tr>
+ * <td colspan=”4”>¹ Any of “true”, “yes”, or “1” is true; everything else is false.<td>
+ * </tr>
+ * <tr>
+ * <td colspan=”4”>² The list of strings is semicolon delimited<td>
+ * </tr>
+ * <tr>
+ * <td colspan=”4”>³ Public is preferred if the value is “public”, any other value
+ * is equivalent to “system”.</td>
+ * </tr>
+ * </tfoot>
+ * </table>
  */
 
 public class XMLResolverConfiguration implements ResolverConfiguration {
@@ -559,27 +604,67 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         }
     }
 
+    /** Add a catalog file to the list of catalogs.
+     *
+     * <p>This adds a catalog file to the end of the list of catalogs. This file will be
+     * loaded by opening the specified file.</p>
+     *
+     * @param catalog The catalog file.
+     */
     public void addCatalog(String catalog) {
-        synchronized (catalogs) {
-            catalogs.add(catalog);
+        if (catalog != null) {
+            synchronized (catalogs) {
+                catalogs.add(catalog);
+            }
         }
     }
 
+    /** Add a catalog file to the list of catalogs.
+     *
+     * <p>This adds a catalog file to the end of the list of catalogs. This file will be loaded
+     * by reading from the specified input source.</p>
+     *
+     * @param catalog The catalog file.
+     * @throws NullPointerException if either catalog or data is null.
+     */
     public void addCatalog(URI catalog, InputSource data) {
+        if (catalog == null) {
+            throw new NullPointerException("null provided for catalog URI");
+        }
+        if (data == null) {
+            throw new NullPointerException("null provided for catalog data");
+        }
         URI uri = URIUtils.cwd().resolve(catalog);
         synchronized (catalogs) {
             catalogs.add(uri.toString());
+            if (manager == null) {
+                manager = getFeature(ResolverFeature.CATALOG_MANAGER);
+            }
+            manager.loadCatalog(uri, data);
         }
-        if (manager == null) {
-            manager = getFeature(ResolverFeature.CATALOG_MANAGER);
-        }
-        manager.loadCatalog(uri, data);
     }
 
+    /** Remove a catalog from the list of catalogs.
+     *
+     * <p>Removes the specified catalog from the list of catalogs (if it was present in the list).</p>
+     *
+     * @param catalog The catalog file.
+     * @return True if the catalog was removed.
+     */
     public boolean removeCatalog(String catalog) {
-        return catalogs.remove(catalog);
+        synchronized (catalogs) {
+            return catalogs.remove(catalog);
+        }
     }
 
+    /** Set a configuration feature.
+     *
+     * <p>Sets the specified feature to the specified value. Unknown features are ignored.</p>
+     *
+     * @param feature The feature.
+     * @param value The new value.
+     * @param <T> A type appropriate for the feature.
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> void setFeature(ResolverFeature<T> feature, T value) {
@@ -645,6 +730,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         return classpathCatalogList;
     }
 
+    /** Return the value of a feature.
+     *
+     * <p>Returns the value of the specified feature.</p>
+     *
+     * @param feature The feature or null if the feature is unknown.
+     * @param <T> A type appropriate to the feature.
+     * @return The feature value.
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getFeature(ResolverFeature<T> feature) {
@@ -695,6 +788,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         }
     }
 
+    /** Iterate over all the known features.
+     *
+     * @return An iterator over all the known features.
+     */
     @Override
     public Iterator<ResolverFeature<?>> getFeatures() {
          return Arrays.stream(knownFeatures).iterator();

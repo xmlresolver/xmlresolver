@@ -164,6 +164,8 @@ javadoc {
   exclude 'org/xmlresolver/utils/**'
   exclude 'org/xmlresolver/BuildConfig.java'
   exclude 'org/xmlresolver/ResourceConnection.java'
+  exclude 'org/xmlresolver/ResolvedResourceImpl.java'
+  exclude 'org/xmlresolver/ResourceResolverImpl.java'
   exclude 'org/xmlresolver/cache/CacheEntryCatalog.java'
   exclude 'org/xmlresolver/catalog/**'
   options.showFromPublic()
