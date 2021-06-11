@@ -27,11 +27,20 @@ import java.util.List;
  * <a href="https://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html">XML
  * Catalogs</a>.</p>
  *
+ * <p>This class loads OASIS XML Catalog files and provides methods for
+ * searching the catalog. All of the XML Catalog entry types defined in
+ * §6 (catalog, group, public, system, rewriteSystem, systemSuffix,
+ * delegatePublic, delegateSystem, uri, rewriteURI, uriSuffix,
+ * delegateURI, and nextCatalog) are supported. In addition, the
+ * following TR9401 Catalog entry types from §D are supported: doctype,
+ * document, entity, and notation. (The other types do not apply to
+ * XML.)</p>
+ *
  * <p>For each of the query methods, the manager either returns the mapping
  * indicated by the catalog, or <code>null</code> to indicate that no match was found.</p>
  */
 
-public class CatalogManager {
+public class CatalogManager implements CatalogResolver {
     protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
     protected final ResolverConfiguration resolverConfiguration;
     protected CatalogLoader catalogLoader;
