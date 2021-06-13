@@ -84,7 +84,12 @@ public class ResolverLogger {
         sb.append(cat);
         sb.append(": ");
         Formatter formatter = new Formatter(sb);
-        formatter.format(message, params);
+
+        if (params.length == 0) {
+            formatter.format("%s", message);
+        } else {
+            formatter.format(message, params);
+        }
 
         Integer deflevel = categories.getOrDefault("*", DEBUG);
         Integer level = categories.getOrDefault(cat, deflevel);
