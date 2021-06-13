@@ -130,7 +130,7 @@ task appJar(type: Jar) {
 }
 assemble.dependsOn appJar
 
-task copyJars(type: Copy, dependsOn: ["jar", "appJar"]) {
+task copyJars(type: Copy, dependsOn: ["jar", "appJar", "dataJar"]) {
   from "build/libs"
   into "build/${basename}-${resolverVersion}/lib"
   doFirst {
