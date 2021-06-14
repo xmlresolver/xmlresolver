@@ -434,6 +434,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
+        // Bit of a hack here.
+        String property = properties.getProperty("catalog-logging");
+        if (property != null && System.getProperty("xml.catalog.logging") == null) {
+            System.setProperty("xml.catalog.logging", property);
+        }
+
         boolean relative = true;
         String allow = properties.getProperty("relative-catalogs");
         if (allow != null) {
@@ -443,7 +449,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             logger.log(ResolverLogger.CONFIG, "Relative catalogs: %s", relative);
         }
 
-        String property = properties.getProperty("catalogs");
+        property = properties.getProperty("catalogs");
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             catalogs.clear();
@@ -521,9 +527,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             cacheDirectory = property;
         }
 
-        property = properties.getProperty("cacheUnderHome");
+        property = properties.getProperty("cache-under-home");
         if (property == null) {
-            property = properties.getProperty("cache-under-home");
+            property = properties.getProperty("cacheUnderHome");
         }
         if (property != null) {
             if (showConfigChanges) {

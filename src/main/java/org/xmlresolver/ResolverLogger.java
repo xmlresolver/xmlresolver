@@ -38,21 +38,10 @@ public class ResolverLogger {
 
     private final Logger logger;
     private final HashMap<String, Integer> categories = new HashMap<>();
+    private String catalogLogging = null;
 
     public ResolverLogger(Class<?> klass) {
         this.logger = LoggerFactory.getLogger(klass);
-        String property = System.getProperty("xml.catalog.logging");
-        if (property != null) {
-            for (String prop : property.split(",\\s*")) {
-                int pos = prop.indexOf(":");
-                if (pos > 0) {
-                    String cat = prop.substring(0, pos).trim();
-                    String level = prop.substring(pos+1).trim();
-                    setCategory(cat, level);
-                }
-            }
-        }
-
     }
 
     public String getCategory(String cat) {
@@ -80,6 +69,8 @@ public class ResolverLogger {
     }
 
     public void log(String cat, String message, Object... params) {
+        updateLoggingCategories();
+
         StringBuilder sb = new StringBuilder();
         sb.append(cat);
         sb.append(": ");
@@ -103,6 +94,33 @@ public class ResolverLogger {
                 break;
             default:
                 logger.debug(sb.toString());
+        }
+    }
+
+    private void updateLoggingCategories() {
+        String property = System.getProperty("xml.catalog.logging");
+        if (property == null && catalogLogging == null) {
+            return;
+        }
+
+        if (property == null) {
+            categories.clear();
+            return;
+        }
+
+        if (property.equals(catalogLogging)) {
+            return;
+        }
+
+        catalogLogging = property;
+        categories.clear();
+        for (String prop : property.split(",\\s*")) {
+            int pos = prop.indexOf(":");
+            if (pos > 0) {
+                String cat = prop.substring(0, pos).trim();
+                String level = prop.substring(pos+1).trim();
+                setCategory(cat, level);
+            }
         }
     }
 }
