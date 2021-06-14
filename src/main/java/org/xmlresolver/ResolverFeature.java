@@ -253,4 +253,19 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> CLASSPATH_CATALOGS = new ResolverFeature<>(
             "http://xmlresolver.org/feature/classpath-catalogs", true);
+
+    /**
+     * Identify the ClassLoader to use for accessing resources on the classpath.
+     *
+     * <p>A {@link ClassLoader} is used to access the class path and load resources
+     * from the class path. By default the resolver configuration uses the class
+     * loader obtained from the class:</p>
+     *
+     * <pre>getClass().getClassLoader()</pre>
+     *
+     * <p>If you're using the resolver in an environment where an alternate class
+     * loader is required, you can specify it with this feature.</p>
+     */
+    public static final ResolverFeature<ClassLoader> CLASSLOADER = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/classloader", null);
 }

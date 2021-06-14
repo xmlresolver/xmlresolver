@@ -75,6 +75,26 @@ public class ClasspathTest {
     }
 
     @Test
+    public void testAlternateClassLoader() {
+        String href = "classpath:path/example-doc.xml";
+        ClassLoader loader = ClassLoader.getSystemClassLoader();
+        XMLResolverConfiguration localconfig = new XMLResolverConfiguration(config);
+        localconfig.setFeature(ResolverFeature.CLASSLOADER, loader);
+        CatalogResolver localresolver = new CatalogResolver(localconfig);
+
+        String line = null;
+        try {
+            ResolvedResource result = localresolver.resolveURI(href, null);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
+            line = reader.readLine();
+        } catch (IOException ex) {
+            // ignore
+        }
+        assertEquals("<doc>test</doc>", line);
+    }
+
+
+    @Test
     public void testClasspathSlash() {
         String href = "classpath:/path/example-doc.xml";
 

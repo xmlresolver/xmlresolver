@@ -34,10 +34,11 @@ public class Resource {
     private final URI localURI;
     private final String contentType;
 
-    /** Creates a new instance of Resource.
+    /**
+     * Creates a new instance of Resource.
      *
-     * @param stream The stream from which the resource can be read
-     * @param uri The URI
+     * @param stream   The stream from which the resource can be read
+     * @param uri      The URI
      * @param localURI The local URI, irrespective of what will be reported as the URI.
      */
     public Resource(InputStream stream, URI uri, URI localURI) {
@@ -47,11 +48,12 @@ public class Resource {
         this.contentType = null;
     }
 
-    /** Creates a new instance of Resource.
+    /**
+     * Creates a new instance of Resource.
      *
-     * @param stream The stream from which the resource can be read
-     * @param uri The URI
-     * @param localURI The local URI, irrespective of what will be reported as the URI.
+     * @param stream      The stream from which the resource can be read
+     * @param uri         The URI
+     * @param localURI    The local URI, irrespective of what will be reported as the URI.
      * @param contentType The content type
      */
     public Resource(InputStream stream, URI uri, URI localURI, String contentType) {
@@ -61,7 +63,29 @@ public class Resource {
         this.contentType = contentType;
     }
 
+    /**
+     * Creates a new instance of Resource from just a URI.
+     *
+     * <p>This version has to use the default class loader to access <code>classpath:</code> URIs.
+     * It is used by the zero-argument constructors for the {@link org.xmlresolver.loaders.XmlLoader}
+     * and {@link org.xmlresolver.loaders.ValidatingXmlLoader}. When possible, pass the resolver
+     * configuration to the constructor.</p>
+     *
+     * @param href The URI
+     */
     public Resource(String href) throws IOException, URISyntaxException {
+        this(null, href);
+    }
+
+    /**
+     * Creates a new instance of Resource from just a URI.
+     *
+     * <p>This version will use the configured class loader to access <code>classpath:</code> URIs.
+     * </p>
+     *
+     * @param href The URI
+     */
+    public Resource(ResolverConfiguration config, String href) throws IOException, URISyntaxException {
         if (href.startsWith("data:")) {
             // This is a little bit crude; see RFC 2397
             uri = URIUtils.newURI(href);
@@ -108,7 +132,13 @@ public class Resource {
             // found (if one is found). That means downstream processes will
             // have a "useful" URI. It still might not work, due to class loaders and
             // such, but at least it won't immediately blow up.
-            URL rsrc = getClass().getClassLoader().getResource(path);
+            ClassLoader loader;
+            if (config == null) {
+                loader = getClass().getClassLoader();
+            } else {
+                loader = config.getFeature(ResolverFeature.CLASSLOADER);
+            }
+            URL rsrc = loader.getResource(path);
             if (rsrc == null) {
                 throw new IOException("Not found: " + href);
             } else {

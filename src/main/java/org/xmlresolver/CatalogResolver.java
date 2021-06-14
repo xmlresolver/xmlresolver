@@ -372,7 +372,7 @@ public class CatalogResolver implements ResourceResolver {
             // found (if one is found). That means downstream processes will
             // have a "useful" URI. It still might not work, due to class loaders and
             // such, but at least it won't immediately blow up.
-            URL rsrc = getClass().getClassLoader().getResource(path);
+            URL rsrc = config.getFeature(ResolverFeature.CLASSLOADER).getResource(path);
             if (rsrc == null) {
                 throw new IOException("Not found: " + res);
             } else {

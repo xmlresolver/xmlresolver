@@ -134,7 +134,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS, ResolverFeature.MASK_JAR_URIS,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
             ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL,
-            ResolverFeature.CLASSPATH_CATALOGS};
+            ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER};
     private static List<String> classpathCatalogList = null;
 
     private final List<String> catalogs;
@@ -151,6 +151,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private String catalogLoader = ResolverFeature.CATALOG_LOADER_CLASS.getDefaultValue();
     private Boolean parseRddl = ResolverFeature.PARSE_RDDL.getDefaultValue();
     private Boolean classpathCatalogs = ResolverFeature.CLASSPATH_CATALOGS.getDefaultValue();
+    private ClassLoader classLoader = ResolverFeature.CLASSLOADER.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
     /** Construct a default configuration.
@@ -202,6 +203,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
      */
     public XMLResolverConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
         logger.log(ResolverLogger.CONFIG, "XMLResolver version %s", BuildConfig.VERSION);
+        if (classLoader == null) {
+            classLoader = getClass().getClassLoader();
+        }
         showConfigChanges = false;
         catalogs = new ArrayList<>();
         loadConfiguration(propertyFiles, catalogFiles);
@@ -218,6 +222,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
      */
     public XMLResolverConfiguration(XMLResolverConfiguration current) {
         catalogs = new ArrayList<>(current.catalogs);
+        classLoader = current.classLoader;
         preferPublic = current.preferPublic;
         preferPropertyFile = current.preferPropertyFile;
         allowCatalogPI = current.allowCatalogPI;
@@ -600,6 +605,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
         logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", catalogLoader);
         logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
+        logger.log(ResolverLogger.CONFIG, "Class loader: %s", classLoader);
         for (String catalog: catalogs) {
             logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
         }
@@ -708,6 +714,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             parseRddl = (Boolean) value;
         } else if (feature == ResolverFeature.CLASSPATH_CATALOGS) {
             classpathCatalogs = (Boolean) value;
+        } else if (feature == ResolverFeature.CLASSLOADER) {
+            classLoader = (ClassLoader) value;
+            if (classLoader == null) {
+                classLoader = getClass().getClassLoader();
+            }
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -789,6 +800,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) cache;
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             return (T) cacheUnderHome;
+        } else if (feature == ResolverFeature.CLASSLOADER) {
+            return (T) classLoader;
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
             return null;
