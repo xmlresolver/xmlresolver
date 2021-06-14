@@ -291,7 +291,7 @@ public class ResourceCache extends CatalogManager {
 
     /** Attempts to determine if the local copy is out of date.
      *
-     * N.B. Calling this function will remove expired entries from the cache!
+     * <p>N.B. Calling this function will remove expired entries from the cache!</p>
      *
      * <p>If the URI is an <code>http:</code> URI, a HEAD request is made and the
      * <code>cachedTime()</code> and <code>etag</code> are compared. If the resource
