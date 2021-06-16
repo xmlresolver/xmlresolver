@@ -72,6 +72,8 @@ public class Resource {
      * configuration to the constructor.</p>
      *
      * @param href The URI
+     * @throws IOException for I/O errors
+     * @throws URISyntaxException if the href cannot be converted to a URI
      */
     public Resource(String href) throws IOException, URISyntaxException {
         this(null, href);
@@ -83,7 +85,10 @@ public class Resource {
      * <p>This version will use the configured class loader to access <code>classpath:</code> URIs.
      * </p>
      *
+     * @param config The configuration (used to get the classloader)
      * @param href The URI
+     * @throws IOException for I/O errors
+     * @throws URISyntaxException if the href cannot be converted to a URI
      */
     public Resource(ResolverConfiguration config, String href) throws IOException, URISyntaxException {
         if (href.startsWith("data:")) {
