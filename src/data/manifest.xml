@@ -20,7 +20,7 @@
   </entry>
   <entry uri="root/www.rddl.org/xhtml-base-1.mod">
     <system>http://www.rddl.org/xhtml-base-1.mod</system>
-  </entry>
+    </entry>
   <entry uri="root/www.rddl.org/xhtml-basic-form-1.mod">
     <system>http://www.rddl.org/xhtml-basic-form-1.mod</system>
   </entry>
@@ -1224,6 +1224,18 @@
   <entry uri="root/www.w3.org/TR/xhtml-modularization/DTD/xhtml-table-1.mod">
     <public>-//W3C//ELEMENTS XHTML Tables 1.0//EN</public>
     <system>https://www.w3.org/TR/xhtml-modularization/DTD/xhtml-table-1.mod</system>
+  </entry>
+  <entry uri="root/www.w3.org/TR/xhtml-modularization/DTD/xhtml-lat1.ent">
+    <public>-//W3C//ENTITIES Latin 1 for XHTML//EN</public>
+    <system>https://www.w3.org/TR/xhtml-modularization/DTD/xhtml-lat1.ent</system>
+  </entry>
+  <entry uri="root/www.w3.org/TR/xhtml-modularization/DTD/xhtml-special.ent">
+    <public>-//W3C//ENTITIES Symbols for XHTML//EN</public>
+    <system>https://www.w3.org/TR/xhtml-modularization/DTD/xhtml-special.ent</system>
+  </entry>
+  <entry uri="root/www.w3.org/TR/xhtml-modularization/DTD/xhtml-symbol.ent">
+    <public>-//W3C//ENTITIES Special for XHTML//EN</public>
+    <system>https://www.w3.org/TR/xhtml-modularization/DTD/xhtml-symbol.ent</system>
   </entry>
   <entry uri="root/www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
     <system>https://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent</system>
