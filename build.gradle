@@ -25,7 +25,7 @@ configurations.all {
 }
 
 configurations {
-  standaloneClasspath.extendsFrom(testImplementation)
+  standaloneClasspath.extendsFrom(runtimeOnly)
 }
 
 dependencies {
@@ -33,11 +33,19 @@ dependencies {
     [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'],
     [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'],
     [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25' ]
+    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' ]
   )
 
   validatingImplementation (
     [group: 'org.relaxng', name: 'jing', version: '20181222' ]
+  )
+
+  runtimeOnly (
+    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'],
+    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'],
+    [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
+    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' ],
+    [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30' ]
   )
 
   testImplementation (
@@ -58,8 +66,12 @@ ext {
   c_restest = "restest"
 }
 
-def EXCP="${projectDir}/build/classes/java/main"
+String runtimeClasspath = "lib/xmlresolver-${resolverVersion}.jar"
+String EXCP="${projectDir}/build/classes/java/main"
 configurations.standaloneClasspath.each { it ->
+  if (!it.name.startsWith("data") && !it.name.startsWith("xmlresolver")) {
+    runtimeClasspath += " lib/" + it.name
+  }
   // Explicitly remove the http libraries
   if (!it.toString().contains("http")) {
     EXCP += ":" + it
@@ -117,15 +129,20 @@ jar {
 }
 
 task appJar(type: Jar) {
+  archiveBaseName = "${basename}-${resolverVersion}"
+  classifier = 'apps'
   from (sourceSets.main.output) {
     include("org/xmlresolver/apps/**")
   }
-  archiveBaseName = "${basename}-apps-${resolverVersion}"
+  // Setting the classpath means it'll run with -jar if you copy
+  // the appropriate jar files into the lib directory below it.
   manifest {
     attributes "Built-By": "Norman Walsh"
+    attributes 'Class-Path': "${runtimeClasspath} lib"
     attributes "Implementation-Vendor": "Norman Walsh"
     attributes "Implementation-Title": "XML Resolver applications"
     attributes "Implementation-Version": resolverVersion
+    attributes 'Main-Class': 'org.xmlresolver.apps.CacheDetails'
   }
 }
 assemble.dependsOn appJar
@@ -176,7 +193,7 @@ javadoc {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-  archiveFileName = "xmlresolver-javadoc-${resolverVersion}.zip"
+  archiveBaseName = "${basename}-${resolverVersion}"
   classifier = 'javadoc'
   from javadoc.destinationDir
   manifest {
@@ -189,7 +206,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 assemble.dependsOn javadocJar
 
 task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
-  archiveFileName = "xmlresolver-sources-${resolverVersion}.zip"
+  archiveBaseName = "${basename}-${resolverVersion}"
   classifier = 'sources'
   from sourceSets.main.allSource
   manifest {
@@ -202,7 +219,7 @@ task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
 assemble.dependsOn sourcesJar
 
 task dataJar(type: Jar, dependsOn: ["stageData"]) {
-  archiveFileName = "xmlresolver-data-${resolverVersion}.jar"
+  archiveBaseName = "${basename}-${resolverVersion}"
   classifier = 'data'
   from "${buildDir}/data"
   manifest {
@@ -255,6 +272,7 @@ publishing {
       artifact javadocJar
       artifact sourcesJar
       artifact dataJar
+      artifact appJar
     }
   }
 
