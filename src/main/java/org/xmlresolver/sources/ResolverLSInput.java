@@ -43,7 +43,7 @@ public class ResolverLSInput implements LSInput {
      * @param publicId The publicId.
      * */
     public ResolverLSInput(ResolvedResource rsrc, String publicId) {
-        resolvedURI = rsrc.getResolvedURI();
+        resolvedURI = rsrc.getLocalURI();
         this.body = rsrc.getInputStream();
         this.systemId = rsrc.getResolvedURI().toString();
         this.publicId = publicId;
