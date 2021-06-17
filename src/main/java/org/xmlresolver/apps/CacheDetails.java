@@ -76,6 +76,9 @@ public class CacheDetails {
                     break;
             }
             System.out.println("\tLocal: " + entry.file.getAbsolutePath());
+            if (entry.contentType() != null) {
+                System.out.println("\tContent type: " + entry.contentType());
+            }
             System.out.println("\tCached on " + showTime(entry.time));
             checkLastModified(entry);
             try {
@@ -85,6 +88,7 @@ public class CacheDetails {
             } catch (URISyntaxException ex) {
                 System.out.println("\tURI SYNTAX EXCEPTION: " + entry.file.getAbsolutePath());
             }
+            System.out.println();
         }
     }
 
