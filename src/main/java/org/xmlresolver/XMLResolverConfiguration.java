@@ -677,6 +677,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
      * @param feature The feature.
      * @param value The new value.
      * @param <T> A type appropriate for the feature.
+     * @throws NullPointerException if the value is null for features that cannot be null
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -684,22 +685,39 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (feature == ResolverFeature.CATALOG_FILES) {
             synchronized (catalogs) {
                 catalogs.clear();
-                catalogs.addAll((List<String>) value);
+                if (value != null) {
+                    catalogs.addAll((List<String>) value);
+                }
             }
-        } else if (feature == ResolverFeature.PREFER_PUBLIC) {
+            return;
+        } else if (feature == ResolverFeature.CLASSLOADER) {
+            classLoader = (ClassLoader) value;
+            if (classLoader == null) {
+                classLoader = getClass().getClassLoader();
+            }
+            return;
+        } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
+            cacheDirectory = (String) value;
+            cache = null;
+            return;
+        } else if (feature == ResolverFeature.CACHE) {
+            cache = (ResourceCache) value;
+            return;
+        }
+
+        if (value == null) {
+            throw new NullPointerException(feature.getName() + " must not be null");
+        }
+
+        if (feature == ResolverFeature.PREFER_PUBLIC) {
             preferPublic = (Boolean) value;
         } else if (feature == ResolverFeature.PREFER_PROPERTY_FILE) {
             preferPropertyFile = (Boolean) value;
         } else if (feature == ResolverFeature.ALLOW_CATALOG_PI) {
             allowCatalogPI = (Boolean) value;
-        } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
-            cacheDirectory = (String) value;
-            cache = null;
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             cacheUnderHome = (Boolean) value;
             cache = null;
-        } else if (feature == ResolverFeature.CACHE) {
-            cache = (ResourceCache) value;
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
@@ -714,11 +732,6 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             parseRddl = (Boolean) value;
         } else if (feature == ResolverFeature.CLASSPATH_CATALOGS) {
             classpathCatalogs = (Boolean) value;
-        } else if (feature == ResolverFeature.CLASSLOADER) {
-            classLoader = (ClassLoader) value;
-            if (classLoader == null) {
-                classLoader = getClass().getClassLoader();
-            }
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
