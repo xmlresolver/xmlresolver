@@ -301,12 +301,10 @@ public class CatalogResolver implements ResourceResolver {
                 return uncachedResource(URIUtils.newURI(requestURI), responseURI);
             } else {
                 FileInputStream fs = new FileInputStream(cached.file);
-                URI localURI = cached.file.toURI();
-                boolean mask = config.getFeature(ResolverFeature.MASK_JAR_URIS);
-                if (mask && ("jar".equals(localURI.getScheme()) || "classpath".equals(localURI.getScheme()))) {
-                    localURI = responseURI;
-                }
-                return new ResolvedResourceImpl(localURI, cached.file.toURI(), fs, cached.contentType());
+                // N.B. We always lie about the local URI when caching. If we didn't, then when
+                // the process using the resolver made a relative URI absolute against the local URI
+                // of the resource, it would get a URI pointing into the cache which would not work.
+                return new ResolvedResourceImpl(responseURI, cached.file.toURI(), fs, cached.contentType());
             }
         } catch (IOException | URISyntaxException | IllegalArgumentException ex) {
             // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
