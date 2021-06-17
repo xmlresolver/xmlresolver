@@ -128,7 +128,7 @@ public class ValidatingXmlLoader implements CatalogLoader {
             builder.put(ValidateProperty.ENTITY_RESOLVER, resolver);
             builder.put(ValidateProperty.URI_RESOLVER, resolver);
 
-            ValidationDriver driver = new ValidationDriver();
+            ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
             URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");
             if (schemaUrl == null) {
                 throw new CatalogInvalidException("Failed to read catalog schema resource");
@@ -143,7 +143,8 @@ public class ValidatingXmlLoader implements CatalogLoader {
                 }
             }
             if (!driver.validate(source)) {
-                throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + errorHandler.getMessage());
+                String msg = errorHandler.getMessage();
+                throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + msg);
             };
 
             if (baos != null) {
