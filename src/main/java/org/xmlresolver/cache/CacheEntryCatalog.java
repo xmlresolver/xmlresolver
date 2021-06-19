@@ -149,7 +149,9 @@ public class CacheEntryCatalog extends EntryCatalog {
                     error("Attempt to cache unexpected entry type.");
             }
             for (String name : entry.getProperties().keySet()) {
-                xml.println("     xr:" + name + "='" + xmlEscape(entry.getProperty(name)) + "'");
+                if (entry.getProperty(name) != null) {
+                    xml.println("     xr:" + name + "='" + xmlEscape(entry.getProperty(name)) + "'");
+                }
             }
             xml.println("/>");
         }

@@ -439,6 +439,10 @@ public class ResourceCache extends CatalogManager {
             return false;
         }
 
+        // If we get something that isn't an absolute URI, assume it
+        // should be resolved against the cwd.
+        uri = URIUtils.cwd().resolve(uri).toString();
+
         // Find the cache info record for this entry
         CacheInfo info = null;
         for (int count = 0; info == null && count < cacheInfo.size(); count++) {
