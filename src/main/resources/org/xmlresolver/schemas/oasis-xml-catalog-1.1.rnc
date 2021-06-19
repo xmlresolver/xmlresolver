@@ -1,14 +1,14 @@
 # Originally converted with trang, but hand modified subsequently
 
-namespace cat = "urn:oasis:names:tc:entity:xmlns:xml:catalog"
+default namespace cat = "urn:oasis:names:tc:entity:xmlns:xml:catalog"
 namespace local = ""
-default namespace = "urn:oasis:names:tc:entity:xmlns:xml:catalog"
+namespace tr9401 = "urn:oasis:names:tc:entity:xmlns:tr9401:catalog"
 
 start = catalog
 
 _any.attribute = attribute * { text }
-_any.nsattribute = attribute * - (cat:* | local:*) { text }
-_any.element = element * - cat:* { (_any.attribute | text | _any.element)* }
+_any.nsattribute = attribute * - (cat:* | tr9401:* | local:*) { text }
+_any.element = element * - (cat:* | tr9401:*) { (_any.attribute | text | _any.element)* }
 
 common.attlist &= 
   attribute id { xsd:ID }?
@@ -36,6 +36,7 @@ catalog =
      | delegateURI
      | nextCatalog
      | group
+     | tr9401.catalog.mix
      | local.catalog.mix)+
   }
 
@@ -155,3 +156,64 @@ attlist.group &=
   common.attlist,
   attribute prefer { systemOrPublic }?,
   local.group.attribs
+
+# ============================================================
+
+tr9401.catalog.mix = tr9401.doctype | tr9401.document | tr9401.dtddecl
+                     | tr9401.entity | tr9401.linktype | tr9401.notation
+                     | tr9401.sgmldecl
+
+local.tr9401.doctype.attribs = _any.nsattribute*
+tr9401.doctype = element tr9401:doctype { attlist.tr9401.doctype, empty }
+attlist.tr9401.doctype &=
+  common.attlist,
+  attribute name { string },
+  attribute uri { uriReference },
+  local.tr9401.doctype.attribs
+
+local.tr9401.document.attribs = _any.nsattribute*
+tr9401.document = element tr9401:document { attlist.tr9401.document, empty }
+attlist.tr9401.document &=
+  common.attlist,
+  attribute uri { uriReference },
+  local.tr9401.document.attribs
+
+local.tr9401.dtddecl.attribs = _any.nsattribute*
+tr9401.dtddecl = element tr9401:dtddecl { attlist.tr9401.dtddecl, empty }
+attlist.tr9401.dtddecl &=
+  common.attlist,
+  attribute name { string },
+  attribute publicId { publicIdentifier },
+  attribute uri { uriReference },
+  local.tr9401.dtddecl.attribs
+
+local.tr9401.entity.attribs = _any.nsattribute*
+tr9401.entity = element tr9401:entity { attlist.tr9401.entity, empty }
+attlist.tr9401.entity &=
+  common.attlist,
+  attribute name { string },
+  attribute uri { uriReference },
+  local.tr9401.entity.attribs
+
+local.tr9401.linktype.attribs = _any.nsattribute*
+tr9401.linktype = element tr9401:linktype { attlist.tr9401.linktype, empty }
+attlist.tr9401.linktype &=
+  common.attlist,
+  attribute name { string },
+  attribute uri { uriReference },
+  local.tr9401.linktype.attribs
+
+local.tr9401.notation.attribs = _any.nsattribute*
+tr9401.notation = element tr9401:notation { attlist.tr9401.notation, empty }
+attlist.tr9401.notation &=
+  common.attlist,
+  attribute name { string },
+  attribute uri { uriReference },
+  local.tr9401.notation.attribs
+
+local.tr9401.sgmldecl.attribs = _any.nsattribute*
+tr9401.sgmldecl = element tr9401:sgmldecl { attlist.tr9401.sgmldecl, empty }
+attlist.tr9401.sgmldecl &=
+  common.attlist,
+  attribute uri { uriReference },
+  local.tr9401.sgmldecl.attribs

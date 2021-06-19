@@ -123,11 +123,13 @@ public class XmlLoader implements CatalogLoader {
         public static ResolverLogger logger = new ResolverLogger(CatalogContentHandler.class);
 
         private static final HashSet<String> CATALOG_ELEMENTS
-                = new HashSet<>(Arrays.asList(
-                "group", "public", "system", "rewriteSystem",
+                = new HashSet<>(Arrays.asList("group", "public", "system", "rewriteSystem",
                 "delegatePublic", "delegateSystem", "uri", "rewriteURI", "delegateURI",
-                "nextCatalog", "doctype", "document", "dtddecl", "entity", "linktype",
-                "notation", "sgmldecl", "uriSuffix", "systemSuffix"));
+                "nextCatalog", "uriSuffix", "systemSuffix"));
+
+        private static final HashSet<String> TR9401_ELEMENTS
+                = new HashSet<>(Arrays.asList("doctype", "document", "dtddecl", "entity",
+                "linktype", "notation", "sgmldecl"));
 
         private final Stack<Entry> parserStack = new Stack<>();
         private final Stack<Boolean> preferPublicStack = new Stack<>();
@@ -178,7 +180,16 @@ public class XmlLoader implements CatalogLoader {
                 pushNull();
             } else {
                 if (ResolverConstants.CATALOG_NS.equals(uri)) {
-                    if (CATALOG_ELEMENTS.contains(localName)) {
+                    // Technically, the TR9401 extension elements should be in the TR9401 namespace,
+                    // but I'm willing to bet lots of folks get that wrong. Be liberal in what mumble mumble...
+                    if (CATALOG_ELEMENTS.contains(localName) || TR9401_ELEMENTS.contains(localName)) {
+                        catalogElement(localName, attributes);
+                    } else {
+                        logger.log(ResolverLogger.ERROR, "Unexpected catalog element (ignored): " + localName);
+                        pushNull();
+                    }
+                } else if (ResolverConstants.TR9401_NS.equals(uri)) {
+                    if (TR9401_ELEMENTS.contains(localName)) {
                         catalogElement(localName, attributes);
                     } else {
                         logger.log(ResolverLogger.ERROR, "Unexpected catalog element (ignored): " + localName);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Originally converted with trang, but hand modified subsequently -->
-<grammar ns="urn:oasis:names:tc:entity:xmlns:xml:catalog" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar ns="urn:oasis:names:tc:entity:xmlns:xml:catalog" xmlns:tr9401="urn:oasis:names:tc:entity:xmlns:tr9401:catalog" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <start>
     <ref name="catalog"/>
   </start>
@@ -14,6 +14,7 @@
       <anyName>
         <except>
           <nsName/>
+          <nsName ns="urn:oasis:names:tc:entity:xmlns:tr9401:catalog"/>
           <nsName ns=""/>
         </except>
       </anyName>
@@ -24,6 +25,7 @@
       <anyName>
         <except>
           <nsName/>
+          <nsName ns="urn:oasis:names:tc:entity:xmlns:tr9401:catalog"/>
         </except>
       </anyName>
       <zeroOrMore>
@@ -87,6 +89,7 @@
           <ref name="delegateURI"/>
           <ref name="nextCatalog"/>
           <ref name="group"/>
+          <ref name="tr9401.catalog.mix"/>
           <ref name="local.catalog.mix"/>
         </choice>
       </oneOrMore>
@@ -368,5 +371,161 @@
       </attribute>
     </optional>
     <ref name="local.group.attribs"/>
+  </define>
+  <!-- ============================================================ -->
+  <define name="tr9401.catalog.mix">
+    <choice>
+      <ref name="tr9401.doctype"/>
+      <ref name="tr9401.document"/>
+      <ref name="tr9401.dtddecl"/>
+      <ref name="tr9401.entity"/>
+      <ref name="tr9401.linktype"/>
+      <ref name="tr9401.notation"/>
+      <ref name="tr9401.sgmldecl"/>
+    </choice>
+  </define>
+  <define name="local.tr9401.doctype.attribs">
+    <zeroOrMore>
+      <ref name="_any.nsattribute"/>
+    </zeroOrMore>
+  </define>
+  <define name="tr9401.doctype">
+    <element name="tr9401:doctype">
+      <ref name="attlist.tr9401.doctype"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.tr9401.doctype" combine="interleave">
+    <ref name="common.attlist"/>
+    <attribute name="name">
+      <data type="string" datatypeLibrary=""/>
+    </attribute>
+    <attribute name="uri">
+      <ref name="uriReference"/>
+    </attribute>
+    <ref name="local.tr9401.doctype.attribs"/>
+  </define>
+  <define name="local.tr9401.document.attribs">
+    <zeroOrMore>
+      <ref name="_any.nsattribute"/>
+    </zeroOrMore>
+  </define>
+  <define name="tr9401.document">
+    <element name="tr9401:document">
+      <ref name="attlist.tr9401.document"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.tr9401.document" combine="interleave">
+    <ref name="common.attlist"/>
+    <attribute name="uri">
+      <ref name="uriReference"/>
+    </attribute>
+    <ref name="local.tr9401.document.attribs"/>
+  </define>
+  <define name="local.tr9401.dtddecl.attribs">
+    <zeroOrMore>
+      <ref name="_any.nsattribute"/>
+    </zeroOrMore>
+  </define>
+  <define name="tr9401.dtddecl">
+    <element name="tr9401:dtddecl">
+      <ref name="attlist.tr9401.dtddecl"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.tr9401.dtddecl" combine="interleave">
+    <ref name="common.attlist"/>
+    <attribute name="name">
+      <data type="string" datatypeLibrary=""/>
+    </attribute>
+    <attribute name="publicId">
+      <ref name="publicIdentifier"/>
+    </attribute>
+    <attribute name="uri">
+      <ref name="uriReference"/>
+    </attribute>
+    <ref name="local.tr9401.dtddecl.attribs"/>
+  </define>
+  <define name="local.tr9401.entity.attribs">
+    <zeroOrMore>
+      <ref name="_any.nsattribute"/>
+    </zeroOrMore>
+  </define>
+  <define name="tr9401.entity">
+    <element name="tr9401:entity">
+      <ref name="attlist.tr9401.entity"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.tr9401.entity" combine="interleave">
+    <ref name="common.attlist"/>
+    <attribute name="name">
+      <data type="string" datatypeLibrary=""/>
+    </attribute>
+    <attribute name="uri">
+      <ref name="uriReference"/>
+    </attribute>
+    <ref name="local.tr9401.entity.attribs"/>
+  </define>
+  <define name="local.tr9401.linktype.attribs">
+    <zeroOrMore>
+      <ref name="_any.nsattribute"/>
+    </zeroOrMore>
+  </define>
+  <define name="tr9401.linktype">
+    <element name="tr9401:linktype">
+      <ref name="attlist.tr9401.linktype"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.tr9401.linktype" combine="interleave">
+    <ref name="common.attlist"/>
+    <attribute name="name">
+      <data type="string" datatypeLibrary=""/>
+    </attribute>
+    <attribute name="uri">
+      <ref name="uriReference"/>
+    </attribute>
+    <ref name="local.tr9401.linktype.attribs"/>
+  </define>
+  <define name="local.tr9401.notation.attribs">
+    <zeroOrMore>
+      <ref name="_any.nsattribute"/>
+    </zeroOrMore>
+  </define>
+  <define name="tr9401.notation">
+    <element name="tr9401:notation">
+      <ref name="attlist.tr9401.notation"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.tr9401.notation" combine="interleave">
+    <ref name="common.attlist"/>
+    <attribute name="name">
+      <data type="string" datatypeLibrary=""/>
+    </attribute>
+    <attribute name="uri">
+      <ref name="uriReference"/>
+    </attribute>
+    <ref name="local.tr9401.notation.attribs"/>
+  </define>
+  <define name="local.tr9401.sgmldecl.attribs">
+    <zeroOrMore>
+      <ref name="_any.nsattribute"/>
+    </zeroOrMore>
+  </define>
+  <define name="tr9401.sgmldecl">
+    <element name="tr9401:sgmldecl">
+      <ref name="attlist.tr9401.sgmldecl"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.tr9401.sgmldecl" combine="interleave">
+    <ref name="common.attlist"/>
+    <attribute name="uri">
+      <ref name="uriReference"/>
+    </attribute>
+    <ref name="local.tr9401.sgmldecl.attribs"/>
   </define>
 </grammar>
