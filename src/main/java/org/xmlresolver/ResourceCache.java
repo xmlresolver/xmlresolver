@@ -170,8 +170,6 @@ public class ResourceCache {
                 cacheSize = parseLong(control, "size", cacheSize);
                 cacheSpace = parseSizeLong(control, "space", cacheSpace);
                 maxAge = parseTimeLong(control, "max-age", maxAge);
-                
-                defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace, maxAge);
 
                 Element child = DOMUtils.getFirstElement(control);
                 while (child != null) {
@@ -197,7 +195,22 @@ public class ResourceCache {
         } catch (SAXException | IOException ex) {
             // nop;
         }
-        
+
+        // There's a bug in 2.1.0 where it accidentally caches file: URIs. This fix
+        // is a bit heavy handed as it may circumvent the ability to ask for file:
+        // URIs to be cached. But that's such a bad idea generally, and I want to move
+        // on to the 3.x release, that I'm just doing this as a 2.1.1 stopgap.
+
+        // Don't cache file: URIs by default.
+        CacheInfo info = new CacheInfo("^file:.*", false, deleteWait, cacheSize, cacheSpace, maxAge);
+        cacheInfo.add(info);
+        // Don't cache classpath: URIs by default.
+        info = new CacheInfo("^classpath:.*", false, deleteWait, cacheSize, cacheSpace, maxAge);
+        cacheInfo.add(info);
+        // Don't cache data: URIs by default.
+        info = new CacheInfo("^data:.*", false, deleteWait, cacheSize, cacheSpace, maxAge);
+        cacheInfo.add(info);
+
         File fDir = new File(dir);
         try {
             cacheDir = fDir.getCanonicalFile();
@@ -744,7 +757,7 @@ public class ResourceCache {
      */
     public boolean cacheURI(String uri) {
         // Find the cache info record for this entry
-        
+
         CacheInfo info = null;
         for (int count = 0; info == null && count < cacheInfo.size(); count++) {
             CacheInfo chk = cacheInfo.get(count);
