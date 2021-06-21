@@ -267,5 +267,5 @@ public class ResolverFeature<T> {
      * loader is required, you can specify it with this feature.</p>
      */
     public static final ResolverFeature<ClassLoader> CLASSLOADER = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/classloader", null);
+            "http://xmlresolver.org/feature/classloader", (ClassLoader) null);
 }
