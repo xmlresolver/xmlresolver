@@ -170,7 +170,13 @@ public class XmlLoader implements CatalogLoader {
                     logger.log(ResolverLogger.ERROR, "Catalog document is not an XML Catalog (ignored): " + qName);
                     parserStack.push(new EntryNull());
                 }
-                baseURIStack.push(baseURIStack.peek());
+
+                URI baseURI = baseURIStack.peek();
+                if (attributes.getValue("xml:base") != null) {
+                    baseURI = URIUtils.resolve(baseURI, attributes.getValue("xml:base"));
+                }
+
+                baseURIStack.push(baseURI);
                 preferPublicStack.push(preferPublicStack.peek());
                 return;
             }
