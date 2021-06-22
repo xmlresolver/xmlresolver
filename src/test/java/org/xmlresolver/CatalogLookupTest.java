@@ -7,6 +7,7 @@ import org.xmlresolver.utils.URIUtils;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -278,6 +279,37 @@ public class CatalogLookupTest {
         assertEquals(catloc.resolve("sample30/fail.rng"), result);
     }
 
+    @Test
+    public void baseUriRootTest() {
+        // Make sure an xml:base attribute on the root element works
+        List<String> catalog = Collections.singletonList(catloc.resolve("lookup-test.xml").toString());
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), catalog);
+        config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
+        CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+        URI result = manager.lookupPublic("https://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd", "-//W3C//DTD SVG 1.1//EN");
+        assertEquals("/usr/local/DTDs/svg11/system-svg11.dtd", result.getPath());
+    }
 
+    @Test
+    public void baseUriGroupTest() {
+        // Make sure an xml:base attribute on a group element works
+        List<String> catalog = Collections.singletonList(catloc.resolve("lookup-test.xml").toString());
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), catalog);
+        config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
+        CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+        URI result = manager.lookupPublic("https://www.w3.org/Graphics/SVG/1.1/DTD/svg11-basic.dtd", "-//W3C//DTD SVG 1.1 Basic//EN");
+        assertEquals("/usr/local/nested/DTDs/svg11/system-svg11-basic.dtd", result.getPath());
+    }
+
+    @Test
+    public void baseUriOnElementTest() {
+        // Make sure an xml:base attribute on the actual element works
+        List<String> catalog = Collections.singletonList(catloc.resolve("lookup-test.xml").toString());
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), catalog);
+        config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
+        CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+        URI result = manager.lookupSystem("https://example.com/test.dtd");
+        assertEquals("/usr/local/on/DTDs/test.dtd", result.getPath());
+    }
 }
 

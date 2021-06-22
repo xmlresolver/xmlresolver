@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="system"
+         xml:base="file:///usr/local/">
+
+  <x:div xmlns:x="http://foo">
+    <!-- These don't count! -->
+    <document uri="http://foo.bar/baz"/>
+    <group>
+      <document uri="http://foo.bar/baz"/>
+    </group>
+  </x:div>
+
+  <public publicId="-//W3C//DTD SVG 1.1//EN"
+          uri="DTDs/svg11/public-svg11.dtd"/>
+
+  <system systemId="https://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+          uri="DTDs/svg11/system-svg11.dtd"/>
+
+  <group prefer="public" xml:base="file:///usr/local/nested/">
+    <public publicId="-//W3C//DTD SVG 1.1 Basic//EN"
+            uri="DTDs/svg11/public-svg11-basic.dtd"/>
+    <system systemId="https://www.w3.org/Graphics/SVG/1.1/DTD/svg11-basic.dtd"
+            uri="DTDs/svg11/system-svg11-basic.dtd"/>
+  </group>
+    
+  <system systemId="https://example.com/test.dtd"
+          xml:base="file:///usr/local/on/"
+          uri="DTDs/test.dtd"/>
+
+</catalog>
