@@ -27,11 +27,11 @@ public class EntryCatalog extends Entry {
         return Type.CATALOG;
     }
 
-    public List<Entry> entries() {
+    public synchronized List<Entry> entries() {
         return entries;
     }
 
-    public List<Entry> entries(Type type) {
+    public synchronized List<Entry> entries(Type type) {
         return typedEntries.getOrDefault(type, none);
     }
 
