@@ -26,4 +26,23 @@ public class EntryUri extends EntryResource {
     public Type getType() {
         return Type.URI;
     }
+
+    @Override
+    public String toString() {
+        String str = "uri " + name + Entry.rarr + uri;
+        if (nature != null || purpose != null) {
+            str += " (";
+            if (nature != null) {
+                str += "nature=" + nature;
+            }
+            if (nature != null && purpose != null) {
+                str += "; ";
+            }
+            if (purpose != null) {
+                str += "purpose=" + purpose;
+            }
+            str += ")";
+        }
+        return str;
+    }
 }

@@ -21,4 +21,9 @@ public class EntryDelegatePublic extends Entry {
     public Type getType() {
         return Type.DELEGATE_PUBLIC;
     }
+
+    @Override
+    public String toString() {
+        return "delegatePublic " + publicIdStart + Entry.rarr + catalog;
+    }
 }

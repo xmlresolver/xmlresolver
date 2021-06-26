@@ -275,4 +275,9 @@ public class EntryCatalog extends Entry {
         }
         return entry;
     }
+
+    @Override
+    public String toString() {
+        return "catalog prefer=" + (preferPublic ? "public" : "system");
+    }
 }

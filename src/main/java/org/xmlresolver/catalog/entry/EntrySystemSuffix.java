@@ -18,4 +18,9 @@ public class EntrySystemSuffix extends Entry {
     public Type getType() {
         return Type.SYSTEM_SUFFIX;
     }
+
+    @Override
+    public String toString() {
+        return "systemSuffix " + systemIdSuffix + Entry.rarr + uri;
+    }
 }

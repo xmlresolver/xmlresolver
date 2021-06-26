@@ -18,4 +18,9 @@ public class EntryDoctype extends Entry {
     public Type getType() {
         return Type.DOCTYPE;
     }
+
+    @Override
+    public String toString() {
+        return "doctype " + name + Entry.rarr + uri;
+    }
 }

@@ -26,4 +26,9 @@ public class EntryDelegateUri extends Entry {
     public Type getType() {
         return Type.DELEGATE_URI;
     }
+
+    @Override
+    public String toString() {
+        return "delegateURI " + uriStart + Entry.rarr + catalog;
+    }
 }

@@ -14,4 +14,9 @@ public class EntryEntity extends EntryResource {
     public Type getType() {
         return Type.ENTITY;
     }
+
+    @Override
+    public String toString() {
+        return "entity " + name + Entry.rarr + uri;
+    }
 }

@@ -11,4 +11,10 @@ public class EntrySgmldecl extends EntryResource {
     public Type getType() {
         return Type.SGML_DECL;
     }
+
+    @Override
+    public String toString() {
+        return "sgmldecl " + uri;
+    }
+
 }

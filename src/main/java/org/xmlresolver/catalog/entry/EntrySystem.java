@@ -21,4 +21,9 @@ public class EntrySystem extends EntryResource {
     public Type getType() {
         return Type.SYSTEM;
     }
+
+    @Override
+    public String toString() {
+        return "system " + systemId + Entry.rarr + uri;
+    }
 }

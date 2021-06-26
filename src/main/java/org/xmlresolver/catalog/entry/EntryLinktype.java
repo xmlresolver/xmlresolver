@@ -14,4 +14,9 @@ public class EntryLinktype extends EntryResource {
     public Type getType() {
         return Type.LINKTYPE;
     }
+
+    @Override
+    public String toString() {
+        return "linktype " + name + Entry.rarr + uri;
+    }
 }

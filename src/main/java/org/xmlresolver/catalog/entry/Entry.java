@@ -19,6 +19,7 @@ public abstract class Entry {
 
     // Cheap and cheerful NCNAME test
     public static final Pattern NCNAME_RE = Pattern.compile("^[A-Za-z0-9_]+$");
+    public static String rarr = " → ";
 
     public final URI baseURI;
     public final String id;

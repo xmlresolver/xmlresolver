@@ -16,4 +16,9 @@ public class EntryPublic extends EntryResource {
     public Type getType() {
         return Type.PUBLIC;
     }
+
+    @Override
+    public String toString() {
+        return "public " + publicId + Entry.rarr + uri;
+    }
 }

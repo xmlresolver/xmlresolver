@@ -14,4 +14,9 @@ public class EntryNotation extends EntryResource {
     public Type getType() {
         return Type.NOTATION;
     }
+
+    @Override
+    public String toString() {
+        return "notation " + name + Entry.rarr + uri;
+    }
 }

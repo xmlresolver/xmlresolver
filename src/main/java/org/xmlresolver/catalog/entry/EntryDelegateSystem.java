@@ -26,4 +26,9 @@ public class EntryDelegateSystem extends Entry {
     public Type getType() {
         return Type.DELEGATE_SYSTEM;
     }
+
+    @Override
+    public String toString() {
+        return "delegateSystem " + systemIdStart + Entry.rarr + catalog;
+    }
 }

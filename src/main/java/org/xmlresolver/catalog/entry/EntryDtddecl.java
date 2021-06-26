@@ -14,4 +14,9 @@ public class EntryDtddecl extends EntryResource {
     public Type getType() {
         return Type.DTD_DECL;
     }
+
+    @Override
+    public String toString() {
+        return "dtddecl " + publicId + Entry.rarr + uri;
+    }
 }

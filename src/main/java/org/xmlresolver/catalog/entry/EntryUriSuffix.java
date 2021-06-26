@@ -18,4 +18,9 @@ public class EntryUriSuffix extends Entry {
     public Type getType() {
         return Type.URI_SUFFIX;
     }
+
+    @Override
+    public String toString() {
+        return "uriSuffix " + uriSuffix + Entry.rarr + uri;
+    }
 }

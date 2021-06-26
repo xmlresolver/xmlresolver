@@ -15,4 +15,9 @@ public class EntryGroup extends Entry {
     public Type getType() {
         return Type.GROUP;
     }
+
+    @Override
+    public String toString() {
+        return "group prefer=" + (preferPublic ? "public" : "system");
+    }
 }

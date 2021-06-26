@@ -11,4 +11,9 @@ public class EntryNull extends Entry {
     public Type getType() {
         return Type.NULL;
     }
+
+    @Override
+    public String toString() {
+        return "null entry (not a catalog element)";
+    }
 }

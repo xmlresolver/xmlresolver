@@ -26,4 +26,9 @@ public class EntryRewriteSystem extends Entry {
     public Type getType() {
         return Type.REWRITE_SYSTEM;
     }
+
+    @Override
+    public String toString() {
+        return "rewriteSystem " + systemIdStart + Entry.rarr + rewritePrefix;
+    }
 }

@@ -11,4 +11,9 @@ public class EntryDocument extends EntryResource {
     public Type getType() {
         return Type.DOCUMENT;
     }
+
+    @Override
+    public String toString() {
+        return "document " + Entry.rarr + uri;
+    }
 }

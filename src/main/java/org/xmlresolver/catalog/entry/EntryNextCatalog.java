@@ -16,4 +16,9 @@ public class EntryNextCatalog extends Entry {
     public Type getType() {
         return Type.NEXT_CATALOG;
     }
+
+    @Override
+    public String toString() {
+        return "nextCatalog " + catalog;
+    }
 }

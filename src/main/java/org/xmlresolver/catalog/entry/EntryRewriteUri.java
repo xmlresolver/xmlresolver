@@ -26,4 +26,9 @@ public class EntryRewriteUri extends Entry {
     public Type getType() {
         return Type.REWRITE_URI;
     }
+
+    @Override
+    public String toString() {
+        return "rewriteURI " + uriStart + Entry.rarr + rewritePrefix;
+    }
 }
