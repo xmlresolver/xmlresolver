@@ -27,7 +27,7 @@ import org.xmlresolver.utils.URIUtils;
  * @author ndw
  */
 public class CacheDetails {
-    private static String usage = "Usage: CacheInfo cache-directory";
+    private static String usage = "Usage: CacheDetails cache-directory";
     private static GregorianCalendar now = new GregorianCalendar();
     
     /** Creates a new instance of CacheInfo */
