@@ -35,13 +35,13 @@ public class CacheTest extends CacheManager {
         assertNotNull(cache.getCacheInfo("^jar:file:"));
         assertNotNull(cache.getCacheInfo("^classpath:"));
         assertNull(cache.getCacheInfo("fribble"));
-        assertEquals(3, cache.getCacheInfoList().size());
+        assertEquals(4, cache.getCacheInfoList().size());
     }
 
     @Test
     public void addCacheInfoDefault() {
         cache.addCacheInfo("^fribble:", true);
-        assertEquals(4, cache.getCacheInfoList().size());
+        assertEquals(5, cache.getCacheInfoList().size());
         CacheInfo info = cache.getCacheInfo("^fribble:");
         assertEquals("^fribble:", info.pattern);
         assertEquals(ResourceCache.cacheSize, info.cacheSize);
@@ -49,7 +49,7 @@ public class CacheTest extends CacheManager {
         assertEquals(ResourceCache.deleteWait, info.deleteWait);
         assertEquals(ResourceCache.maxAge, info.maxAge);
         cache.removeCacheInfo("^fribble:");
-        assertEquals(3, cache.getCacheInfoList().size());
+        assertEquals(4, cache.getCacheInfoList().size());
         assertNull(cache.getCacheInfo("^fribble:"));
     }
 
@@ -57,7 +57,7 @@ public class CacheTest extends CacheManager {
     public void addCacheInfoExplicit() {
         cache.addCacheInfo("^fribble:", true);
         cache.addCacheInfo("^frabble:", false, 123, 456, 789, 10);
-        assertEquals(5, cache.getCacheInfoList().size());
+        assertEquals(6, cache.getCacheInfoList().size());
         CacheInfo info = cache.getCacheInfo("^frabble:");
         assertEquals("^frabble:", info.pattern);
         assertEquals(456, info.cacheSize);
@@ -65,11 +65,11 @@ public class CacheTest extends CacheManager {
         assertEquals(123, info.deleteWait);
         assertEquals(10, info.maxAge);
         cache.removeCacheInfo("^frabble:");
-        assertEquals(4, cache.getCacheInfoList().size());
+        assertEquals(5, cache.getCacheInfoList().size());
         assertNull(cache.getCacheInfo("^frabble:"));
         assertNotNull(cache.getCacheInfo("^fribble:"));
         cache.removeCacheInfo("^fribble:");
-        assertEquals(3, cache.getCacheInfoList().size());
+        assertEquals(4, cache.getCacheInfoList().size());
         assertNull(cache.getCacheInfo("^fribble:"));
     }
 
@@ -82,7 +82,7 @@ public class CacheTest extends CacheManager {
         secondConfig.setFeature(ResolverFeature.CACHE_DIRECTORY, URIUtils.cwd().resolve(cacheDir).getPath());
         ResourceCache secondCache = new ResourceCache(secondConfig);
 
-        assertEquals(5, secondCache.getCacheInfoList().size());
+        assertEquals(6, secondCache.getCacheInfoList().size());
         CacheInfo info = secondCache.getCacheInfo("^frabble:");
         assertEquals("^frabble:", info.pattern);
         assertEquals(456, info.cacheSize);
@@ -90,11 +90,11 @@ public class CacheTest extends CacheManager {
         assertEquals(123, info.deleteWait);
         assertEquals(10, info.maxAge);
         secondCache.removeCacheInfo("^frabble:");
-        assertEquals(4, secondCache.getCacheInfoList().size());
+        assertEquals(5, secondCache.getCacheInfoList().size());
         assertNull(secondCache.getCacheInfo("^frabble:"));
         assertNotNull(secondCache.getCacheInfo("^fribble:"));
         secondCache.removeCacheInfo("^fribble:");
-        assertEquals(3, secondCache.getCacheInfoList().size());
+        assertEquals(4, secondCache.getCacheInfoList().size());
         assertNull(secondCache.getCacheInfo("^fribble:"));
     }
 

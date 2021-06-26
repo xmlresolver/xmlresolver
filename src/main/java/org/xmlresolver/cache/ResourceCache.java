@@ -117,6 +117,7 @@ public class ResourceCache extends CatalogManager {
     public static final long cacheSize = 1000;
     public static final long cacheSpace = 1024 * 1000 * 10; // 10Mb
     public static final long maxAge = -1;
+    private static final String defaultPattern = ".*";
 
     private boolean loaded = false;
     private File cacheDir = null;
@@ -132,7 +133,7 @@ public class ResourceCache extends CatalogManager {
     public ResourceCache(ResolverConfiguration config) {
         super(config);
         // In case there is no control.xml file...
-        defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace, maxAge);
+        defaultCacheInfo = new CacheInfo(defaultPattern, true, deleteWait, cacheSize, cacheSpace, maxAge);
 
         String dir = config.getFeature(ResolverFeature.CACHE_DIRECTORY);
         if (dir == null) {
@@ -242,7 +243,16 @@ public class ResourceCache extends CatalogManager {
     }
 
     public List<CacheInfo> getCacheInfoList() {
-        return new ArrayList<>(cacheInfo);
+        ArrayList<CacheInfo> clist = new ArrayList<>();
+        boolean override = false;
+        for (CacheInfo info : cacheInfo) {
+            override = override || (defaultPattern.equals(info.pattern));
+            clist.add(info);
+        }
+        if (!override) {
+            clist.add(defaultCacheInfo);
+        }
+        return clist;
     }
 
     public CacheInfo getCacheInfo(String pattern) {
@@ -284,7 +294,7 @@ public class ResourceCache extends CatalogManager {
         }
     }
 
-    public ArrayList<CacheEntry> entries() {
+    public List<CacheEntry> entries() {
         loadCache();
         return new ArrayList<>(catalog.cached);
     }
@@ -1052,7 +1062,7 @@ public class ResourceCache extends CatalogManager {
                     cacheSize = parseLong(attributes.getValue("", "size"), default_cacheSize);
                     cacheSpace = parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
                     maxAge = parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
-                    defaultCacheInfo = new CacheInfo(".*", true, deleteWait, cacheSize, cacheSpace, maxAge);
+                    defaultCacheInfo = new CacheInfo(defaultPattern, true, deleteWait, cacheSize, cacheSpace, maxAge);
                 }
             }
 
