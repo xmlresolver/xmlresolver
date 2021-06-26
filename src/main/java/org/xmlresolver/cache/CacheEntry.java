@@ -50,4 +50,9 @@ public class CacheEntry {
             return uri;
         }
     }
+
+    @Override
+    public String toString() {
+        return file.getAbsolutePath();
+    }
 }

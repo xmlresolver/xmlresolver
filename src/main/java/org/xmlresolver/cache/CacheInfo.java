@@ -51,4 +51,16 @@ public class CacheInfo {
         this.cacheSpace = cacheSpace;
         this.maxAge = maxAge;
     }
+
+    @Override
+    public String toString() {
+        String str;
+        if (cache) {
+            str = "Cache include " + pattern;
+        } else {
+            str = "Cache exclude " + pattern;
+        }
+
+        return str;
+    }
 }
