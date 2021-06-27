@@ -117,7 +117,7 @@ public class ResourceCache extends CatalogManager {
     public static final long cacheSize = 1000;
     public static final long cacheSpace = 1024 * 1000 * 10; // 10Mb
     public static final long maxAge = -1;
-    private static final String defaultPattern = ".*";
+    public static final String defaultPattern = ".*";
 
     private boolean loaded = false;
     private File cacheDir = null;
@@ -243,16 +243,7 @@ public class ResourceCache extends CatalogManager {
     }
 
     public List<CacheInfo> getCacheInfoList() {
-        ArrayList<CacheInfo> clist = new ArrayList<>();
-        boolean override = false;
-        for (CacheInfo info : cacheInfo) {
-            override = override || (defaultPattern.equals(info.pattern));
-            clist.add(info);
-        }
-        if (!override) {
-            clist.add(defaultCacheInfo);
-        }
-        return clist;
+        return new ArrayList<>(cacheInfo);
     }
 
     public CacheInfo getCacheInfo(String pattern) {
@@ -265,6 +256,10 @@ public class ResourceCache extends CatalogManager {
             }
         }
         return null;
+    }
+
+    public CacheInfo getDefaultCacheInfo() {
+        return defaultCacheInfo;
     }
 
     public CacheInfo addCacheInfo(String pattern, boolean cache) {
@@ -1023,14 +1018,6 @@ public class ResourceCache extends CatalogManager {
     }
 
     private class CacheHandler extends DefaultHandler {
-        private final Pattern sizeK = Pattern.compile("^[0-9]k$", Pattern.CASE_INSENSITIVE);
-        private final Pattern sizeM = Pattern.compile("^[0-9]m$", Pattern.CASE_INSENSITIVE);
-        private final Pattern sizeG = Pattern.compile("^[0-9]g$", Pattern.CASE_INSENSITIVE);
-        private final Pattern timeS = Pattern.compile("^[0-9]s$", Pattern.CASE_INSENSITIVE);
-        private final Pattern timeM = sizeM; // same
-        private final Pattern timeH = Pattern.compile("^[0-9]h$", Pattern.CASE_INSENSITIVE);
-        private final Pattern timeD = Pattern.compile("^[0-9]d$", Pattern.CASE_INSENSITIVE);
-        private final Pattern timeW = Pattern.compile("^[0-9]w$", Pattern.CASE_INSENSITIVE);
 
         private final long default_deleteWait;
         private final long default_cacheSize;
@@ -1058,19 +1045,19 @@ public class ResourceCache extends CatalogManager {
                 isControl = ResolverConstants.XMLRESOURCE_EXT_NS.equals(uri) && "cache-control".equals(localName);
                 if (isControl) {
                     cacheVersion = attributes.getValue("", "version");
-                    deleteWait = parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
-                    cacheSize = parseLong(attributes.getValue("", "size"), default_cacheSize);
-                    cacheSpace = parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
-                    maxAge = parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
+                    deleteWait = CacheParser.parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
+                    cacheSize = CacheParser.parseLong(attributes.getValue("", "size"), default_cacheSize);
+                    cacheSpace = CacheParser.parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
+                    maxAge = CacheParser.parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
                     defaultCacheInfo = new CacheInfo(defaultPattern, true, deleteWait, cacheSize, cacheSpace, maxAge);
                 }
             }
 
             if (isControl && depth == 1 && ResolverConstants.XMLRESOURCE_EXT_NS.equals(uri)) {
-                deleteWait = parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
-                cacheSize = parseLong(attributes.getValue("", "size"), default_cacheSize);
-                cacheSpace = parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
-                maxAge = parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
+                deleteWait = CacheParser.parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
+                cacheSize = CacheParser.parseLong(attributes.getValue("", "size"), default_cacheSize);
+                cacheSpace = CacheParser.parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
+                maxAge = CacheParser.parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
                 String cacheRegex = attributes.getValue("", "uri");
                 switch (localName) {
                     case "cache":
@@ -1099,73 +1086,6 @@ public class ResourceCache extends CatalogManager {
             depth--;
         }
 
-        private long parseLong(String longStr, long defVal) {
-            if (longStr == null) {
-                return defVal;
-            }
-
-            try {
-                return Long.parseLong(longStr);
-            } catch (NumberFormatException nfe) {
-                logger.log(ResolverLogger.ERROR, "Bad numeric value in cache control file: %s", longStr);
-                return defVal;
-            }
-        }
-
-        private long parseSizeLong(String longStr, long defVal) {
-            if (longStr == null) {
-                return defVal;
-            }
-
-            long units = 1;
-            if (sizeK.matcher(longStr).matches()) {
-                units = 1024;
-                longStr = longStr.substring(0,longStr.length()-1);
-            } else if (sizeM.matcher(longStr).matches()) {
-                units = 1024*1000;
-                longStr = longStr.substring(0,longStr.length()-1);
-            } else if (sizeG.matcher(longStr).matches()) {
-                units = 1024*1000*1000;
-                longStr = longStr.substring(0,longStr.length()-1);
-            }
-
-            return parseLong(longStr, units, defVal);
-        }
-
-        private long parseTimeLong(String longStr, long defVal) {
-            if (longStr == null) {
-                return defVal;
-            }
-
-            long units = 1;
-            if (timeS.matcher(longStr).matches()) {
-                longStr = longStr.substring(0,longStr.length()-1);
-            } else if (timeM.matcher(longStr).matches()) {
-                units = 60;
-                longStr = longStr.substring(0,longStr.length()-1);
-            } else if (timeH.matcher(longStr).matches()) {
-                units = 3600;
-                longStr = longStr.substring(0,longStr.length()-1);
-            } else if (timeD.matcher(longStr).matches()) {
-                units = 3600*24;
-                longStr = longStr.substring(0,longStr.length()-1);
-            } else if (timeW.matcher(longStr).matches()) {
-                units = 3600*24*7;
-                longStr = longStr.substring(0,longStr.length()-1);
-            }
-
-            return parseLong(longStr, units, defVal);
-        }
-
-        private long parseLong(String longStr, long units, long defVal) {
-            try {
-                long val = Long.parseLong(longStr);
-                return val * units;
-            } catch (NumberFormatException nfe) {
-                logger.log(ResolverLogger.ERROR, "Bad numeric value in cache control file: %s", longStr);
-                return defVal;
-            }
-        }
     }
 
     private class EntryHandler extends DefaultHandler {
