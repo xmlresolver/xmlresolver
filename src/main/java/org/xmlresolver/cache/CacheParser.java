@@ -10,14 +10,14 @@ import java.util.regex.Pattern;
 public class CacheParser {
     protected static ResolverLogger logger = new ResolverLogger(CacheParser.class);
 
-    private static final Pattern sizeK = Pattern.compile("^[0-9]k$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern sizeM = Pattern.compile("^[0-9]m$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern sizeG = Pattern.compile("^[0-9]g$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern timeS = Pattern.compile("^[0-9]s$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern sizeK = Pattern.compile("^[0-9]+k$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern sizeM = Pattern.compile("^[0-9]+m$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern sizeG = Pattern.compile("^[0-9]+g$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern timeS = Pattern.compile("^[0-9]+s$", Pattern.CASE_INSENSITIVE);
     private static final Pattern timeM = sizeM; // same
-    private static final Pattern timeH = Pattern.compile("^[0-9]h$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern timeD = Pattern.compile("^[0-9]d$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern timeW = Pattern.compile("^[0-9]w$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern timeH = Pattern.compile("^[0-9]+h$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern timeD = Pattern.compile("^[0-9]+d$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern timeW = Pattern.compile("^[0-9]+w$", Pattern.CASE_INSENSITIVE);
 
     public static long parseLong(String longStr, long defVal) {
         if (longStr == null) {
