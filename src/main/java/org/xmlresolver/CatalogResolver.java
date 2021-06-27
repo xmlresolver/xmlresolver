@@ -24,6 +24,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Stack;
 
+/** The CatalogResolver returns resolved resources in a uniform way.
+ *
+ * The various resolver APIs want different return results. This class wraps those up in a
+ * uniform interface so that the details about resolution are more readily available.g
+ */
+
 public class CatalogResolver implements ResourceResolver {
     private static final ResolverLogger logger = new ResolverLogger(CatalogResolver.class);
     private XMLResolverConfiguration config = null;
