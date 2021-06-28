@@ -464,7 +464,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
-                    if (!relative && propertiesURL != null) {
+                    if (relative && propertiesURL != null) {
                         try {
                             token = new URL(propertiesURL, token).toString();
                         } catch (MalformedURLException e) {
@@ -485,7 +485,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
-                    if (!relative && propertiesURL != null) {
+                    if (relative && propertiesURL != null) {
                         try {
                             token = new URL(propertiesURL, token).toURI().toString();
                         } catch (URISyntaxException | MalformedURLException e) {
