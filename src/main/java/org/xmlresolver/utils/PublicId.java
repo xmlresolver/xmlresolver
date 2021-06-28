@@ -124,7 +124,7 @@ public abstract class PublicId {
               .replace("%25", "%");
       return publicId;
     } else {
-      return urn.toString();
+      return urn;
     }
   }
 }
