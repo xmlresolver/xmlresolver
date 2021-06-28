@@ -3,7 +3,8 @@ plugins {
   id "maven-publish"
   id "signing"
   id 'com.github.gmazzo.buildconfig' version "2.0.2"
-  id 'com.nwalsh.saxon-gradle' version '0.9.1-beta3'
+  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.3'
+  id 'com.nwalsh.gradle.docker.container' version '0.0.1'
 }
 
 repositories {
@@ -59,8 +60,8 @@ dependencies {
   )
 }
 
-import com.nwalsh.SaxonXsltTask
-import Docker
+import com.nwalsh.gradle.saxon.SaxonXsltTask
+import com.nwalsh.gradle.docker.DockerContainer
 
 ext {
   c_restest = "restest"
@@ -82,6 +83,10 @@ buildConfig {
   packageName("org.xmlresolver")
   buildConfigField('String', 'appName', "\"org.xmlresolver\"")
   buildConfigField('String', 'VERSION', "\"${resolverVersion}\"")
+}
+
+docker_container.configure {
+  workingDir = "docker"
 }
 
 // ============================================================
@@ -277,47 +282,58 @@ clean.dependsOn deleteBuild
 // ======================================================================
 
 tasks.register("dockerup") {
+  description "Make sure the Docker container is running."
   doLast {
-    Docker.assertRunning(c_restest)
+    DockerContainer.assertRunning(c_restest)
   }
 }
 
 tasks.register("dockerdown") {
+  description "Make sure the Docker container is not running."
   doLast {
-    Docker.assertNotRunning(c_restest)
+    DockerContainer.assertNotRunning(c_restest)
   }
 }
 
 tasks.register("start") {
+  description "Start the testing container"
   dependsOn "dockerdown"
 
-  doFirst {
-    Docker.assertDockerAvailable()
-    Docker.assertDockerComposeAvailable()
+  doLast {
+    DockerContainer.compose {
+      command = "up"
+      args = "-d"
+    }
   }
 
+  finalizedBy "dockerStatus"
+}
+
+tasks.register("dockerStatus") {
+  description "Print a short summary of running containers"
   doLast {
-    exec {
-      workingDir "docker"
-      commandLine Docker.dockerCompose(), "up", "-d"
-    }
-    exec {
-      commandLine Docker.docker(), "ps", "-a", "--format={{.ID}} {{.Names}} {{.Status}}"
+    if (DockerContainer.containers().isEmpty()) {
+      println("There are no docker containers running.")
+    } else {
+      DockerContainer.docker( {
+        command = "ps"
+        args = ["-a", "--format={{.ID}} {{.Names}} {{.Status}}"]
+      })
     }
   }
 }
 
 tasks.register("stop") {
-  doFirst {
-    Docker.assertDockerComposeAvailable()
-  }    
+  description "Stop the testing container"
+  dependsOn "dockerup"
 
   doLast {
-    exec {
-      workingDir "docker"
-      commandLine Docker.dockerCompose(), "down"
+    DockerContainer.compose {
+      command = "down"
     }
   }
+
+  finalizedBy "dockerStatus"
 }
 
 // ======================================================================
