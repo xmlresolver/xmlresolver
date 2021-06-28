@@ -16,7 +16,7 @@ services:
       stdin_open: true
       tty: true
       networks:
-        - external_net
+        - external_res_net
 
 networks:
-  external_net: {}
+  external_res_net: {}
