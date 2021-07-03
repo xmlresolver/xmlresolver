@@ -32,9 +32,7 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - run: ./gradlew start
-
-      - run: ./gradlew --info dist
+      - run: ./gradlew dist
 
       # Using gradlew to stop docker removes the build
       # directory. I have no idea why.
