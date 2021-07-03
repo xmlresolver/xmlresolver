@@ -40,7 +40,8 @@ and a robust, thread-safe implementation.
 See also: https://xmlresolver.org/
 
 For guidelines about how to migrate your application from the Apache Commons resolver to
-this resolver, see documentation and examples in https://github.com/ndw/resolver-migration/
+this resolver, see documentation and examples in
+https://github.com/xmlresolver/resolver-migration
 
 ## ChangeLog
 
