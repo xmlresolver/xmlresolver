@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-    xtserver:
+    restest_server:
       image: ghcr.io/ndw/3.0-test-suite/xproctest:0.9.0
       container_name: restest
       ports:
@@ -16,7 +16,7 @@ services:
       stdin_open: true
       tty: true
       networks:
-        - external_res_net
+        - external_restest_net
 
 networks:
-  external_res_net: {}
+  external_restest_net: {}
