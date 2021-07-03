@@ -4,7 +4,7 @@ plugins {
   id "signing"
   id 'com.github.gmazzo.buildconfig' version "2.0.2"
   id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.3'
-  id 'com.nwalsh.gradle.docker.container' version '0.0.1'
+  id 'com.nwalsh.gradle.docker.container' version '0.0.3'
 }
 
 repositories {
@@ -284,32 +284,32 @@ clean.dependsOn deleteBuild
 tasks.register("dockerup") {
   description "Make sure the Docker container is running."
   doLast {
-    DockerContainer.assertRunning(c_restest)
+    if (!DockerContainer.running(c_restest)) {
+      DockerContainer.compose {
+        command = "up"
+        options = ["-p", "xmlres"]
+        args = "-d"
+      }
+    }
   }
+  finalizedBy "dockerstatus"
 }
+test.dependsOn dockerup
 
 tasks.register("dockerdown") {
   description "Make sure the Docker container is not running."
   doLast {
-    DockerContainer.assertNotRunning(c_restest)
-  }
-}
-
-tasks.register("start") {
-  description "Start the testing container"
-  dependsOn "dockerdown"
-
-  doLast {
-    DockerContainer.compose {
-      command = "up"
-      args = "-d"
+    if (DockerContainer.running(c_restest)) {
+      DockerContainer.compose {
+        command = "down"
+        options = ["-p", "xmlres"]
+      }
     }
   }
-
-  finalizedBy "dockerStatus"
+  finalizedBy "dockerstatus"
 }
 
-tasks.register("dockerStatus") {
+tasks.register("dockerstatus") {
   description "Print a short summary of running containers"
   doLast {
     if (DockerContainer.containers().isEmpty()) {
@@ -321,19 +321,6 @@ tasks.register("dockerStatus") {
       })
     }
   }
-}
-
-tasks.register("stop") {
-  description "Stop the testing container"
-  dependsOn "dockerup"
-
-  doLast {
-    DockerContainer.compose {
-      command = "down"
-    }
-  }
-
-  finalizedBy "dockerStatus"
 }
 
 // ======================================================================
