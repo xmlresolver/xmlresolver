@@ -35,6 +35,8 @@ public class ResolverTestJar {
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+        config.setFeature(ResolverFeature.CACHE, null);
+        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         resolver = new Resolver(config);
     }
 
