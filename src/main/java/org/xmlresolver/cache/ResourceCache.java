@@ -158,7 +158,7 @@ public class ResourceCache extends CatalogManager {
             cacheDir = fDir.getCanonicalFile();
             logger.log(ResolverLogger.CACHE, "Cache dir: %s", cacheDir);
             if (!cacheDir.exists()) {
-                cacheDir.mkdir();
+                cacheDir.mkdirs();
             }
             if (!cacheDir.exists()) {
                 logger.log(ResolverLogger.ERROR, "Cannot create cache directory: %s", cacheDir);
