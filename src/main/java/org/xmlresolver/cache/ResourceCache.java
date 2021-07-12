@@ -113,11 +113,27 @@ import java.util.regex.Pattern;
  * @author ndw
  */
 public class ResourceCache extends CatalogManager {
+    /** Length of time a cached resource remains available after it has been deleted. */
     public static final long deleteWait = 60*60*24*7; // 1 week
+    /** The mazimum size of the cache (in files). */
     public static final long cacheSize = 1000;
+    /** The maximum size of the cache (in bytes). */
     public static final long cacheSpace = 1024 * 1000 * 10; // 10Mb
+    /** The maximum age of a file in the cache. */
     public static final long maxAge = -1;
+    /** The default cache pattern. */
     public static final String defaultPattern = ".*";
+    /** Excluded patterns.
+     *
+     * <p>These patterns are excluded because they refer to files on the local filesystem.
+     * If they are cached, then the resolver may resolve URIs from the cache that are "stale"
+     * with respect to the files actually on the filesystem.</p>
+     *
+     * <p>The <code>jar:file:</code> and <code>classpath:</code> schemes are Java schemes.</p>
+     * <p>The <code>path:</code> scheme as a .NET scheme (similar in effect to <code>classpath:</code>).</p>
+     * <p>Both the Java and .NET schemes are excluded in case the cache is shared across languages.</p>
+     */
+    public static final String[] excludedPatterns = new String[]{"^file:", "^jar:file:", "^classpath:", "^path:"};
 
     private boolean loaded = false;
     private File cacheDir = null;
@@ -173,6 +189,7 @@ public class ResourceCache extends CatalogManager {
             return;
         }
 
+        boolean update = false;
         File control = new File(cacheDir, "control.xml");
         try {
             SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -183,25 +200,29 @@ public class ResourceCache extends CatalogManager {
             InputSource source = new InputSource(control.getAbsolutePath());
             parser.parse(source, new CacheHandler(deleteWait, cacheSize, cacheSpace, maxAge));
 
-            if (cacheVersion == null && cacheInfo.isEmpty()) {
-                // Caching file and classpath URIs is going to be confusing.
-                // This cache control file has no cache/no-cache patterns.
-                // By default, exclude file: and classpath: URIs.
-                cacheInfo.add(new CacheInfo("^file:", false));
-                cacheInfo.add(new CacheInfo("^jar:file:", false));
-                cacheInfo.add(new CacheInfo("^classpath:", false));
+            // Caching file and classpath URIs is going to be confusing.
+            // Unless these patterns are explicitly included, explicitly exclude them
+            for (String pattern : excludedPatterns) {
+                CacheInfo info = getCacheInfo(pattern);
+                if (info == null) {
+                    update = true;
+                    cacheInfo.add(new CacheInfo(pattern, false));
+                }
             }
-
         } catch (FileNotFoundException ex) {
-            // By default, do not cache file:, jar:, or classpath: URIs. If you do, changing
+            // By default, do not cache the excluded patterns. If you do, changing
             // the files on your local filesystem will not have any effect when the documents
             // come from the cache!
-            cacheInfo.add(new CacheInfo("^file:", false));
-            cacheInfo.add(new CacheInfo("^jar:file:", false));
-            cacheInfo.add(new CacheInfo("^classpath:", false));
-            updateCacheControlFile();
+            update = true;
+            for (String pattern : excludedPatterns) {
+                cacheInfo.add(new CacheInfo(pattern, false));
+            }
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             // Nevermind
+        }
+
+        if (update) {
+            updateCacheControlFile();
         }
     }
 
