@@ -169,6 +169,29 @@ To make this easier, the 2.0 release adds a new system property,
 Those files will be added to the list defined by the normal catalog
 settings.
 
-xxxxxxx
+### Support for validating catalog files
 
-document xmlresolver.offline
+The resolver is tolerant of errors in catalog files by design. A
+production application shouldn’t fall over because someone adds a bad
+catalog file to the catalog path. Instead, the errant file is simply
+ignored.
+
+During development, it may be useful to take a more restrictive view.
+Putting a typo in a catalog file is one common source of resolution
+failures. More than once, I’ve spent time trying to track down a
+resolver bug only to discover that I’d typed `systemid` instead of
+`systemId` in a catalog file, or made some other similar error.
+
+Obviously, editing your catalog files with a validating editor is one
+simply remedy to this problem, but experience suggests that’s not
+always what actually happens.
+
+You can use the
+[catalog-loader-class](https://xmlresolver.org/#xml.catalog.catalogLoaderClass) property
+to specify an alternate catalog loader. If you specify,
+`org.xmlresolver.loaders.ValidatingXmlLoader`, the catalog files will be validated
+as they are loaded and validation errors will raise an exception.
+
+In order to use this feature, you must have
+[Jing](https://search.maven.org/artifact/org.relaxng/jing) version 20181222 on your classpath.
+
