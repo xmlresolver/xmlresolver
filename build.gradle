@@ -45,12 +45,11 @@ dependencies {
     [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'],
     [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'],
     [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' ],
-    [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30' ]
   )
 
   testImplementation (
     [group: 'junit', name: 'junit', version: '4.12'],
+    [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30' ],
     files("src/test/resources/data1.jar"),
     files("src/test/resources/data2.jar"),
     files("src/test/resources/data3.jar"),
