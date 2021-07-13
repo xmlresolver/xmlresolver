@@ -115,7 +115,7 @@ import java.util.regex.Pattern;
 public class ResourceCache extends CatalogManager {
     /** Length of time a cached resource remains available after it has been deleted. */
     public static final long deleteWait = 60*60*24*7; // 1 week
-    /** The mazimum size of the cache (in files). */
+    /** The maximum size of the cache (in files). */
     public static final long cacheSize = 1000;
     /** The maximum size of the cache (in bytes). */
     public static final long cacheSpace = 1024 * 1000 * 10; // 10Mb
@@ -586,6 +586,7 @@ public class ResourceCache extends CatalogManager {
                 || (!entryDir.exists() && !entryDir.mkdir())
                 || (!expiredDir.exists() && !expiredDir.mkdir())) {
             logger.log(ResolverLogger.CACHE, "Failed to setup data, entry, and expired directories in cache");
+            cacheDir = null;
             return;
         }
 
