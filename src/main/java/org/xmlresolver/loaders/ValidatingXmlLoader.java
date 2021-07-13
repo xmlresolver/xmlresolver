@@ -9,10 +9,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xmlresolver.CatalogManager;
 import org.xmlresolver.Resolver;
-import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.Resource;
-import org.xmlresolver.XMLResolverConfiguration;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.exceptions.CatalogInvalidException;
 import org.xmlresolver.exceptions.CatalogUnavailableException;
@@ -28,7 +26,6 @@ import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 
 /** A validating catalog loader.
@@ -44,14 +41,8 @@ public class ValidatingXmlLoader implements CatalogLoader {
     private final XmlLoader underlyingLoader;
 
     public ValidatingXmlLoader() {
-        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
-        config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
-        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/org/xmlresolver/validator/catalog.xml"));
-        config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
-        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
-        config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
-        resolver = new Resolver(config);
         underlyingLoader = new XmlLoader();
+        resolver = underlyingLoader.getLoaderResolver();
         catalogMap = new HashMap<>();
     }
 
