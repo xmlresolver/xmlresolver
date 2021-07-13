@@ -684,9 +684,19 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     public <T> void setFeature(ResolverFeature<T> feature, T value) {
         if (feature == ResolverFeature.CATALOG_FILES) {
             synchronized (catalogs) {
+                if (showConfigChanges) {
+                    logger.log(ResolverLogger.CONFIG, "Catalog list cleared");
+                }
                 catalogs.clear();
                 if (value != null) {
-                    catalogs.addAll((List<String>) value);
+                    for (String cat : (List<String>) value) {
+                        if (!"".equals(cat.trim())) {
+                            if (showConfigChanges) {
+                                logger.log(ResolverLogger.CONFIG, "Catalog: %s", cat);
+                            }
+                            catalogs.add(cat);
+                        }
+                    }
                 }
             }
             return;
@@ -695,13 +705,22 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             if (classLoader == null) {
                 classLoader = getClass().getClassLoader();
             }
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", classLoader.toString());
+            }
             return;
         } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
             cacheDirectory = (String) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
+            }
             cache = null;
             return;
         } else if (feature == ResolverFeature.CACHE) {
             cache = (ResourceCache) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Cache: %s", cache.toString());
+            }
             return;
         }
 
@@ -711,27 +730,60 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
         if (feature == ResolverFeature.PREFER_PUBLIC) {
             preferPublic = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Prefer public: %s", preferPublic);
+            }
         } else if (feature == ResolverFeature.PREFER_PROPERTY_FILE) {
             preferPropertyFile = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Prefer propertyFile: %s", preferPropertyFile);
+            }
         } else if (feature == ResolverFeature.ALLOW_CATALOG_PI) {
             allowCatalogPI = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
+            }
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             cacheUnderHome = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
+            }
             cache = null;
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Catalog manager: %s", manager.toString());
+            }
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
             uriForSystem = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "URI-for-system: %s", uriForSystem);
+            }
         } else if (feature == ResolverFeature.MERGE_HTTPS) {
             mergeHttps = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Merge-https: %s", mergeHttps);
+            }
         } else if (feature == ResolverFeature.MASK_JAR_URIS) {
             maskJarUris = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Mask-jar-URIs: %s", maskJarUris);
+            }
         } else if (feature == ResolverFeature.CATALOG_LOADER_CLASS) {
             catalogLoader = (String) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", catalogLoader);
+            }
         } else if (feature == ResolverFeature.PARSE_RDDL) {
             parseRddl = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Use RDDL: %s", parseRddl);
+            }
         } else if (feature == ResolverFeature.CLASSPATH_CATALOGS) {
             classpathCatalogs = (Boolean) value;
+            if (showConfigChanges) {
+                logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
+            }
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
