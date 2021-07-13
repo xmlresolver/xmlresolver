@@ -6,9 +6,12 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.CatalogManager;
+import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverConstants;
+import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.Resource;
+import org.xmlresolver.XMLResolverConfiguration;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryNull;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
@@ -32,8 +36,9 @@ import java.util.Stack;
  */
 public class XmlLoader implements CatalogLoader {
     protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
-
     protected final HashMap<URI, EntryCatalog> catalogMap;
+
+    private static Resolver loaderResolver = null;
     private boolean preferPublic = true;
 
     public XmlLoader() {
@@ -54,6 +59,21 @@ public class XmlLoader implements CatalogLoader {
      */
     public boolean getPreferPublic() {
         return preferPublic;
+    }
+
+    public static synchronized Resolver getLoaderResolver() {
+        if (loaderResolver == null) {
+            XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+            config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
+            config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/org/xmlresolver/schemas/catalog.xml"));
+            config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
+            config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
+            config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
+            config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
+            loaderResolver = new Resolver(config);
+        }
+
+        return loaderResolver;
     }
 
     public EntryCatalog loadCatalog(URI catalog) {
@@ -107,6 +127,7 @@ public class XmlLoader implements CatalogLoader {
                 spf.setXIncludeAware(false);
                 SAXParser parser = spf.newSAXParser();
                 CatalogContentHandler handler = new CatalogContentHandler(catalog, preferPublic);
+
                 parser.parse(source, handler);
                 EntryCatalog entry = handler.catalog();
                 catalogMap.put(catalog, entry);
@@ -131,6 +152,7 @@ public class XmlLoader implements CatalogLoader {
                 = new HashSet<>(Arrays.asList("doctype", "document", "dtddecl", "entity",
                 "linktype", "notation", "sgmldecl"));
 
+        private Locator locator = null;
         private final Stack<Entry> parserStack = new Stack<>();
         private final Stack<Boolean> preferPublicStack = new Stack<>();
         private final Stack<URI> baseURIStack = new Stack<>();
@@ -147,6 +169,7 @@ public class XmlLoader implements CatalogLoader {
 
         @Override
         public void setDocumentLocator (Locator locator) {
+            this.locator = locator;
             if (catalog != null) {
                 catalog.setLocator(locator);
             }
@@ -166,6 +189,10 @@ public class XmlLoader implements CatalogLoader {
                     }
                     catalog = new EntryCatalog(baseURIStack.peek(), id, preferPublicStack.peek());
                     parserStack.push(catalog);
+
+                    if (locator != null) {
+                        catalog.setLocator(locator);
+                    }
                 } else {
                     logger.log(ResolverLogger.ERROR, "Catalog document is not an XML Catalog (ignored): " + qName);
                     parserStack.push(new EntryNull());
@@ -330,6 +357,13 @@ public class XmlLoader implements CatalogLoader {
             parserStack.pop();
             baseURIStack.pop();
             preferPublicStack.pop();
+        }
+
+        @Override
+        public InputSource resolveEntity (String publicId,
+                                          String systemId)
+                throws SAXException, IOException {
+            return getLoaderResolver().resolveEntity(publicId, systemId);
         }
     }
 }

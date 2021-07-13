@@ -45,6 +45,28 @@ public class LoaderTest {
     }
 
     @Test
+    public void validatingDtd10ValidCatalog() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/dtd10catalog.xml"));
+        config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
+        config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
+        CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+        URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
+        assertNotNull(rsrc);
+    }
+
+    @Test
+    public void validatingDtd11ValidCatalog() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/dtd11catalog.xml"));
+        config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
+        config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
+        CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+        URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
+        assertNotNull(rsrc);
+    }
+
+    @Test
     public void validatingInvalidCatalog() {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/invalid-catalog.xml"));
