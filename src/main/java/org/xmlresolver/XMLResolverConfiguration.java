@@ -320,16 +320,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         String property = System.getProperty("xml.catalog.files");
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog list cleared");
-            }
+            showConfigChange("Catalog list cleared");
             catalogs.clear();
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
-                    if (showConfigChanges) {
-                        logger.log(ResolverLogger.CONFIG, "Catalog: %s", token);
-                    }
+                    showConfigChange("Catalog: %s", token);
                     catalogs.add(token);
                 }
             }
@@ -341,9 +337,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
-                    if (showConfigChanges) {
-                        logger.log(ResolverLogger.CONFIG, "Catalog: %s", token);
-                    }
+                    showConfigChange("Catalog: %s", token);
                     catalogs.add(token);
                 }
             }
@@ -351,89 +345,67 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
         property = System.getProperty("xml.catalog.prefer");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Prefer public: %s", property);
-            }
+            showConfigChange("Prefer public: %s", property);
             preferPublic = "public".equals(property);
         }
 
         property = System.getProperty("xml.catalog.preferPropertyFile");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Prefer propertyFile: %s", property);
-            }
+            showConfigChange("Prefer propertyFile: %s", property);
             preferPropertyFile = isTrue(property);
         }
 
         property = System.getProperty("xml.catalog.allowPI");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", property);
-            }
+            showConfigChange("Allow catalog PI: %s", property);
             allowCatalogPI = isTrue(property);
         }
 
         property = System.getProperty("xml.catalog.cache");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Cache directory: %s", property);
-            }
+            showConfigChange("Cache directory: %s", property);
             cacheDirectory = property;
         }
 
         property = System.getProperty("xml.catalog.cacheUnderHome");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Cache under home: %s", property);
-            }
+            showConfigChange("Cache under home: %s", property);
             cacheUnderHome = isTrue(property);
         }
 
         property = System.getProperty("xml.catalog.uriForSystem");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "URI-for-system: %s", property);
-            }
+            showConfigChange("URI-for-system: %s", property);
             uriForSystem = isTrue(property);
         }
 
         property = System.getProperty("xml.catalog.mergeHttps");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Merge-https: %s", property);
-            }
+            showConfigChange("Merge-https: %s", property);
             mergeHttps = isTrue(property);
         }
 
         property = System.getProperty("xml.catalog.maskJarUris");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Mask-jar-URIs: %s", property);
-            }
+            showConfigChange("Mask-jar-URIs: %s", property);
             maskJarUris = isTrue(property);
         }
 
         property = System.getProperty("xml.catalog.catalogLoaderClass");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", property);
-            }
+            showConfigChange("Catalog loader: %s", property);
             catalogLoader = property;
         }
 
         property = System.getProperty("xml.catalog.parseRddl");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Use RDDL: %s", property);
-            }
+            showConfigChange("Use RDDL: %s", property);
             parseRddl = isTrue(property);
         }
 
         property = System.getProperty("xml.catalog.classpathCatalogs");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", property);
-            }
+            showConfigChange("Classpath catalogs: %s", property);
             classpathCatalogs = isTrue(property);
         }
     }
@@ -450,17 +422,13 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (allow != null) {
             relative = isTrue(allow);
         }
-        if (showConfigChanges) {
-            logger.log(ResolverLogger.CONFIG, "Relative catalogs: %s", relative);
-        }
+        showConfigChange("Relative catalogs: %s", relative);
 
         property = properties.getProperty("catalogs");
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             catalogs.clear();
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog list cleared");
-            }
+            showConfigChange("Catalog list cleared");
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!"".equals(token.trim())) {
@@ -471,9 +439,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                             logger.log(ResolverLogger.ERROR, "Cannot make absolute: " + token);
                         }
                     }
-                    if (showConfigChanges) {
-                        logger.log(ResolverLogger.CONFIG, "Catalog: %s", token);
-                    }
+                    showConfigChange("Catalog: %s", token);
                     catalogs.add(token);
                 }
             }
@@ -492,9 +458,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                             logger.log(ResolverLogger.ERROR, "Cannot make absolute: " + token);
                         }
                     }
-                    if (showConfigChanges) {
-                        logger.log(ResolverLogger.CONFIG, "Catalog: %s", token);
-                    }
+                    showConfigChange("Catalog: %s", token);
                     catalogs.add(token);
                 }
             }
@@ -502,33 +466,25 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
         property = properties.getProperty("prefer");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Prefer public: %s", property);
-            }
+            showConfigChange("Prefer public: %s", property);
             preferPublic = "public".equals(property);
         }
 
         property = properties.getProperty("prefer-property-file");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Prefer propertyFile: %s", property);
-            }
+            showConfigChange("Prefer propertyFile: %s", property);
             preferPropertyFile = isTrue(property);
         }
 
         property = properties.getProperty("allow-oasis-xml-catalog-pi");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", property);
-            }
+            showConfigChange("Allow catalog PI: %s", property);
             allowCatalogPI = isTrue(property);
         }
 
         property = properties.getProperty("cache");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Cache directory: %s", property);
-            }
+            showConfigChange("Cache directory: %s", property);
             cacheDirectory = property;
         }
 
@@ -537,57 +493,43 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             property = properties.getProperty("cacheUnderHome");
         }
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Cache under home: %s", property);
-            }
+            showConfigChange("Cache under home: %s", property);
             cacheUnderHome = isTrue(property);
         }
 
         property = properties.getProperty("uri-for-system");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "URI-for-system: %s", property);
-            }
+            showConfigChange("URI-for-system: %s", property);
             uriForSystem = isTrue(property);
         }
 
         property = properties.getProperty("merge-https");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Merge-https: %s", property);
-            }
+            showConfigChange("Merge-https: %s", property);
             mergeHttps = isTrue(property);
         }
 
         property = properties.getProperty("mask-jar-uris");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Mask-jar-URIs: %s", property);
-            }
+            showConfigChange("Mask-jar-URIs: %s", property);
             maskJarUris = isTrue(property);
         }
 
         property = properties.getProperty("catalog-loader-class");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", property);
-            }
+            showConfigChange("Catalog loader: %s", property);
             catalogLoader = property;
         }
 
         property = properties.getProperty("parse-rddl");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Parse RDDL: %s", property);
-            }
+            showConfigChange("Parse RDDL: %s", property);
             parseRddl = isTrue(property);
         }
 
         property = properties.getProperty("classpath-catalogs");
         if (property != null) {
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", property);
-            }
+            showConfigChange("Classpath catalogs: %s", property);
             classpathCatalogs = isTrue(property);
         }
     }
@@ -684,16 +626,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     public <T> void setFeature(ResolverFeature<T> feature, T value) {
         if (feature == ResolverFeature.CATALOG_FILES) {
             synchronized (catalogs) {
-                if (showConfigChanges) {
-                    logger.log(ResolverLogger.CONFIG, "Catalog list cleared");
-                }
+                showConfigChange("Catalog list cleared");
                 catalogs.clear();
                 if (value != null) {
                     for (String cat : (List<String>) value) {
                         if (!"".equals(cat.trim())) {
-                            if (showConfigChanges) {
-                                logger.log(ResolverLogger.CONFIG, "Catalog: %s", cat);
-                            }
+                            showConfigChange("Catalog: %s", cat);
                             catalogs.add(cat);
                         }
                     }
@@ -705,22 +643,16 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             if (classLoader == null) {
                 classLoader = getClass().getClassLoader();
             }
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", classLoader.toString());
-            }
+            showConfigChange("Catalog loader: %s", classLoader);
             return;
         } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
             cacheDirectory = (String) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
-            }
+            showConfigChange("Cache directory: %s", cacheDirectory);
             cache = null;
             return;
         } else if (feature == ResolverFeature.CACHE) {
             cache = (ResourceCache) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Cache: %s", cache.toString());
-            }
+            showConfigChange("Cache: %s", cache);
             return;
         }
 
@@ -730,62 +662,56 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
         if (feature == ResolverFeature.PREFER_PUBLIC) {
             preferPublic = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Prefer public: %s", preferPublic);
-            }
+            showConfigChange("Prefer public: %s", preferPublic);
         } else if (feature == ResolverFeature.PREFER_PROPERTY_FILE) {
             preferPropertyFile = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Prefer propertyFile: %s", preferPropertyFile);
-            }
+            showConfigChange("Prefer propertyFile: %s", preferPropertyFile);
         } else if (feature == ResolverFeature.ALLOW_CATALOG_PI) {
             allowCatalogPI = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
-            }
+            showConfigChange("Allow catalog PI: %s", allowCatalogPI);
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             cacheUnderHome = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
-            }
+            showConfigChange("Cache under home: %s", cacheUnderHome);
             cache = null;
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog manager: %s", manager.toString());
-            }
+            logger.log(ResolverLogger.CONFIG, "Catalog manager: %s", manager.toString());
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
             uriForSystem = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "URI-for-system: %s", uriForSystem);
-            }
+            showConfigChange("URI-for-system: %s", uriForSystem);
         } else if (feature == ResolverFeature.MERGE_HTTPS) {
             mergeHttps = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Merge-https: %s", mergeHttps);
-            }
+            showConfigChange("Merge-https: %s", mergeHttps);
         } else if (feature == ResolverFeature.MASK_JAR_URIS) {
             maskJarUris = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Mask-jar-URIs: %s", maskJarUris);
-            }
+            showConfigChange("Mask-jar-URIs: %s", maskJarUris);
         } else if (feature == ResolverFeature.CATALOG_LOADER_CLASS) {
             catalogLoader = (String) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", catalogLoader);
-            }
+            showConfigChange("Catalog loader: %s", catalogLoader);
         } else if (feature == ResolverFeature.PARSE_RDDL) {
             parseRddl = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Use RDDL: %s", parseRddl);
-            }
+            showConfigChange("Use RDDL: %s", parseRddl);
         } else if (feature == ResolverFeature.CLASSPATH_CATALOGS) {
             classpathCatalogs = (Boolean) value;
-            if (showConfigChanges) {
-                logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
-            }
+            showConfigChange("Classpath catalogs: %s", classpathCatalogs);
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
+        }
+    }
+
+    private void showConfigChange(String message) {
+        if (showConfigChanges) {
+            logger.log(ResolverLogger.CONFIG, message);
+        }
+    }
+
+    private void showConfigChange(String message, Object value) {
+        if (showConfigChanges) {
+            if (value == null) {
+                logger.log(ResolverLogger.CONFIG, message, "null");
+            } else {
+                logger.log(ResolverLogger.CONFIG, message, value.toString());
+            }
         }
     }
 
