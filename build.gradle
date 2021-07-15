@@ -26,25 +26,22 @@ configurations.all {
 }
 
 configurations {
-  standaloneClasspath.extendsFrom(runtimeOnly)
+  standaloneClasspath.extendsFrom(implementation)
 }
 
 dependencies {
   implementation (
     [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'],
     [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'],
-    [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
+    [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ]
+  )
+
+  compileOnly (
     [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' ]
   )
 
   validatingImplementation (
     [group: 'org.relaxng', name: 'jing', version: '20181222' ]
-  )
-
-  runtimeOnly (
-    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'],
-    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'],
-    [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ],
   )
 
   testImplementation (
