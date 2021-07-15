@@ -190,35 +190,42 @@ public class ResourceCache extends CatalogManager {
         }
 
         boolean update = false;
+        boolean parsed = false;
         File control = new File(cacheDir, "control.xml");
-        try {
-            SAXParserFactory spf = SAXParserFactory.newInstance();
-            spf.setNamespaceAware(true);
-            spf.setValidating(false);
-            spf.setXIncludeAware(false);
-            SAXParser parser = spf.newSAXParser();
-            InputSource source = new InputSource(control.getAbsolutePath());
-            parser.parse(source, new CacheHandler(deleteWait, cacheSize, cacheSpace, maxAge));
+        if (control.exists()) {
+            try {
+                SAXParserFactory spf = SAXParserFactory.newInstance();
+                spf.setNamespaceAware(true);
+                spf.setValidating(false);
+                spf.setXIncludeAware(false);
+                SAXParser parser = spf.newSAXParser();
+                InputSource source = new InputSource(control.getAbsolutePath());
+                parser.parse(source, new CacheHandler(deleteWait, cacheSize, cacheSpace, maxAge));
+                parsed = true;
 
-            // Caching file and classpath URIs is going to be confusing.
-            // Unless these patterns are explicitly included, explicitly exclude them
-            for (String pattern : excludedPatterns) {
-                CacheInfo info = getCacheInfo(pattern);
-                if (info == null) {
-                    update = true;
-                    cacheInfo.add(new CacheInfo(pattern, false));
+                // Caching file and classpath URIs is going to be confusing.
+                // Unless these patterns are explicitly included, explicitly exclude them
+                for (String pattern : excludedPatterns) {
+                    CacheInfo info = getCacheInfo(pattern);
+                    if (info == null) {
+                        update = true;
+                        cacheInfo.add(new CacheInfo(pattern, false));
+                    }
                 }
+            } catch (ParserConfigurationException | SAXException | IOException ex) {
+                logger.log(ResolverLogger.ERROR, "Failed to parse cache control file: %s", ex.getMessage());
             }
-        } catch (FileNotFoundException ex) {
+        } else {
+            update = true;
+        }
+
+        if (!parsed) {
             // By default, do not cache the excluded patterns. If you do, changing
             // the files on your local filesystem will not have any effect when the documents
             // come from the cache!
-            update = true;
             for (String pattern : excludedPatterns) {
                 cacheInfo.add(new CacheInfo(pattern, false));
             }
-        } catch (ParserConfigurationException | SAXException | IOException ex) {
-            // Nevermind
         }
 
         if (update) {
