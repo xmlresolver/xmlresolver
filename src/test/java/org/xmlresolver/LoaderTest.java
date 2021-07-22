@@ -29,7 +29,7 @@ public class LoaderTest {
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/invalid-catalog.xml"));
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.XmlLoader");
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
-        URI rsrc = manager.lookupSystem("https://xmlresolver.com/ns/sample/sample.dtd");
+        URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
         assertNotNull(rsrc);
     }
 

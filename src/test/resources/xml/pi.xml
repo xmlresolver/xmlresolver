@@ -1,7 +1,7 @@
 <?oasis-xml-catalog catalog="../picat.xml"?>
 <!DOCTYPE book PUBLIC "-//Sample//DTD PITEST Simple 1.0//EN"
                       "https://xmlresolver.org/ns/pitest-sample/sample.dtd">
-<book xmlns="https://xmlresolver.com/ns/sample">
+<book xmlns="https://xmlresolver.org/ns/sample">
 <title>OASIS Catalog PI Test</title>
 <article>
 <p>This document tests the OASIS XML Catalog PI.</p>

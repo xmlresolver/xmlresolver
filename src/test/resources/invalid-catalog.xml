@@ -4,7 +4,7 @@
   <public systemId="-//Sample//DTD Simple 1.0//EN"
           uri="sample10/sample.dtd"/>
 
-  <system publicId="https://xmlresolver.com/ns/sample/sample.dtd"
+  <system publicId="https://xmlresolver.org/ns/sample/sample.dtd"
           uri="sample10/sample.dtd"/>
 
   <group prefer="system" uri="http://example.com/">
@@ -12,7 +12,7 @@
 
   <notValid/>
 
-  <system systemId="https://xmlresolver.com/ns/sample/sample.dtd"
+  <system systemId="https://xmlresolver.org/ns/sample/sample.dtd"
           uri="sample10/sample.dtd"/>
 
 </catalog>

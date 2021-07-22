@@ -1,4 +1,4 @@
-<book xmlns="https://xmlresolver.com/ns/sample"
+<book xmlns="https://xmlresolver.org/ns/sample"
       xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>A sample book</title>
 <article>

@@ -1,5 +1,5 @@
 <!DOCTYPE "https://xmlresolver.org/ns/sample-as-uri/sample.dtd">
-<book xmlns="http://xmlresolver.com/ns/sample"
+<book xmlns="http://xmlresolver.org/ns/sample"
 <title>A sample book</title>
 <article>
 <p>This is resolved if the uri-as-system feature is enabled.</p>

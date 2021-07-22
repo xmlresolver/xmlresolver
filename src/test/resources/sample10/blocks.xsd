@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://xmlresolver.com/ns/sample" xmlns:sample="http://xmlresolver.com/ns/sample" xmlns:xlink="http://www.w3.org/1999/xlink">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://xmlresolver.org/ns/sample" xmlns:sample="http://xmlresolver.org/ns/sample" xmlns:xlink="http://www.w3.org/1999/xlink">
   <xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="xlink.xsd"/>
   <xs:element name="p">
     <xs:complexType mixed="true">

@@ -1,4 +1,4 @@
-default namespace = "http://xmlresolver.com/ns/sample"
+default namespace = "http://xmlresolver.org/ns/sample"
 namespace xlink = "http://www.w3.org/1999/xlink"
 
 p = element p { (text | em | link)* }

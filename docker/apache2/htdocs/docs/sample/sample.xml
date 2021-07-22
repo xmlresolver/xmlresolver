@@ -1,8 +1,8 @@
 <!DOCTYPE book PUBLIC "-//Sample//DTD Simple 1.0//EN"
           "https://xmlresolver.org/ns/sample/sample.dtd">
-<book xmlns="http://xmlresolver.com/ns/sample"
+<book xmlns="http://xmlresolver.org/ns/sample"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://xmlresolver.com/ns/sample sample.xsd">
+      xsi:schemaLocation="http://xmlresolver.org/ns/sample sample.xsd">
 <title>A sample book</title>
 <article>
 <p>This <link xmlns:xlink="http://www.w3.org/1999/xlink"

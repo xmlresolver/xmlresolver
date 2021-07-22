@@ -4,7 +4,7 @@
   <public publicId="-//Sample//DTD Simple 1.0//EN"
           uri="http://localhost:8222/docs/sample/sample.dtd"/>
 
-  <system systemId="https://xmlresolver.com/ns/sample/sample.dtd"
+  <system systemId="https://xmlresolver.org/ns/sample/sample.dtd"
           uri="http://localhost:8222/docs/sample/sample.dtd"/>
 
 </catalog>
