@@ -31,7 +31,7 @@ public class ResolverLocalFileTest {
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
-        config.setFeature(ResolverFeature.URI_FOR_SYSTEM, false);
+        config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
         config.setFeature(ResolverFeature.PREFER_PUBLIC, false);
         resolver = new Resolver(config);
     }
@@ -41,7 +41,7 @@ public class ResolverLocalFileTest {
         //this is what will get often get called by Saxon for a local file
         Source result = resolver.resolve("IVOA-v1.0.vo-dml.xml", "");
         assertNotNull("should have returned a source",result);
-        assertEquals("file:///Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
+        assertEquals("file:/Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
     }
     
     @Test
@@ -49,14 +49,14 @@ public class ResolverLocalFileTest {
         //if the base is unknown then perhaps this should be the call..
         Source result = resolver.resolve("IVOA-v1.0.vo-dml.xml", null);
         assertNotNull("should have returned a source",result);
-        assertEquals("file:///Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
+        assertEquals("file:/Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
     }
     @Test
     public void lookupLocalFileURI() throws TransformerException {
         //this is probably what clients should call for a local file to be compliant
         Source result = resolver.resolve("file://./IVOA-asurl.vo-dml.xml", null);
         assertNotNull("should have returned a source",result);
-        assertEquals("file:///Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
+        assertEquals("file:/Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
 
     }
     
@@ -65,20 +65,10 @@ public class ResolverLocalFileTest {
         //this is probably what clients should call for a local file to be compliant
         Source result = resolver.resolve("file://./IVOA-asurl.vo-dml.xml", "");
         assertNotNull("should have returned a source",result);
-        assertEquals("file:///Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
+        assertEquals("file:/Users/pharriso/Work/ivoa/vo-dml/models/ivoa/vo-dml/IVOA-v1.0.vo-dml.xml",result.getSystemId());
 
     }
-
-    
-    @Test
-    public void lookupNotInCatalogue() throws TransformerException {
-        //something not in the catalogue should just be returned if the resolver is to be used directly in saxon for instance
-        Source result = resolver.resolve("afile.ext", "file:///root/");
-        assertNotNull("should have returned a source",result);
-        assertEquals("file:///root/file.ext",result.getSystemId());
-      
-    }
-    
+     
     @Test
     public void URITest() throws URISyntaxException {
         URI uri = new URI("file://./IVOA-v1.0.vo-dml.xml");
