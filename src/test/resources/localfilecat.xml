@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<catalog  xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">  
+   <group  prefer="system"  xml:base="file:///Users/pharriso/Work/ivoa/vo-dml/models/" >  
+     <system
+         systemId="IVOA-v1.0.vo-dml.xml"  
+         uri="ivoa/vo-dml/IVOA-v1.0.vo-dml.xml"/>
+    <system
+         systemId="file://./IVOA-asurl.vo-dml.xml"  
+         uri="ivoa/vo-dml/IVOA-v1.0.vo-dml.xml"/>
+
+   </group>
+</catalog>
