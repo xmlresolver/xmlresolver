@@ -36,13 +36,12 @@ import java.util.HashMap;
 public class ValidatingXmlLoader implements CatalogLoader {
     protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
     protected final HashMap<URI, EntryCatalog> catalogMap;
-    private boolean preferPublic = true;
     private final Resolver resolver;
     private final XmlLoader underlyingLoader;
 
     public ValidatingXmlLoader() {
         underlyingLoader = new XmlLoader();
-        resolver = underlyingLoader.getLoaderResolver();
+        resolver = XmlLoader.getLoaderResolver();
         catalogMap = new HashMap<>();
     }
 
@@ -152,22 +151,24 @@ public class ValidatingXmlLoader implements CatalogLoader {
         return underlyingLoader.loadCatalog(catalog, source);
     }
 
-    /** Set the default "prefer public" status for this catalog.
-     *
-     * @param prefer True if public identifiers are to be preferred.
-     */
     @Override
     public void setPreferPublic(boolean prefer) {
-        preferPublic = prefer;
+        underlyingLoader.setPreferPublic(prefer);
     }
 
-    /** Return the current "prefer public" status.
-     *
-     * @return The current "prefer public" status of this catalog loader.
-     */
     @Override
     public boolean getPreferPublic() {
-        return preferPublic;
+        return underlyingLoader.getPreferPublic();
+    }
+
+    @Override
+    public void setArchivedCatalogs(boolean allow) {
+        underlyingLoader.setArchivedCatalogs(allow);
+    }
+
+    @Override
+    public boolean getArchivedCatalogs() {
+        return underlyingLoader.getArchivedCatalogs();
     }
 
     private static class MyErrorHandler implements ErrorHandler {
