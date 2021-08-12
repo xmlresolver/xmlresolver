@@ -24,11 +24,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /** An XML catalog loader.
  *
@@ -40,6 +43,7 @@ public class XmlLoader implements CatalogLoader {
 
     private static Resolver loaderResolver = null;
     private boolean preferPublic = true;
+    private boolean archivedCatalogs = true;
 
     public XmlLoader() {
         catalogMap = new HashMap<>();
@@ -49,6 +53,7 @@ public class XmlLoader implements CatalogLoader {
      *
      * @param prefer True if public identifiers are to be preferred.
      */
+    @Override
     public void setPreferPublic(boolean prefer) {
         preferPublic = prefer;
     }
@@ -57,15 +62,26 @@ public class XmlLoader implements CatalogLoader {
      *
      * @return The current "prefer public" status of this catalog loader.
      */
+    @Override
     public boolean getPreferPublic() {
         return preferPublic;
+    }
+
+    @Override
+    public void setArchivedCatalogs(boolean allow) {
+        archivedCatalogs = allow;
+    }
+
+    @Override
+    public boolean getArchivedCatalogs() {
+        return archivedCatalogs;
     }
 
     public static synchronized Resolver getLoaderResolver() {
         if (loaderResolver == null) {
             XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
             config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
-            config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/org/xmlresolver/schemas/catalog.xml"));
+            config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/org/xmlresolver/catalog.xml"));
             config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
             config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
             config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
@@ -119,6 +135,8 @@ public class XmlLoader implements CatalogLoader {
             throw new IllegalArgumentException("Catalog URIs must be absolute: " + catalog);
         }
 
+        URI zipcatalog = null;
+
         synchronized (catalogMap) {
             try {
                 SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -134,10 +152,101 @@ public class XmlLoader implements CatalogLoader {
             } catch (ParserConfigurationException | SAXException | IOException ex) {
                 logger.log(ResolverLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
                 catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
+
+                if (archivedCatalogs) {
+                    zipcatalog = archiveCatalog(catalog);
+                }
             }
         }
 
+        if (zipcatalog != null) {
+            EntryCatalog zipcat = loadCatalog(zipcatalog);
+            catalogMap.put(catalog, zipcat);
+        }
+
         return catalogMap.get(catalog);
+    }
+
+    private URI archiveCatalog(URI catalog) {
+        if (!"file".equals(catalog.getScheme())) {
+            // For the moment, let's limit this to file: URIs
+            return null;
+        }
+
+        // Archive files come in two basic flavors, "top level" and "directory".
+        // In a top level archive, all the files unpack into the current working directory.
+        // In a directory archive, all of the files unpack into a directory under the current working directory
+        // (In other words, they all have a leading directory/ component in their names.)
+        //
+        // We want to support either flavor.
+        //
+        // In a top level archive, if org/xmlresolver/catalog.xml exists, use it. If catalog.xml exists,
+        // use it. If both exist, use org/xmlresolver/catalog.xml
+        //
+        // In a directory archive, if directory/org/xmlresolver/catalog.xml exists, use it.
+        // If directory/catalog.xml exists, use it. If both exist, use directory/org/xmlresolver/catalog.xml
+        //
+        // If none of these conditions apply, there's no catalog for us here.
+
+        HashSet<String> catalogSet = new HashSet<> ();
+        boolean firstEntry = true;
+        String leadingDir = null;
+
+        try {
+            URLConnection conn = catalog.toURL().openConnection();
+            ZipInputStream zip = new ZipInputStream(conn.getInputStream());
+            ZipEntry entry = zip.getNextEntry();
+            while (entry != null) {
+                if (firstEntry) {
+                    int pos = entry.getName().indexOf("/");
+                    if (pos >= 0) {
+                        leadingDir = entry.getName().substring(0, pos);
+                    }
+                    firstEntry = false;
+                } else {
+                    if (leadingDir != null) {
+                        int pos = entry.getName().indexOf("/");
+                        if (pos < 0  || !leadingDir.equals(entry.getName().substring(0, pos))) {
+                            leadingDir = null;
+                        }
+                    }
+                }
+
+                if (!entry.isDirectory() && entry.getName().endsWith("catalog.xml")) {
+                    catalogSet.add(entry.getName());
+                }
+
+                entry = zip.getNextEntry();
+            }
+            zip.close();
+
+            String catpath = null;
+            if (leadingDir != null) {
+                if (catalogSet.contains(leadingDir + "/catalog.xml")) {
+                    catpath = "/" + leadingDir + "/catalog.xml";
+                }
+                if (catalogSet.contains(leadingDir + "/org/xmlresolver/catalog.xml")) {
+                    catpath = "/" + leadingDir + "/org/xmlresolver/catalog.xml";
+                }
+            } else {
+                if (catalogSet.contains("catalog.xml")) {
+                    catpath = "/catalog.xml";
+                }
+                if (catalogSet.contains("org/xmlresolver/catalog.xml")) {
+                    catpath = "/org/xmlresolver/catalog.xml";
+                }
+            }
+
+            if (catpath != null) {
+                return new URI("jar:file://" +  catalog.getPath() + "!" + catpath);
+            }
+
+            logger.log(ResolverLogger.ERROR, "Failed to find catalog in archived catalog: " + catalog);
+        } catch (IOException|URISyntaxException ex) {
+            logger.log(ResolverLogger.ERROR, "Failed to load archived catalog: " + catalog + ": " + ex.getMessage());
+        }
+
+        return null;
     }
 
     private static class CatalogContentHandler extends DefaultHandler {

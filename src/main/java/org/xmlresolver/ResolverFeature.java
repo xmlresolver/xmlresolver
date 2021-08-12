@@ -268,4 +268,14 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<ClassLoader> CLASSLOADER = new ResolverFeature<>(
             "http://xmlresolver.org/feature/classloader", (ClassLoader) null);
+
+    /**
+     * Adds support for placing ZIP files on the catalog path.
+     *
+     * <p>If enabled, then you can put ZIP files on the catalog path. The resolver
+     * will look for <code>catalog.xml</code> and <code>org/xmlresolver/catalog.xml</code>,
+     * using whichever it finds first. If it doesn't find either, the file is ignored.</p>
+     */
+    public static final ResolverFeature<Boolean> ARCHIVED_CATALOGS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/archived-catalogs", true);
 }

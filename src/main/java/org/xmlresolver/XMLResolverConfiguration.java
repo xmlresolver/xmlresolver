@@ -134,7 +134,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS, ResolverFeature.MASK_JAR_URIS,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
             ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL,
-            ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER};
+            ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER,
+            ResolverFeature.ARCHIVED_CATALOGS};
     private static List<String> classpathCatalogList = null;
 
     private final List<String> catalogs;
@@ -152,6 +153,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean parseRddl = ResolverFeature.PARSE_RDDL.getDefaultValue();
     private Boolean classpathCatalogs = ResolverFeature.CLASSPATH_CATALOGS.getDefaultValue();
     private ClassLoader classLoader = ResolverFeature.CLASSLOADER.getDefaultValue();
+    private Boolean archivedCatalogs = ResolverFeature.ARCHIVED_CATALOGS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
     /** Construct a default configuration.
@@ -240,6 +242,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         catalogLoader = current.catalogLoader;
         parseRddl = current.parseRddl;
         classpathCatalogs = current.classpathCatalogs;
+        archivedCatalogs = current.archivedCatalogs;
         showConfigChanges = current.showConfigChanges;
     }
 
@@ -408,6 +411,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Classpath catalogs: %s", property);
             classpathCatalogs = isTrue(property);
         }
+
+        property = System.getProperty("xml.catalog.archivedCatalogs");
+        if (property != null) {
+            showConfigChange("Archived catalogs: %s", property);
+            archivedCatalogs = isTrue(property);
+        }
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
@@ -532,6 +541,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Classpath catalogs: %s", property);
             classpathCatalogs = isTrue(property);
         }
+
+        property = properties.getProperty("archived-catalogs");
+        if (property != null) {
+            showConfigChange("Archived catalogs: %s", property);
+            archivedCatalogs = isTrue(property);
+        }
     }
 
     private void showConfig() {
@@ -547,6 +562,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
         logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", catalogLoader);
         logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
+        logger.log(ResolverLogger.CONFIG, "Archived catalogs: %s", archivedCatalogs);
         logger.log(ResolverLogger.CONFIG, "Class loader: %s", classLoader);
         for (String catalog: catalogs) {
             logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
@@ -694,6 +710,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.CLASSPATH_CATALOGS) {
             classpathCatalogs = (Boolean) value;
             showConfigChange("Classpath catalogs: %s", classpathCatalogs);
+        } else if (feature == ResolverFeature.ARCHIVED_CATALOGS) {
+            archivedCatalogs = (Boolean) value;
+            showConfigChange("Archived catalogs: %s", archivedCatalogs);
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -793,6 +812,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) cacheUnderHome;
         } else if (feature == ResolverFeature.CLASSLOADER) {
             return (T) classLoader;
+        } else if (feature == ResolverFeature.ARCHIVED_CATALOGS) {
+            return (T) archivedCatalogs;
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
             return null;

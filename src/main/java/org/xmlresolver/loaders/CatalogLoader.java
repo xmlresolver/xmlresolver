@@ -53,4 +53,20 @@ public interface CatalogLoader {
      * @return The current "prefer public" status of this catalog loader.
      */
     public boolean getPreferPublic();
+
+    /** Allow archived catalogs on the catalog path.
+     *
+     * <p>If allowed, then ZIP files may be specified as catalogs. The loader
+     * will return the catalog associated with the <code>/catalog.xml</code>
+     * or <code>/org/xmlresolver/catalog.xml</code> within the ZIP file.</p>
+     *
+     * @param allow True if archived catalogs are to be allowed.
+     */
+    public void setArchivedCatalogs(boolean allow);
+
+    /** Return whether or not archived catalogs are allowed.
+     *
+     * @return True if archived catalogs are allowed.
+     */
+    public boolean getArchivedCatalogs();
 }

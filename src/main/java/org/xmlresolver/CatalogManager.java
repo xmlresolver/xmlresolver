@@ -64,6 +64,7 @@ public class CatalogManager implements XMLCatalogResolver {
             throw new IllegalArgumentException("Failed to instantiate catalog loader: " + loaderClassName + ": " + ex.getMessage());
         }
         catalogLoader.setPreferPublic(config.getFeature(ResolverFeature.PREFER_PUBLIC));
+        catalogLoader.setArchivedCatalogs(config.getFeature(ResolverFeature.ARCHIVED_CATALOGS));
     }
 
     /** Constructs a catalog manager from the current one and a configuration.
