@@ -737,8 +737,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private List<String> findClasspathCatalogFiles() {
         if (classpathCatalogList == null) {
             logger.log(ResolverLogger.CONFIG, "Searching for catalogs on classpath:");
-            for (URL url : ((URLClassLoader) XMLResolverConfiguration.class.getClassLoader()).getURLs()) {
-                logger.log(ResolverLogger.CONFIG, "    " + url.toString());
+            try {
+                for (URL url : ((URLClassLoader) XMLResolverConfiguration.class.getClassLoader()).getURLs()) {
+                    logger.log(ResolverLogger.CONFIG, "    " + url.toString());
+                }
+            } catch (ClassCastException ex) {
+                logger.log(ResolverLogger.CONFIG, "    Unknown: cannot determine class path in JDK9+");
             }
             ArrayList<String> catalogs = new ArrayList<>();
             try {
