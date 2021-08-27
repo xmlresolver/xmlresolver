@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="http://xmlresolver.org/ns/sample" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0">
+  <define name="p">
+    <element name="p">
+      <zeroOrMore>
+        <choice>
+          <text/>
+          <ref name="em"/>
+          <ref name="link"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="em">
+    <element name="em">
+      <zeroOrMore>
+        <choice>
+          <text/>
+          <ref name="em"/>
+          <ref name="link"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="link">
+    <element name="link">
+      <attribute name="xlink:href"/>
+      <text/>
+    </element>
+  </define>
+</grammar>

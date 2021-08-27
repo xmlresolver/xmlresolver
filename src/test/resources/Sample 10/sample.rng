@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="http://xmlresolver.org/ns/sample" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://relaxng.org/ns/structure/1.0">
+  <start>
+    <choice>
+      <ref name="book"/>
+      <ref name="article"/>
+    </choice>
+  </start>
+  <define name="book">
+    <element name="book">
+      <optional>
+        <attribute name="xsi:schemaLocation"/>
+      </optional>
+      <ref name="title"/>
+      <choice>
+        <oneOrMore>
+          <ref name="article"/>
+        </oneOrMore>
+        <oneOrMore>
+          <ref name="chapter"/>
+        </oneOrMore>
+      </choice>
+    </element>
+  </define>
+  <define name="article">
+    <element name="article">
+      <optional>
+        <ref name="title"/>
+      </optional>
+      <oneOrMore>
+        <ref name="p"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="chapter">
+    <element name="chapter">
+      <ref name="title"/>
+      <oneOrMore>
+        <ref name="p"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="title">
+    <element name="title">
+      <text/>
+    </element>
+  </define>
+  <include href="blocks.rng"/>
+</grammar>

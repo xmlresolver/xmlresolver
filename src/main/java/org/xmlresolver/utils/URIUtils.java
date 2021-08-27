@@ -121,6 +121,18 @@ public abstract class URIUtils {
             }
         }
 
+        // Escape URI characters...
+        StringBuilder sb = new StringBuilder();
+        for (int idx = 0; idx < uri.length(); idx++) {
+            char ch = uri.charAt(idx);
+            if (ch <= ' ' || ch >= '~') {
+                sb.append(String.format("%%%02X", (int) ch));
+            } else {
+                sb.append(ch);
+            }
+        }
+        uri = sb.toString();
+
         URI resolved = URI.create(uri);
         if (resolved.isAbsolute()) {
             return resolved;

@@ -1,0 +1,15 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT p (#PCDATA|em|link)*>
+<!ATTLIST p
+  xmlns CDATA #FIXED 'http://xmlresolver.org/ns/sample'>
+
+<!ELEMENT em (#PCDATA|em|link)*>
+<!ATTLIST em
+  xmlns CDATA #FIXED 'http://xmlresolver.org/ns/sample'>
+
+<!ELEMENT link (#PCDATA)>
+<!ATTLIST link
+  xmlns CDATA #FIXED 'http://xmlresolver.org/ns/sample'
+  xmlns:xlink CDATA #FIXED 'http://www.w3.org/1999/xlink'
+  xlink:href CDATA #REQUIRED>

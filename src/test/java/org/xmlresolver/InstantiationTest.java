@@ -11,7 +11,10 @@ package org.xmlresolver;
 
 import org.junit.Test;
 
+import java.lang.reflect.InvocationTargetException;
+
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -21,8 +24,12 @@ public class InstantiationTest {
     @Test
     public void testInstantiate() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         String className = "org.xmlresolver.Resolver";
-        Class rClass = Class.forName(className);
-        Object resolver = rClass.newInstance();
-        assertNotNull(resolver);
+        Class<?> rClass = Class.forName(className);
+        try {
+            Object resolver = rClass.getConstructor().newInstance();
+            assertNotNull(resolver);
+        } catch (NoSuchMethodException| InvocationTargetException ex) {
+            fail();
+        }
     }
 }

@@ -1,0 +1,17 @@
+default namespace = "http://xmlresolver.org/ns/sample"
+namespace xlink = "http://www.w3.org/1999/xlink"
+namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+start = book | article
+
+book = element book {
+           attribute xsi:schemaLocation { text }?,
+           title, (article+ | chapter+)
+       }
+
+article = element article { title?, p+ }
+chapter = element chapter { title, p+ }
+
+title = element title { text }
+
+include "blocks.rnc"

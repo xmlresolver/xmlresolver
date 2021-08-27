@@ -1,0 +1,11 @@
+default namespace = "http://xmlresolver.org/ns/sample"
+namespace xlink = "http://www.w3.org/1999/xlink"
+
+p = element p { (text | em | link)* }
+
+em = element em { (text | em | link)* }
+
+link = element link {
+        attribute xlink:href { text },
+        text 
+    }
