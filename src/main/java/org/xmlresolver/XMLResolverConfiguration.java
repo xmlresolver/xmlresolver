@@ -136,9 +136,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL,
             ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER,
             ResolverFeature.ARCHIVED_CATALOGS};
+
     private static List<String> classpathCatalogList = null;
 
     private final List<String> catalogs;
+    private final List<String> additionalCatalogs;
     private Boolean preferPublic = ResolverFeature.PREFER_PUBLIC.getDefaultValue();
     private Boolean preferPropertyFile = ResolverFeature.PREFER_PROPERTY_FILE.getDefaultValue();
     private Boolean allowCatalogPI = ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue();
@@ -210,6 +212,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         }
         showConfigChanges = false;
         catalogs = new ArrayList<>();
+        additionalCatalogs = new ArrayList<>();
         loadConfiguration(propertyFiles, catalogFiles);
         showConfigChanges = true;
     }
@@ -224,6 +227,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
      */
     public XMLResolverConfiguration(XMLResolverConfiguration current) {
         catalogs = new ArrayList<>(current.catalogs);
+        additionalCatalogs = new ArrayList<>();
         classLoader = current.classLoader;
         preferPublic = current.preferPublic;
         preferPropertyFile = current.preferPropertyFile;
@@ -646,14 +650,28 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 catalogs.clear();
                 if (value != null) {
                     for (String cat : (List<String>) value) {
-                        if (!"".equals(cat.trim())) {
-                            showConfigChange("Catalog: %s", cat);
-                            catalogs.add(cat);
+                        if (!"".equals(cat.trim()) && !catalogs.contains(cat.trim())) {
+                            showConfigChange("Catalog: %s", cat.trim());
+                            catalogs.add(cat.trim());
                         }
                     }
                 }
             }
             return;
+        } else if (feature == ResolverFeature.CATALOG_ADDITIONS) {
+                synchronized (catalogs) {
+                    if (value == null) {
+                        additionalCatalogs.clear();
+                    } else {
+                        for (String cat : (List<String>) value) {
+                            if (!"".equals(cat.trim()) && !additionalCatalogs.contains(cat.trim())) {
+                                showConfigChange("Catalog: %s", cat.trim());
+                                additionalCatalogs.add(cat.trim());
+                            }
+                        }
+                    }
+                }
+                return;
         } else if (feature == ResolverFeature.CLASSLOADER) {
             classLoader = (ClassLoader) value;
             if (classLoader == null) {
@@ -782,9 +800,19 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
             return (T) manager;
         } else if (feature == ResolverFeature.CATALOG_FILES) {
-            List<String> cats = new ArrayList<>(catalogs);
+            List<String> cats = null;
+            synchronized (catalogs) {
+                cats = new ArrayList<>(catalogs);
+                cats.addAll(additionalCatalogs);
+            }
             if (classpathCatalogs) {
                 cats.addAll(findClasspathCatalogFiles());
+            }
+            return (T) cats;
+        } else if (feature == ResolverFeature.CATALOG_ADDITIONS) {
+            List<String> cats = null;
+            synchronized (catalogs) {
+                cats = new ArrayList<>(additionalCatalogs);
             }
             return (T) cats;
         } else if (feature == ResolverFeature.PREFER_PUBLIC) {
