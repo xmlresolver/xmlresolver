@@ -304,6 +304,7 @@ public class XmlLoader implements CatalogLoader {
                     }
                 } else {
                     logger.log(ResolverLogger.ERROR, "Catalog document is not an XML Catalog (ignored): " + qName);
+                    catalog = new EntryCatalog(baseURIStack.peek(), null, false);
                     parserStack.push(new EntryNull());
                 }
 
