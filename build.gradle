@@ -85,33 +85,34 @@ docker_container.configure {
 
 // ============================================================
 
-task stageData(type: SaxonXsltTask) {
-  def baselen = "${projectDir}/data/src/data".length() + 1
-  def baseout = "${buildDir}/data/org/xmlresolver"
+task buildData(type: Exec) {
+  workingDir "data"
+  commandLine "./gradlew", "dist"
+}
 
-  inputs.files fileTree(dir: "${projectDir}/data/src/data")
-  outputs.files fileTree(dir: "${projectDir}/data/src/data").collect { source ->
-    "${baseout}/${source.getAbsolutePath().substring(baselen)}"
-  }
-  outputs.file "${baseout}/cat-entities.xml"
-  outputs.file "${baseout}/cat-mathml2.xml"
-  outputs.file "${baseout}/cat-mathml3.xml"
-  outputs.file "${baseout}/cat-rddl.xml"
-  outputs.file "${baseout}/cat-svg.xml"
-  outputs.file "${baseout}/cat-xhtml.xml"
-
+task copyData(dependsOn: ["buildData"]) {
+  def srcpath = null
   doFirst {
-    copy {
-      into "${buildDir}/data/org/xmlresolver"
-      from ("${projectDir}/data/src/data") {
-        exclude "manifest.xml"
+    File databuild = new File("data/build")
+    databuild.listFiles().each { fn ->
+      if (fn.toString().startsWith("data/build/xmlresolverdata")) {
+        if (srcpath != null) {
+          throw new GradleException("More than one version of the data?")
+        }
+        srcpath = fn.toString()
       }
     }
   }
-
-  input "${projectDir}/data/src/data/manifest.xml"
-  output "${buildDir}/data/org/xmlresolver/catalog.xml"
-  stylesheet "${projectDir}/tools/make-catalog.xsl"
+  doLast {
+    if (srcpath == null) {
+      throw new GradleException("No data?")
+    } else {
+      copy {
+        into "${buildDir}/data/org/xmlresolver"
+        from "${projectDir}/${srcpath}"
+      }
+    }
+  }
 }
 
 // ============================================================
@@ -197,7 +198,7 @@ task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
 }
 assemble.dependsOn sourcesJar
 
-task dataJar(type: Jar, dependsOn: ["stageData"]) {
+task dataJar(type: Jar, dependsOn: ["copyData"]) {
   archiveBaseName = "${basename}-${resolverVersion}"
   classifier = 'data'
   from "${buildDir}/data"
