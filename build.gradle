@@ -50,7 +50,7 @@ dependencies {
     files("src/test/resources/data1.jar"),
     files("src/test/resources/data2.jar"),
     files("src/test/resources/data3.jar"),
-    files("src/test/resources/xmlresolver-data.jar")
+    files("${buildDir}/libs/xmlresolver-${resolverVersion}-data.jar")
   )
 }
 
@@ -210,6 +210,8 @@ task dataJar(type: Jar, dependsOn: ["copyData"]) {
   }
 }
 assemble.dependsOn dataJar
+test.dependsOn dataJar
+compileTestJava.dependsOn dataJar
 
 signing {
   sign publishing.publications
