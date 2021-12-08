@@ -5,12 +5,27 @@ import org.junit.Test;
 import org.xmlresolver.cache.ResourceCache;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
+import static org.junit.Assert.fail;
+
 public class FeatureTest {
+    private void knownFeature(ResolverConfiguration config, ResolverFeature<?> feature) {
+        Iterator<ResolverFeature<?>> iter = config.getFeatures();
+        while (iter.hasNext()) {
+            ResolverFeature<?> testFeature = iter.next();
+            if (testFeature == feature) {
+                return;
+            }
+        }
+        System.err.println("Unknown feature: " + feature);
+        fail();
+    }
 
     private void booleanFeature(ResolverFeature<Boolean> feature) {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, feature);
         boolean orig = config.getFeature(feature);
         config.setFeature(feature, false);
         Assert.assertEquals(false, config.getFeature(feature));
@@ -21,6 +36,7 @@ public class FeatureTest {
 
     private void stringFeature(ResolverFeature<String> feature) {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, feature);
         String orig = config.getFeature(feature);
         config.setFeature(feature, "apple pie");
         Assert.assertEquals("apple pie", config.getFeature(feature));
@@ -40,6 +56,7 @@ public class FeatureTest {
     @Test
     public void testFeatureCache() {
         ResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, ResolverFeature.CACHE);
         ResourceCache myCache = new ResourceCache(config);
         ResourceCache orig = config.getFeature(ResolverFeature.CACHE);
         config.setFeature(ResolverFeature.CACHE, myCache);
@@ -60,10 +77,12 @@ public class FeatureTest {
     @Test
     public void testFeatureCatalogAdditions() {
         ResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, ResolverFeature.CATALOG_FILES);
         List<String> origCatalogs = config.getFeature(ResolverFeature.CATALOG_FILES);
         List<String> myCatalogs = Arrays.asList("CatOne", "CatTwo", "CatThree");
         config.setFeature(ResolverFeature.CATALOG_FILES, myCatalogs);
 
+        knownFeature(config, ResolverFeature.CATALOG_ADDITIONS);
         List<String> origAdditional = config.getFeature(ResolverFeature.CATALOG_ADDITIONS);
         List<String> myList = Arrays.asList("One", "Two", "Three");
         config.setFeature(ResolverFeature.CATALOG_ADDITIONS, myList);
@@ -97,6 +116,7 @@ public class FeatureTest {
     @Test
     public void testFeatureCatalogFiles() {
         ResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, ResolverFeature.CATALOG_FILES);
         List<String> orig = config.getFeature(ResolverFeature.CATALOG_FILES);
         List<String> myList = Arrays.asList("One", "Two", "Three");
         config.setFeature(ResolverFeature.CATALOG_FILES, myList);
@@ -146,6 +166,7 @@ public class FeatureTest {
     @Test
     public void testFeatureCatalogManager() {
         ResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, ResolverFeature.CATALOG_MANAGER);
         CatalogManager manager = new CatalogManager(config);
         CatalogManager orig = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         config.setFeature(ResolverFeature.CATALOG_MANAGER, manager);
@@ -157,6 +178,7 @@ public class FeatureTest {
     public void testFeatureClassloader() {
         ClassLoader myLoader = new MyClassLoader();
         ResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, ResolverFeature.CLASSLOADER);
         ClassLoader orig = config.getFeature(ResolverFeature.CLASSLOADER);
         config.setFeature(ResolverFeature.CLASSLOADER, myLoader);
         Assert.assertEquals(myLoader, config.getFeature(ResolverFeature.CLASSLOADER));
