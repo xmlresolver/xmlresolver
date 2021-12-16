@@ -85,6 +85,13 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return resolver.getConfiguration();
     }
 
+    /** Get the underlying {@link CatalogResolver} used by this resolver.
+     * @return The catalog resolver.
+     */
+    public CatalogResolver getCatalogResolver() {
+        return resolver;
+    }
+
     /** Implements the {@link javax.xml.transform.URIResolver} interface. */
     @Override
     public Source resolve(String href, String base) throws TransformerException {
