@@ -135,7 +135,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
             ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL,
             ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER,
-            ResolverFeature.ARCHIVED_CATALOGS};
+            ResolverFeature.ARCHIVED_CATALOGS, ResolverFeature.THROW_URI_EXCEPTIONS};
 
     private static List<String> classpathCatalogList = null;
 
@@ -156,6 +156,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean classpathCatalogs = ResolverFeature.CLASSPATH_CATALOGS.getDefaultValue();
     private ClassLoader classLoader = ResolverFeature.CLASSLOADER.getDefaultValue();
     private Boolean archivedCatalogs = ResolverFeature.ARCHIVED_CATALOGS.getDefaultValue();
+    private Boolean throwUriExceptions = ResolverFeature.THROW_URI_EXCEPTIONS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
 
     /** Construct a default configuration.
@@ -247,6 +248,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         parseRddl = current.parseRddl;
         classpathCatalogs = current.classpathCatalogs;
         archivedCatalogs = current.archivedCatalogs;
+        throwUriExceptions = current.throwUriExceptions;
         showConfigChanges = current.showConfigChanges;
     }
 
@@ -421,6 +423,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Archived catalogs: %s", property);
             archivedCatalogs = isTrue(property);
         }
+
+        property = System.getProperty("xml.catalog.throwUriExceptions");
+        if (property != null) {
+            showConfigChange("Throw URI exceptions: %s", property);
+            throwUriExceptions = isTrue(property);
+        }
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
@@ -551,6 +559,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Archived catalogs: %s", property);
             archivedCatalogs = isTrue(property);
         }
+
+        property = properties.getProperty("throw-uri-exceptions");
+        if (property != null) {
+            showConfigChange("Throw URI exceptions: %s", property);
+            throwUriExceptions = isTrue(property);
+        }
     }
 
     private void showConfig() {
@@ -567,6 +581,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", catalogLoader);
         logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
         logger.log(ResolverLogger.CONFIG, "Archived catalogs: %s", archivedCatalogs);
+        logger.log(ResolverLogger.CONFIG, "Throw URI exceptions: %s", throwUriExceptions);
         logger.log(ResolverLogger.CONFIG, "Class loader: %s", classLoader);
         for (String catalog: catalogs) {
             logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
@@ -731,6 +746,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.ARCHIVED_CATALOGS) {
             archivedCatalogs = (Boolean) value;
             showConfigChange("Archived catalogs: %s", archivedCatalogs);
+        } else if (feature == ResolverFeature.THROW_URI_EXCEPTIONS) {
+            throwUriExceptions = (Boolean) value;
+            showConfigChange("Throw URI exceptions: %s", throwUriExceptions);
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -846,6 +864,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) classLoader;
         } else if (feature == ResolverFeature.ARCHIVED_CATALOGS) {
             return (T) archivedCatalogs;
+        } else if (feature == ResolverFeature.THROW_URI_EXCEPTIONS) {
+            return (T) throwUriExceptions;
         } else {
             logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
             return null;

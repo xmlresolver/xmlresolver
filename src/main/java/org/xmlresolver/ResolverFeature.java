@@ -278,4 +278,16 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> ARCHIVED_CATALOGS = new ResolverFeature<>(
             "http://xmlresolver.org/feature/archived-catalogs", true);
+
+    /**
+     * Allows the resolver to throw exceptions for invalid URIs.
+     *
+     * <p>If enabled, when the resolver attempts to process a URI, if the processing
+     * raises an exception, that exception will be thrown rather than suppressed. For
+     * checked exceptions, such as <code>URISyntaxException</code>, what's thrown will
+     * be a <code>IllegalArgumentException</code> wrapping the underlying exception.</p>
+     */
+    public static final ResolverFeature<Boolean> THROW_URI_EXCEPTIONS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/throw-uri-exceptions", false);
+
 }
