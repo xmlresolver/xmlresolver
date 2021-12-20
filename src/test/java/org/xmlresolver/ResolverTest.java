@@ -22,10 +22,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -69,6 +66,30 @@ public class ResolverTest {
         } catch (IOException | SAXException ex) {
             fail();
         }
+    }
+
+    @Test
+    public void throwUriExceptions() {
+        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+        try {
+            config.setFeature(ResolverFeature.THROW_URI_EXCEPTIONS, false);
+            URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
+            InputSource source = resolver.resolveEntity(null, "blort%gg");
+            assertNull(source);
+        } catch (IOException | SAXException ex) {
+            fail();
+        }
+
+        try {
+            config.setFeature(ResolverFeature.THROW_URI_EXCEPTIONS, true);
+            URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
+            resolver.resolveEntity(null, "blort%gg");
+            fail();
+        } catch (IOException | SAXException | IllegalArgumentException ex) {
+            // pass;
+        }
+
+        config.setFeature(ResolverFeature.THROW_URI_EXCEPTIONS, throwExceptions);
     }
 
     @Test
