@@ -70,12 +70,14 @@ public class CatalogResolver implements ResourceResolver {
      *
      * @param href The URI of the resource
      * @param baseURI The base URI against which <code>href</code> should be made absolute, if necessary.
-     *
-     * @return The resource that represents the URI or null.
+     * @throws IllegalArgumentException if the THROW_URI_EXCEPTIONS feature is true and an exception occurs resolving a URI.
+     * @return The resolved resource or null if no resolution was possible.
      */
     @Override
     public ResolvedResource resolveURI(String href, String baseURI) {
         logger.log(ResolverLogger.REQUEST, "resolveURI: %s (base URI: %s)", href, baseURI);
+
+        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
 
         if (href == null || "".equals(href)) {
             href = baseURI;
@@ -106,6 +108,17 @@ public class CatalogResolver implements ResourceResolver {
                 }
             } catch (URISyntaxException ex) {
                 logger.log(ResolverLogger.ERROR, "URI syntax exception: %s (base URI: %s)", href, baseURI);
+                if (throwExceptions) {
+                    throw new IllegalArgumentException(ex);
+                }
+                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                return null;
+
+            } catch (IllegalArgumentException ex) {
+                logger.log(ResolverLogger.ERROR, "URI argument exception: %s (base URI: %s)", href, baseURI);
+                if (throwExceptions) {
+                    throw ex;
+                }
                 logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
@@ -118,6 +131,16 @@ public class CatalogResolver implements ResourceResolver {
                 return resource(absolute, absuri, cache.cachedUri(absuri));
             } catch (URISyntaxException use) {
                 logger.log(ResolverLogger.ERROR, "URI syntax exception: %s", absolute);
+                if (throwExceptions) {
+                    throw new IllegalArgumentException(use);
+                }
+                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                return null;
+            } catch (IllegalArgumentException ex) {
+                logger.log(ResolverLogger.ERROR, "URI argument exception: %s", absolute);
+                if (throwExceptions) {
+                    throw ex;
+                }
                 logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
@@ -127,6 +150,32 @@ public class CatalogResolver implements ResourceResolver {
         }
     }
 
+    /** Resolve external identifiers and other entity-like resources.
+     *
+     * <p>If the systemId is null and the baseURI is not, the systemId is taken to be the baseURI
+     * and the baseURI is treated as if it were null.
+     *
+     * <p>If name, publicId and systemId are all null, null is returned.</p>
+     *
+     * <p>If systemId or publicId are not null, the method attempts to resolve an external identifier with
+     * the specified external identifier and the (possibly null) name and publicId. (Because public
+     * identifiers can be encoded in URNs, it's possible for this method to receive a publicId and
+     * not a systemId, even in XML systems.)</p>
+     *
+     * <p>If name is not null, but systemId is, name is assumed to be document type name and
+     * the method attempts to resolve an external identifier that matches. A <code>doctype</code> catalog
+     * entry, for example.</p>
+     *
+     * <p>If the systemId is relative, resolution fails, and baseURI is not null, the systemId
+     * is made absolute with respect to the baseURI and resolution is attempted a second time.</p>
+     *
+     * @param name The possibly null entity (or document type) name.
+     * @param publicId The possibly null public identifier.
+     * @param systemId The possibly relative system identifier to resolve.
+     * @param baseURI The possibly null base URI to use if systemId is relative and not resolved.
+     * @throws IllegalArgumentException if the THROW_URI_EXCEPTIONS feature is true and an exception occurs resolving a URI.
+     * @return The resolved resource or null if no resolution was possible.
+     */
     @Override
     public ResolvedResource resolveEntity(String name, String publicId, String systemId, String baseURI) {
         if (name == null && publicId == null && systemId == null && baseURI == null) {
@@ -158,6 +207,8 @@ public class CatalogResolver implements ResourceResolver {
         if (resolved != null) {
             result = resource(systemId, resolved, cache.cachedSystem(resolved, publicId));
         } else {
+            boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+
             try {
                 if (systemId != null) {
                     absSystem = new URI(systemId);
@@ -176,7 +227,17 @@ public class CatalogResolver implements ResourceResolver {
                     }
                 }
             } catch (URISyntaxException ex) {
-                logger.log(ResolverLogger.ERROR, "URI syntax exception: %s (base: %s)", systemId, baseURI);
+                logger.log(ResolverLogger.ERROR, "URI exception: %s (base: %s)", systemId, baseURI);
+                if (throwExceptions) {
+                    throw new IllegalArgumentException(ex);
+                }
+                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                return null;
+            } catch (IllegalArgumentException ex) {
+                logger.log(ResolverLogger.ERROR, "URI exception: %s (base: %s)", systemId, baseURI);
+                if (throwExceptions) {
+                    throw ex;
+                }
                 logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
@@ -201,6 +262,14 @@ public class CatalogResolver implements ResourceResolver {
         return null;
     }
 
+    /**
+     * Resolve a document type from its name.
+     *
+     * <p>Searches the catalog for a DOCTYPE entry with a matching name.</p>
+     * @param name The doctype name.
+     * @param baseURI The base uri. Ignored.
+     * @return The resolved resource or null if no resolution was possible.
+     */
     private ResolvedResource resolveDoctype(String name, String baseURI) {
         logger.log(ResolverLogger.REQUEST, "resolveDoctype: %s", name);
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
@@ -228,20 +297,27 @@ public class CatalogResolver implements ResourceResolver {
      * @param baseURI The base URI of the resource.
      * @param nature The RDDL nature of the resource.
      * @param purpose The RDDL purpose of the resource.
-     *
-     * @return The resource that represents the URI or null.
+     * @throws IllegalArgumentException if the THROW_URI_EXCEPTIONS feature is true and an exception occurs resolving a URI.
+     * @return The resolved resource or null if no resolution was possible.
      */
     @Override
     public ResolvedResource resolveNamespace(String href, String baseURI, String nature, String purpose) {
         logger.log(ResolverLogger.REQUEST, "resolveNamespace: %s (base: %s, nature: %s, purpose: %s)",
                 href, baseURI, nature, purpose);
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
 
         URI absolute = null;
         try {
             absolute = new URI(href);
-        } catch (URISyntaxException use) {
-            // nevermind
+        } catch (URISyntaxException ex) {
+            if (throwExceptions) {
+                throw new IllegalArgumentException(ex);
+            }
+        } catch (IllegalArgumentException ex) {
+            if (throwExceptions) {
+                throw ex;
+            }
         }
 
         URI resolved = catalog.lookupNamespaceURI(href, nature, purpose);
@@ -251,8 +327,14 @@ public class CatalogResolver implements ResourceResolver {
                 // If we can make it absolute, we want it to be absolute from here on out
                 href = absolute.toString();
                 resolved = catalog.lookupNamespaceURI(href, nature, purpose);
-            } catch (URISyntaxException use) {
-                // nevermind
+            } catch (URISyntaxException ex) {
+                if (throwExceptions) {
+                    throw new IllegalArgumentException(ex);
+                }
+            } catch (IllegalArgumentException ex) {
+                if (throwExceptions) {
+                    throw ex;
+                }
             }
         }
 
@@ -274,6 +356,16 @@ public class CatalogResolver implements ResourceResolver {
                     }
                 } catch (URISyntaxException ex) {
                     logger.log(ResolverLogger.ERROR, "URI syntax exception: " + href);
+                    if (throwExceptions) {
+                        throw new IllegalArgumentException(ex);
+                    }
+                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
+                    return null;
+                } catch (IllegalArgumentException ex) {
+                    logger.log(ResolverLogger.ERROR, "URI argument exception: " + href);
+                    if (throwExceptions) {
+                        throw ex;
+                    }
                     logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
                     return null;
                 }
@@ -302,6 +394,7 @@ public class CatalogResolver implements ResourceResolver {
     }
 
     private ResolvedResourceImpl resource(String requestURI, URI responseURI, CacheEntry cached) {
+        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
         try {
             if (cached == null) {
                 return uncachedResource(URIUtils.newURI(requestURI), responseURI);
@@ -312,9 +405,19 @@ public class CatalogResolver implements ResourceResolver {
                 // of the resource, it would get a URI pointing into the cache which would not work.
                 return new ResolvedResourceImpl(responseURI, cached.file.toURI(), fs, cached.contentType());
             }
-        } catch (IOException | URISyntaxException | IllegalArgumentException ex) {
+        } catch (IOException | URISyntaxException ex) {
             // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
             logger.log(ResolverLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
+            if (throwExceptions) {
+                throw new IllegalArgumentException(ex);
+            }
+            return null;
+        } catch (IllegalArgumentException ex) {
+            // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
+            logger.log(ResolverLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
+            if (throwExceptions) {
+                throw ex;
+            }
             return null;
         }
     }
@@ -410,7 +513,7 @@ public class CatalogResolver implements ResourceResolver {
             } else {
                 return null;
             }
-        } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
+        } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException | IllegalArgumentException ex) {
             logger.log(ResolverLogger.ERROR, "RDDL parse failed: %s: %s",
                     uri, ex.getMessage());
             return null;
