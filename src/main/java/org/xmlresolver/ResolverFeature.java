@@ -323,4 +323,26 @@ public class ResolverFeature<T> {
     public static final ResolverFeature<String> DEFAULT_LOGGER_LOG_LEVEL = new ResolverFeature<>(
             "http://xmlresolver.org/feature/default-logger-log-level", "warn");
 
+    /**
+     * Specify the protocols allowed for entity lookup.
+     *
+     * <p>This feature restricts the protocols that are allowed during entity resolution. If an
+     * attempt is made to resolve an entity and the system identifier for that entity uses a protocol
+     * not listed in this feature, the request is rejected. See JAXP 185.</p>
+     * <p>The keyword "all" allows all protocols. An empty list allows none.</p>
+     */
+    public static final ResolverFeature<String> ACCESS_EXTERNAL_ENTITY = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/access-external-entity", "all");
+
+    /**
+     * Specify the protocols allowed for URI lookup.
+     *
+     * <p>This feature restricts the protocols that are allowed during URI resolution. If an
+     * attempt is made to resolve a document and the URI for that document uses a protocol
+     * not listed in this feature, the request is rejected. See JAXP 185.</p>
+     * <p>The keyword "all" allows all protocols. An empty list allows none.</p>
+     */
+    public static final ResolverFeature<String> ACCESS_EXTERNAL_DOCUMENT = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/access-external-document", "all");
+
 }
