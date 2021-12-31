@@ -294,10 +294,17 @@ public class ResolverFeature<T> {
     /**
      * Identifies the resolver logger class.
      *
-     * <p>The {@link org.xmlresolver.logging.DefaultLogger DefaultLogger} class writes log messages
-     * to <code>System.err</code>. The {@link org.xmlresolver.logging.SystemLogger SystemLogger} uses
-     * a logging backend. (You must configure a concrete backend for the logging facade on your
-     * classpath.)</p>
+     * <p>Any class that implements {@link org.xmlresolver.logging.ResolverLogger} can be used.
+     * XML Resolver ships with two implementations:</p>
+     *
+     * <ul>
+     *     <li>The {@link org.xmlresolver.logging.DefaultLogger org.xmlresolver.logging.DefaultLogger} class writes log messages
+     *     to <code>System.err</code>.</li>
+     *     <li>The {@link org.xmlresolver.logging.SystemLogger org.xmlresolver.logging.SystemLogger} class uses
+     *     a logging backend. (You must configure a concrete backend for the logging facade on your
+     *     classpath.)</li>
+     * </ul>
+     *
      */
     public static final ResolverFeature<String> RESOLVER_LOGGER_CLASS = new ResolverFeature<>(
             "http://xmlresolver.org/feature/resolver-logger-class", "org.xmlresolver.logging.DefaultLogger");
@@ -307,8 +314,8 @@ public class ResolverFeature<T> {
      *
      * <p>This feature can get and set an instance of the logger. The logger is usually
      * configured with the <code>RESOLVER_LOGGER_CLASS</code> feature. If the logger
-     * has been configured that way, an attempt to get the <code>RESOLVER_LOGGER</code>
-     * should instantiate the class.</p>
+     * has been configured via <code>RESOLVER_LOGGER_CLASS</code>, an attempt to get the <code>RESOLVER_LOGGER</code>
+     * will instantiate the class (if it hasn't already been instantiated).</p>
      */
     public static final ResolverFeature<ResolverLogger> RESOLVER_LOGGER = new ResolverFeature<>(
             "http://xmlresolver.org/feature/resolver-logger", null);

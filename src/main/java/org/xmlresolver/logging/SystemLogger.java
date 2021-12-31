@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverConfiguration;
-import org.xmlresolver.ResolverFeature;
 
 /**
  * The system logger interfaces to a logging backend via a logging backend.
@@ -32,6 +31,9 @@ public class SystemLogger extends AbstractLogger {
 
     /**
      * Initialize the logger using the default backend.
+     *
+     * <p>The default backend in this case is the one that {@link org.slf4j.LoggerFactory org.slf4j.LoggerFactory}
+     * will find for the <code>org.xmlresolver.Resolver</code> class.</p>
      *
      * <p>This class doesn't actually use the provided resolver configuration, but it's
      * necessary to support the way loggers are instantiated by the configuration.</p>
