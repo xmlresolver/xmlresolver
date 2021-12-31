@@ -6,6 +6,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.cache.CacheEntry;
 import org.xmlresolver.cache.ResourceCache;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,7 +33,7 @@ import java.util.Stack;
  */
 
 public class CatalogResolver implements ResourceResolver {
-    private static final ResolverLogger logger = new ResolverLogger(CatalogResolver.class);
+    private final ResolverLogger logger;
     private XMLResolverConfiguration config = null;
     private ResourceCache cache = null;
 
@@ -51,6 +53,7 @@ public class CatalogResolver implements ResourceResolver {
     public CatalogResolver(XMLResolverConfiguration conf) {
         config = conf;
         cache = conf.getFeature(ResolverFeature.CACHE);
+        logger = conf.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Returns the {@link XMLResolverConfiguration} used by this ResourceResolver.
@@ -75,7 +78,7 @@ public class CatalogResolver implements ResourceResolver {
      */
     @Override
     public ResolvedResource resolveURI(String href, String baseURI) {
-        logger.log(ResolverLogger.REQUEST, "resolveURI: %s (base URI: %s)", href, baseURI);
+        logger.log(AbstractLogger.REQUEST, "resolveURI: %s (base URI: %s)", href, baseURI);
 
         boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
 
@@ -83,7 +86,7 @@ public class CatalogResolver implements ResourceResolver {
             href = baseURI;
             baseURI = null;
             if (href == null || "".equals(href)) {
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
         }
@@ -91,7 +94,7 @@ public class CatalogResolver implements ResourceResolver {
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI resolved = catalog.lookupURI(href);
         if (resolved != null) {
-            logger.log(ResolverLogger.RESPONSE, "resolveURI: %s", resolved);
+            logger.log(AbstractLogger.RESPONSE, "resolveURI: %s", resolved);
             return resource(href, resolved, cache.cachedUri(resolved));
         }
 
@@ -102,24 +105,24 @@ public class CatalogResolver implements ResourceResolver {
                 if (!href.equals(absolute)) {
                     resolved = catalog.lookupURI(absolute);
                     if (resolved != null) {
-                        logger.log(ResolverLogger.RESPONSE, "resolveURI: %s", resolved);
+                        logger.log(AbstractLogger.RESPONSE, "resolveURI: %s", resolved);
                         return resource(absolute, resolved, cache.cachedUri(resolved));
                     }
                 }
             } catch (URISyntaxException ex) {
-                logger.log(ResolverLogger.ERROR, "URI syntax exception: %s (base URI: %s)", href, baseURI);
+                logger.log(AbstractLogger.ERROR, "URI syntax exception: %s (base URI: %s)", href, baseURI);
                 if (throwExceptions) {
                     throw new IllegalArgumentException(ex);
                 }
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
 
             } catch (IllegalArgumentException ex) {
-                logger.log(ResolverLogger.ERROR, "URI argument exception: %s (base URI: %s)", href, baseURI);
+                logger.log(AbstractLogger.ERROR, "URI argument exception: %s (base URI: %s)", href, baseURI);
                 if (throwExceptions) {
                     throw ex;
                 }
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
         }
@@ -127,25 +130,25 @@ public class CatalogResolver implements ResourceResolver {
         if (cache.cacheURI(absolute)) {
             try {
                 URI absuri = new URI(absolute);
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: cached %s", absolute);
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: cached %s", absolute);
                 return resource(absolute, absuri, cache.cachedUri(absuri));
             } catch (URISyntaxException use) {
-                logger.log(ResolverLogger.ERROR, "URI syntax exception: %s", absolute);
+                logger.log(AbstractLogger.ERROR, "URI syntax exception: %s", absolute);
                 if (throwExceptions) {
                     throw new IllegalArgumentException(use);
                 }
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
             } catch (IllegalArgumentException ex) {
-                logger.log(ResolverLogger.ERROR, "URI argument exception: %s", absolute);
+                logger.log(AbstractLogger.ERROR, "URI argument exception: %s", absolute);
                 if (throwExceptions) {
                     throw ex;
                 }
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
         } else {
-            logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+            logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
             return null;
         }
     }
@@ -179,20 +182,20 @@ public class CatalogResolver implements ResourceResolver {
     @Override
     public ResolvedResource resolveEntity(String name, String publicId, String systemId, String baseURI) {
         if (name == null && publicId == null && systemId == null && baseURI == null) {
-            logger.log(ResolverLogger.REQUEST, "resolveEntity: null");
+            logger.log(AbstractLogger.REQUEST, "resolveEntity: null");
             return null;
         }
 
         if (name != null && publicId == null && systemId == null) {
-            logger.log(ResolverLogger.REQUEST, "resolveEntity: name: %s (%s)", name, baseURI);
+            logger.log(AbstractLogger.REQUEST, "resolveEntity: name: %s (%s)", name, baseURI);
             return resolveDoctype(name, baseURI);
         }
 
         if (name != null) {
-            logger.log(ResolverLogger.REQUEST, "resolveEntity: %s %s (baseURI: %s, publicId: %s)",
+            logger.log(AbstractLogger.REQUEST, "resolveEntity: %s %s (baseURI: %s, publicId: %s)",
                     name, systemId, baseURI, publicId);
         } else {
-            logger.log(ResolverLogger.REQUEST, "resolveEntity: %s (baseURI: %s, publicId: %s)",
+            logger.log(AbstractLogger.REQUEST, "resolveEntity: %s (baseURI: %s, publicId: %s)",
                     systemId, baseURI, publicId);
         }
 
@@ -227,38 +230,38 @@ public class CatalogResolver implements ResourceResolver {
                     }
                 }
             } catch (URISyntaxException ex) {
-                logger.log(ResolverLogger.ERROR, "URI exception: %s (base: %s)", systemId, baseURI);
+                logger.log(AbstractLogger.ERROR, "URI exception: %s (base: %s)", systemId, baseURI);
                 if (throwExceptions) {
                     throw new IllegalArgumentException(ex);
                 }
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
             } catch (IllegalArgumentException ex) {
-                logger.log(ResolverLogger.ERROR, "URI exception: %s (base: %s)", systemId, baseURI);
+                logger.log(AbstractLogger.ERROR, "URI exception: %s (base: %s)", systemId, baseURI);
                 if (throwExceptions) {
                     throw ex;
                 }
-                logger.log(ResolverLogger.RESPONSE, "resolveURI: null");
+                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
         }
 
         if (result != null) {
-            logger.log(ResolverLogger.RESPONSE, "resolveEntity: %s", resolved);
+            logger.log(AbstractLogger.RESPONSE, "resolveEntity: %s", resolved);
             return result;
         }
 
         if (absSystem == null) {
-            logger.log(ResolverLogger.RESPONSE, "resolveEntity: null");
+            logger.log(AbstractLogger.RESPONSE, "resolveEntity: null");
             return null;
         }
 
         if (cache.cacheURI(absSystem.toString())) {
-            logger.log(ResolverLogger.RESPONSE, "resolveEntity: cached %s", absSystem);
+            logger.log(AbstractLogger.RESPONSE, "resolveEntity: cached %s", absSystem);
             return resource(absSystem.toString(), absSystem, cache.cachedSystem(absSystem, publicId));
         }
 
-        logger.log(ResolverLogger.RESPONSE, "resolveEntity: null");
+        logger.log(AbstractLogger.RESPONSE, "resolveEntity: null");
         return null;
     }
 
@@ -271,14 +274,14 @@ public class CatalogResolver implements ResourceResolver {
      * @return The resolved resource or null if no resolution was possible.
      */
     private ResolvedResource resolveDoctype(String name, String baseURI) {
-        logger.log(ResolverLogger.REQUEST, "resolveDoctype: %s", name);
+        logger.log(AbstractLogger.REQUEST, "resolveDoctype: %s", name);
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI resolved = catalog.lookupDoctype(name, null, null);
         if (resolved == null) {
-            logger.log(ResolverLogger.RESPONSE, "resolveDoctype: null");
+            logger.log(AbstractLogger.RESPONSE, "resolveDoctype: null");
             return null;
         } else {
-            logger.log(ResolverLogger.RESPONSE, "resolveDoctype: %s", resolved);
+            logger.log(AbstractLogger.RESPONSE, "resolveDoctype: %s", resolved);
             ResolvedResourceImpl result = resource(null, resolved, cache.cachedSystem(resolved, null));
             return result;
         }
@@ -302,7 +305,7 @@ public class CatalogResolver implements ResourceResolver {
      */
     @Override
     public ResolvedResource resolveNamespace(String href, String baseURI, String nature, String purpose) {
-        logger.log(ResolverLogger.REQUEST, "resolveNamespace: %s (base: %s, nature: %s, purpose: %s)",
+        logger.log(AbstractLogger.REQUEST, "resolveNamespace: %s (base: %s, nature: %s, purpose: %s)",
                 href, baseURI, nature, purpose);
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
@@ -355,18 +358,18 @@ public class CatalogResolver implements ResourceResolver {
                         rddl = checkRddl(URIUtils.newURI(href), nature, purpose, null);
                     }
                 } catch (URISyntaxException ex) {
-                    logger.log(ResolverLogger.ERROR, "URI syntax exception: " + href);
+                    logger.log(AbstractLogger.ERROR, "URI syntax exception: " + href);
                     if (throwExceptions) {
                         throw new IllegalArgumentException(ex);
                     }
-                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
+                    logger.log(AbstractLogger.RESPONSE, "resolveNamespace: null");
                     return null;
                 } catch (IllegalArgumentException ex) {
-                    logger.log(ResolverLogger.ERROR, "URI argument exception: " + href);
+                    logger.log(AbstractLogger.ERROR, "URI argument exception: " + href);
                     if (throwExceptions) {
                         throw ex;
                     }
-                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
+                    logger.log(AbstractLogger.RESPONSE, "resolveNamespace: null");
                     return null;
                 }
             }
@@ -374,21 +377,21 @@ public class CatalogResolver implements ResourceResolver {
             if (rddl != null) {
                 ResolvedResource local = resolveURI(rddl.toString(), href);
                 if (local != null) {
-                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", local.getLocalURI());
+                    logger.log(AbstractLogger.RESPONSE, "resolveNamespace: %s", local.getLocalURI());
                     return local;
                 } else {
-                    logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", rddl);
+                    logger.log(AbstractLogger.RESPONSE, "resolveNamespace: %s", rddl);
                     return resource(href, rddl, cached);
                 }
             }
         }
 
         if (resolved != null) {
-            logger.log(ResolverLogger.RESPONSE, "resolveNamespace: %s", resolved);
+            logger.log(AbstractLogger.RESPONSE, "resolveNamespace: %s", resolved);
             return resource(absolute == null ? null : absolute.toString(),
                     resolved, cache.cachedNamespaceUri(resolved, nature, purpose));
         } else {
-            logger.log(ResolverLogger.RESPONSE, "resolveNamespace: null");
+            logger.log(AbstractLogger.RESPONSE, "resolveNamespace: null");
             return null;
         }
     }
@@ -407,14 +410,14 @@ public class CatalogResolver implements ResourceResolver {
             }
         } catch (IOException | URISyntaxException ex) {
             // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
-            logger.log(ResolverLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
+            logger.log(AbstractLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
             if (throwExceptions) {
                 throw new IllegalArgumentException(ex);
             }
             return null;
         } catch (IllegalArgumentException ex) {
             // IllegalArgumentException occurs if the (unresolved) URI is not absolute, for example.
-            logger.log(ResolverLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
+            logger.log(AbstractLogger.ERROR, "Resolution failed: %s: %s", responseURI, ex.getMessage());
             if (throwExceptions) {
                 throw ex;
             }
@@ -514,7 +517,7 @@ public class CatalogResolver implements ResourceResolver {
                 return null;
             }
         } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException | IllegalArgumentException ex) {
-            logger.log(ResolverLogger.ERROR, "RDDL parse failed: %s: %s",
+            logger.log(AbstractLogger.ERROR, "RDDL parse failed: %s: %s",
                     uri, ex.getMessage());
             return null;
         }

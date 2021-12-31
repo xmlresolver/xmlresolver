@@ -9,8 +9,6 @@
 
 package org.xmlresolver.utils;
 
-import org.xmlresolver.ResolverLogger;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -20,8 +18,6 @@ import java.nio.charset.StandardCharsets;
  * @author ndw
  */
 public abstract class URIUtils {
-    protected static ResolverLogger logger = new ResolverLogger(URIUtils.class);
-
     /**
      * Creates a URI for the users current working directory.
      *
@@ -39,7 +35,6 @@ public abstract class URIUtils {
         try {
             return URIUtils.newURI(dir);
         } catch (URISyntaxException ex) {
-            logger.log(ResolverLogger.WARNING, "Failed to create URI from user.dir: %s", dir);
             return URI.create("file:///"); // ¯\_(ツ)_/¯
         }
     }

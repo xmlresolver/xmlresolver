@@ -10,6 +10,8 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 public class ResourceConnection {
-    private static final ResolverLogger logger = new ResolverLogger(ResourceConnection.class);
-
     private InputStream stream = null;
     private URI uri = null;
     private URI redirect = null;
@@ -40,11 +40,11 @@ public class ResourceConnection {
     // ResourceConnection logic in multiple places. To check properties, I only
     // want to make a HEAD request, so ...
 
-    public ResourceConnection(String resolved) {
-        this(resolved, false);
+    public ResourceConnection(ResolverConfiguration config, String resolved) {
+        this(config, resolved, false);
     }
 
-    public ResourceConnection(String resolved, boolean headOnly) {
+    public ResourceConnection(ResolverConfiguration config, String resolved, boolean headOnly) {
         try {
             uri = org.xmlresolver.utils.URIUtils.newURI(resolved);
             URL url = uri.toURL();
@@ -123,7 +123,8 @@ public class ResourceConnection {
                 }
             }
         } catch (URISyntaxException | IOException | IllegalArgumentException use) {
-            logger.log(ResolverLogger.WARNING, "Failed to %s: %s: %s", headOnly ? "HEAD" : "GET", resolved, use.getMessage());
+            ResolverLogger logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+            logger.log(AbstractLogger.WARNING, "Failed to %s: %s: %s", headOnly ? "HEAD" : "GET", resolved, use.getMessage());
         }
     }
 

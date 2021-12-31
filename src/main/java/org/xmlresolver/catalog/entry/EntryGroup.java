@@ -1,13 +1,14 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.ResolverConfiguration;
+
 import java.net.URI;
 
 public class EntryGroup extends Entry {
     public final boolean preferPublic;
 
-    public EntryGroup(URI baseURI, String id, boolean prefer) {
-        super(baseURI, id);
-        // FIXME: warn if prefer is neither public nor system
+    public EntryGroup(ResolverConfiguration config, URI baseURI, String id, boolean prefer) {
+        super(config, baseURI, id);
         this.preferPublic = prefer;
     }
 

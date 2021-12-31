@@ -1,5 +1,6 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
@@ -9,8 +10,8 @@ public class EntryDelegatePublic extends Entry {
     public final String publicIdStart;
     public final URI catalog;
 
-    public EntryDelegatePublic(URI baseURI, String id, String start, String catalog, boolean prefer) {
-        super(baseURI, id);
+    public EntryDelegatePublic(ResolverConfiguration config, URI baseURI, String id, String start, String catalog, boolean prefer) {
+        super(config, baseURI, id);
         this.publicIdStart = start;
         this.catalog = URIUtils.resolve(baseURI, catalog);
 

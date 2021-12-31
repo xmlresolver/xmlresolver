@@ -7,13 +7,12 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xmlresolver.CatalogManager;
-import org.xmlresolver.Resolver;
-import org.xmlresolver.ResolverLogger;
-import org.xmlresolver.Resource;
+import org.xmlresolver.*;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.exceptions.CatalogInvalidException;
 import org.xmlresolver.exceptions.CatalogUnavailableException;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,13 +33,17 @@ import java.util.HashMap;
  * well-formed XML, or is not valid according to the XML Catalogs 1.1 schema.
  */
 public class ValidatingXmlLoader implements CatalogLoader {
-    protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
+    protected final ResolverConfiguration config;
+    protected final ResolverLogger logger;
     protected final HashMap<URI, EntryCatalog> catalogMap;
     private final Resolver resolver;
     private final XmlLoader underlyingLoader;
 
-    public ValidatingXmlLoader() {
-        underlyingLoader = new XmlLoader();
+    public ValidatingXmlLoader(ResolverConfiguration config) {
+        this.config = config;
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+
+        underlyingLoader = new XmlLoader(config);
         resolver = XmlLoader.getLoaderResolver();
         catalogMap = new HashMap<>();
     }
@@ -65,12 +68,12 @@ public class ValidatingXmlLoader implements CatalogLoader {
             return loadCatalog(catalog, source);
         } catch (FileNotFoundException fex) {
             // Throwing an exception for a simple file not found error seems a little too aggressive
-            logger.log(ResolverLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
+            logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
+            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
             return catalogMap.get(catalog);
         } catch (IOException | URISyntaxException ex) {
-            logger.log(ResolverLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(catalog, null, false));
+            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
             throw new CatalogUnavailableException(ex.getMessage());
         }
     }
@@ -112,7 +115,7 @@ public class ValidatingXmlLoader implements CatalogLoader {
                 source.setCharacterStream(new CharArrayReader(caw.toCharArray()));
             }
 
-            MyErrorHandler errorHandler = new MyErrorHandler();
+            MyErrorHandler errorHandler = new MyErrorHandler(config);
             PropertyMapBuilder builder = new PropertyMapBuilder();
             builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
             builder.put(ValidateProperty.ENTITY_RESOLVER, resolver);
@@ -172,15 +175,22 @@ public class ValidatingXmlLoader implements CatalogLoader {
     }
 
     private static class MyErrorHandler implements ErrorHandler {
+        private final ResolverConfiguration config;
+        private final ResolverLogger logger;
         private String firstError = null;
         private String firstWarning = null;
+
+        public MyErrorHandler(ResolverConfiguration config) {
+            this.config = config;
+            logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+        }
 
         @Override
         public void warning(SAXParseException exception) throws SAXException {
             if (firstWarning == null) {
                 firstWarning = exception.getMessage();
             }
-            logger.log(ResolverLogger.WARNING, exception.getMessage());
+            logger.log(AbstractLogger.WARNING, exception.getMessage());
         }
 
         @Override
@@ -188,13 +198,13 @@ public class ValidatingXmlLoader implements CatalogLoader {
             if (firstError == null) {
                 firstError = exception.getMessage();
             }
-            logger.log(ResolverLogger.ERROR, exception.getMessage());
+            logger.log(AbstractLogger.ERROR, exception.getMessage());
         }
 
         @Override
         public void fatalError(SAXParseException exception) throws SAXException {
             firstError = exception.getMessage();
-            logger.log(ResolverLogger.ERROR, exception.getMessage());
+            logger.log(AbstractLogger.ERROR, exception.getMessage());
         }
 
         public String getMessage() {

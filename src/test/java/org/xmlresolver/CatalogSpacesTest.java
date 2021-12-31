@@ -26,7 +26,7 @@ public class CatalogSpacesTest {
         resolver = new Resolver(config);
 
         // Make sure the Docker container is running where we expect.
-        ResourceConnection conn = new ResourceConnection("http://localhost:8222/docs/sample/sample.dtd", true);
+        ResourceConnection conn = new ResourceConnection(config, "http://localhost:8222/docs/sample/sample.dtd", true);
         Assert.assertEquals(200, conn.getStatusCode());
     }
 

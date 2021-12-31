@@ -1,12 +1,13 @@
 package org.xmlresolver.cache;
 
+import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.ResolverConstants;
-import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryPublic;
 import org.xmlresolver.catalog.entry.EntrySystem;
 import org.xmlresolver.catalog.entry.EntryUri;
+import org.xmlresolver.logging.AbstractLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,8 +27,8 @@ public class CacheEntryCatalog extends EntryCatalog {
     public final ArrayList<CacheEntry> cached = new ArrayList<>();
     private final URI baseURI;
 
-    public CacheEntryCatalog(URI baseURI, String id, boolean prefer) {
-        super(baseURI, id, prefer);
+    public CacheEntryCatalog(ResolverConfiguration config, URI baseURI, String id, boolean prefer) {
+        super(config, baseURI, id, prefer);
         this.baseURI = baseURI;
     }
 
@@ -77,13 +78,13 @@ public class CacheEntryCatalog extends EntryCatalog {
         sb.append(":");
         Formatter formatter = new Formatter(sb);
         formatter.format(message, params);
-        logger.log(ResolverLogger.CACHE, sb.toString());
+        logger.log(AbstractLogger.CACHE, sb.toString());
     }
 
     protected EntryUri addUri(URI baseURI, String name, String uri, String nature, String purpose, long timestamp) {
         EntryUri entry = null;
         if (name != null && uri != null) {
-            entry = new EntryUri(baseURI, null, name, uri, nature, purpose);
+            entry = new EntryUri(config, baseURI, null, name, uri, nature, purpose);
             add(entry, timestamp);
         } else {
             error("Invalid uri entry (missing name or uri attribute)");
@@ -95,7 +96,7 @@ public class CacheEntryCatalog extends EntryCatalog {
     protected EntryPublic addPublic(URI baseURI, String publicId, String uri, long timestamp) {
         EntryPublic entry = null;
         if (publicId != null && uri != null) {
-            entry = new EntryPublic(baseURI, null, publicId, uri, true);
+            entry = new EntryPublic(config, baseURI, null, publicId, uri, true);
             add(entry, timestamp);
         } else {
             error("Invalid public entry (missing publicId or uri attribute)");
@@ -106,7 +107,7 @@ public class CacheEntryCatalog extends EntryCatalog {
     protected EntrySystem addSystem(URI baseURI, String systemId, String uri, long timestamp) {
         EntrySystem entry = null;
         if (systemId != null && uri != null) {
-            entry = new EntrySystem(baseURI, null, systemId, uri);
+            entry = new EntrySystem(config, baseURI, null, systemId, uri);
             add(entry, timestamp);
         } else {
             error("Invalid system entry (missing systemId or uri attribute)");
@@ -191,7 +192,7 @@ public class CacheEntryCatalog extends EntryCatalog {
                 }
                 newTypedEntries.get(entry.entry.getType()).add(entry.entry);
             } else {
-                logger.log(ResolverLogger.CACHE, "Expiring %s (%s)", entry.file.getAbsolutePath(), entry.uri);
+                logger.log(AbstractLogger.CACHE, "Expiring %s (%s)", entry.file.getAbsolutePath(), entry.uri);
                 entry.expired = true;
                 File entryFile = new File(entry.entry.baseURI);
                 Path source = entryFile.toPath();
@@ -199,7 +200,7 @@ public class CacheEntryCatalog extends EntryCatalog {
                 try {
                     Files.move(source, target, REPLACE_EXISTING);
                 } catch (IOException ex) {
-                    logger.log(ResolverLogger.ERROR, "Attempt to expire cache entry failed: %s: %s",
+                    logger.log(AbstractLogger.ERROR, "Attempt to expire cache entry failed: %s: %s",
                             entry.file.getAbsolutePath(), ex.getMessage());
                 }
             }

@@ -16,8 +16,9 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.Resolver;
-import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.XMLResolverConfiguration;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.URIUtils;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ import java.net.URISyntaxException;
  * @author ndw
  */
 public class ResolvingXMLFilter extends XMLFilterImpl {
-    protected static ResolverLogger logger = new ResolverLogger(ResolvingXMLFilter.class);
+    protected final ResolverLogger logger;
 
     /** Are oasis-xml-catalog PIs allowed by this catalog? */
     private boolean allowXMLCatalogPI = true;
@@ -56,6 +57,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
         }
         resolver = staticResolver;
         allowXMLCatalogPI = resolver.getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
+        logger = resolver.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Construct an XML filter with the specified resolver.
@@ -66,6 +68,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
         super();
         this.resolver = resolver;
         allowXMLCatalogPI = resolver.getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
+        logger = resolver.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Construct an XML filter with the specified parent and resolver.
@@ -76,6 +79,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     public ResolvingXMLFilter(XMLReader parent, Resolver resolver) {
         super(parent);
         this.resolver = resolver;
+        logger = resolver.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /**
@@ -212,7 +216,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
 
                             resolver.getConfiguration().addCatalog(catalog.toString());
                         } catch (URISyntaxException mue) {
-                            logger.log(ResolverLogger.WARNING, "URI syntax exception resolving PI catalog: %s", data);
+                            logger.log(AbstractLogger.WARNING, "URI syntax exception resolving PI catalog: %s", data);
                         }
                     }
                 }

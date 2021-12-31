@@ -1,10 +1,12 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.ResolverConfiguration;
+
 import java.net.URI;
 
 public class EntryDocument extends EntryResource {
-    public EntryDocument(URI baseURI, String id, String uri) {
-        super(baseURI, id, uri);
+    public EntryDocument(ResolverConfiguration config, URI baseURI, String id, String uri) {
+        super(config, baseURI, id, uri);
     }
 
     @Override

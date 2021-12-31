@@ -1,5 +1,6 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
@@ -8,8 +9,8 @@ import java.net.URI;
 public abstract class EntryResource extends Entry {
     public final URI uri;
 
-    public EntryResource(URI baseURI, String id, String uri) {
-        super(baseURI, id);
+    public EntryResource(ResolverConfiguration config, URI baseURI, String id, String uri) {
+        super(config, baseURI, id);
         this.uri = URIUtils.resolve(baseURI, uri);
     }
 }

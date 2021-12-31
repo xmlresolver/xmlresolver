@@ -1,15 +1,12 @@
 package org.xmlresolver.catalog.query;
 
 import org.xmlresolver.CatalogManager;
-import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 
 import java.net.URI;
 import java.util.ArrayList;
 
 public abstract class QueryCatalog extends QueryResult {
-    protected static ResolverLogger logger = new ResolverLogger(QueryCatalog.class);
-
     public QueryCatalog() {
         super();
     }
