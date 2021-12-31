@@ -17,11 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLDecoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Stack;
@@ -91,6 +87,18 @@ public class CatalogResolver implements ResourceResolver {
             }
         }
 
+        try {
+            URI uri = new URI(href);
+            if (uri.isAbsolute()) {
+                if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), href)) {
+                    logger.log(AbstractLogger.REQUEST, "resolveURI (access denied): null");
+                    return null;
+                }
+            }
+        } catch (URISyntaxException ex) {
+            // nevermind
+        }
+
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI resolved = catalog.lookupURI(href);
         if (resolved != null) {
@@ -103,6 +111,10 @@ public class CatalogResolver implements ResourceResolver {
             try {
                 absolute = new URI(baseURI).resolve(href).toString();
                 if (!href.equals(absolute)) {
+                    if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), absolute)) {
+                        logger.log(AbstractLogger.REQUEST, "resolveURI (access denied): null");
+                        return null;
+                    }
                     resolved = catalog.lookupURI(absolute);
                     if (resolved != null) {
                         logger.log(AbstractLogger.RESPONSE, "resolveURI: %s", resolved);
@@ -186,6 +198,20 @@ public class CatalogResolver implements ResourceResolver {
             return null;
         }
 
+        if (systemId != null) {
+            try {
+                URI uri = new URI(systemId);
+                if (uri.isAbsolute()) {
+                    if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY), systemId)) {
+                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): null");
+                        return null;
+                    }
+                }
+            } catch (URISyntaxException ex) {
+                // nevermind
+            }
+        }
+
         if (name != null && publicId == null && systemId == null) {
             logger.log(AbstractLogger.REQUEST, "resolveEntity: name: %s (%s)", name, baseURI);
             return resolveDoctype(name, baseURI);
@@ -221,6 +247,12 @@ public class CatalogResolver implements ResourceResolver {
                     if (systemId != null) {
                         absSystem = absSystem.resolve(systemId);
                     }
+
+                    if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY), absSystem.toString())) {
+                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): null");
+                        return null;
+                    }
+
                     resolved = catalog.lookupEntity(name, absSystem.toString(), publicId);
                     if (resolved == null && config.getFeature(ResolverFeature.URI_FOR_SYSTEM)) {
                         resolved = catalog.lookupURI(absSystem.toString());
@@ -274,7 +306,23 @@ public class CatalogResolver implements ResourceResolver {
      * @return The resolved resource or null if no resolution was possible.
      */
     private ResolvedResource resolveDoctype(String name, String baseURI) {
-        logger.log(AbstractLogger.REQUEST, "resolveDoctype: %s", name);
+        if (baseURI == null) {
+            logger.log(AbstractLogger.REQUEST, "resolveDoctype: %s", name);
+        } else {
+            logger.log(AbstractLogger.REQUEST, "resolveDoctype: %s (%s)", name, baseURI);
+            try {
+                URI uri = new URI(baseURI);
+                if (uri.isAbsolute()) {
+                    if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY), baseURI)) {
+                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): null");
+                        return null;
+                    }
+                }
+            } catch (URISyntaxException ex) {
+                // nevermind
+            }
+        }
+
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI resolved = catalog.lookupDoctype(name, null, null);
         if (resolved == null) {
@@ -313,6 +361,12 @@ public class CatalogResolver implements ResourceResolver {
         URI absolute = null;
         try {
             absolute = new URI(href);
+            if (absolute.isAbsolute()) {
+                if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), href)) {
+                    logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): null");
+                    return null;
+                }
+            }
         } catch (URISyntaxException ex) {
             if (throwExceptions) {
                 throw new IllegalArgumentException(ex);
@@ -329,6 +383,14 @@ public class CatalogResolver implements ResourceResolver {
                 absolute = new URI(baseURI).resolve(href);
                 // If we can make it absolute, we want it to be absolute from here on out
                 href = absolute.toString();
+
+                if (absolute.isAbsolute()) {
+                    if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), href)) {
+                        logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): null");
+                        return null;
+                    }
+                }
+
                 resolved = catalog.lookupNamespaceURI(href, nature, purpose);
             } catch (URISyntaxException ex) {
                 if (throwExceptions) {
@@ -394,6 +456,50 @@ public class CatalogResolver implements ResourceResolver {
             logger.log(AbstractLogger.RESPONSE, "resolveNamespace: null");
             return null;
         }
+    }
+
+    private boolean forbidAccess(String allowed, String uri) {
+        if (allowed == null || "".equals(allowed.trim())) {
+            return true;
+        }
+
+        if ("all".equals(allowed.trim())) {
+            return false;
+        }
+
+        boolean sawHttp = false;
+        boolean sawHttps = false;
+
+        // Ok, that's the easy cases taken care of. Let's do the hard work.
+        uri = uri.toLowerCase();
+        for (String value : allowed.split(",")) {
+            String protocol = value.trim().toLowerCase();
+
+            if ("all".equals(protocol)) {
+                return false;
+            }
+
+            if (!protocol.endsWith(":")) {
+                protocol += ":";
+            }
+
+            sawHttp = sawHttp || "http:".equals(protocol);
+            sawHttps = sawHttps || "https:".equals(protocol);
+            if (uri.startsWith(protocol)) {
+                return false;
+            }
+        }
+
+        if (config.getFeature(ResolverFeature.MERGE_HTTPS)) {
+            if (sawHttp && !sawHttps && uri.startsWith("https:")) {
+                return false;
+            }
+            if (sawHttps && !sawHttp && uri.startsWith("http:")) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private ResolvedResourceImpl resource(String requestURI, URI responseURI, CacheEntry cached) {

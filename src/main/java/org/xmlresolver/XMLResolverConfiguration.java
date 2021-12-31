@@ -15,14 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Configures an XML resolver.
@@ -48,6 +41,16 @@ import java.util.StringTokenizer;
  * </tr>
  * </thead>
  * <tbody>
+ * <tr><th>{@link ResolverFeature#ACCESS_EXTERNAL_DOCUMENT}</th>
+ * <td>xml.catalog.accessExternalDocument</td>
+ * <td>access-external-document</td>
+ * <td>String</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#ACCESS_EXTERNAL_ENTITY}</th>
+ * <td>xml.catalog.accessExternalEntity</td>
+ * <td>access-external-entity</td>
+ * <td>String</td>
+ * </tr>
  * <tr><th>{@link ResolverFeature#ALLOW_CATALOG_PI}</th>
  * <td>xml.catalog.allowPI</td>
  * <td>allow-oasis-xml-catalog-pi</td>
@@ -156,7 +159,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER,
             ResolverFeature.ARCHIVED_CATALOGS, ResolverFeature.THROW_URI_EXCEPTIONS,
             ResolverFeature.RESOLVER_LOGGER_CLASS, ResolverFeature.RESOLVER_LOGGER,
-            ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL};
+            ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL,
+            ResolverFeature.ACCESS_EXTERNAL_ENTITY, ResolverFeature.ACCESS_EXTERNAL_DOCUMENT};
 
     private static List<String> classpathCatalogList = null;
 
@@ -181,6 +185,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
     private String resolverLoggerClass = ResolverFeature.RESOLVER_LOGGER_CLASS.getDefaultValue();
     private String defaultLoggerLogLevel = ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL.getDefaultValue();
+    private String accessExternalEntity = ResolverFeature.ACCESS_EXTERNAL_ENTITY.getDefaultValue();
+    private String accessExternalDocument = ResolverFeature.ACCESS_EXTERNAL_DOCUMENT.getDefaultValue();
     private ResolverLogger resolverLogger = null;
 
     /** Construct a default configuration.
@@ -288,6 +294,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         resolverLoggerClass = current.resolverLoggerClass;
         resolverLogger = current.resolverLogger;
         defaultLoggerLogLevel = current.defaultLoggerLogLevel;
+        accessExternalEntity = current.accessExternalEntity;
+        accessExternalDocument = current.accessExternalDocument;
     }
 
     private void loadConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
@@ -479,6 +487,18 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Default logger log level: %s", property);
             defaultLoggerLogLevel = property;
         }
+
+        property = System.getProperty("xml.catalog.accessExternalEntity");
+        if (property != null) {
+            showConfigChange("Access external entity: %s", property);
+            accessExternalEntity = property;
+        }
+
+        property = System.getProperty("xml.catalog.accessExternalDocument");
+        if (property != null) {
+            showConfigChange("Access external document: %s", property);
+            accessExternalDocument = property;
+        }
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
@@ -628,6 +648,17 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             defaultLoggerLogLevel = property;
         }
 
+        property = properties.getProperty("access-external-entity");
+        if (property != null) {
+            showConfigChange("Access external entity: %s", property);
+            accessExternalEntity = property;
+        }
+
+        property = properties.getProperty("access-external-document");
+        if (property != null) {
+            showConfigChange("Access external document: %s", property);
+            accessExternalDocument = property;
+        }
     }
 
     private void showConfig() {
@@ -647,6 +678,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         resolverLogger.log(AbstractLogger.CONFIG, "Throw URI exceptions: %s", throwUriExceptions);
         resolverLogger.log(AbstractLogger.CONFIG, "Class loader: %s", classLoader);
         resolverLogger.log(AbstractLogger.CONFIG, "Logger class: %s", resolverLoggerClass);
+        resolverLogger.log(AbstractLogger.CONFIG, "Access external entity: %s", accessExternalEntity);
+        resolverLogger.log(AbstractLogger.CONFIG, "Access external document: %s", accessExternalDocument);
+
         resolverLogger.log(AbstractLogger.CONFIG, "Default logger log level: %s", defaultLoggerLogLevel);
         for (String catalog: catalogs) {
             resolverLogger.log(AbstractLogger.CONFIG, "Catalog: %s", catalog);
@@ -826,6 +860,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.RESOLVER_LOGGER) {
             resolverLogger = (ResolverLogger) value;
             showConfigChange("Resolver logger: %s", resolverLogger);
+        } else if (feature == ResolverFeature.ACCESS_EXTERNAL_ENTITY) {
+            accessExternalEntity = (String) value;
+            showConfigChange("Access external entity: %s", accessExternalEntity);
+        } else if (feature == ResolverFeature.ACCESS_EXTERNAL_DOCUMENT) {
+            accessExternalDocument = (String) value;
+            showConfigChange("Access external document: %s", accessExternalDocument);
         } else {
             resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -959,6 +999,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 }
             }
             return (T) resolverLogger;
+        } else if (feature == ResolverFeature.ACCESS_EXTERNAL_ENTITY) {
+            return (T) accessExternalEntity;
+        } else if (feature == ResolverFeature.ACCESS_EXTERNAL_DOCUMENT) {
+            return (T) accessExternalDocument;
         } else {
             resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
             return null;
