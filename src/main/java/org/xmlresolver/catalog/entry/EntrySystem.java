@@ -1,12 +1,14 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.ResolverConfiguration;
+
 import java.net.URI;
 
 public class EntrySystem extends EntryResource {
     public final String systemId;
 
-    public EntrySystem(URI baseURI, String id, String systemId, String uri) {
-        super(baseURI, id, uri);
+    public EntrySystem(ResolverConfiguration config, URI baseURI, String id, String systemId, String uri) {
+        super(config, baseURI, id, uri);
 
         if (systemId.startsWith("classpath:/")) {
             // classpath:/path/to/thing is the same as classpath:path/to/thing

@@ -10,6 +10,8 @@ import org.xmlresolver.catalog.query.QueryPublic;
 import org.xmlresolver.catalog.query.QuerySystem;
 import org.xmlresolver.catalog.query.QueryUri;
 import org.xmlresolver.loaders.CatalogLoader;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.PublicId;
 import org.xmlresolver.utils.URIUtils;
 
@@ -41,7 +43,7 @@ import java.util.List;
  */
 
 public class CatalogManager implements XMLCatalogResolver {
-    protected static ResolverLogger logger = new ResolverLogger(CatalogManager.class);
+    protected final ResolverLogger logger;
     protected final ResolverConfiguration resolverConfiguration;
     protected CatalogLoader catalogLoader;
 
@@ -57,14 +59,15 @@ public class CatalogManager implements XMLCatalogResolver {
         }
         try {
             Class<?> loaderClass = Class.forName(loaderClassName);
-            Constructor<?> constructor = loaderClass.getConstructor();
-            catalogLoader = (CatalogLoader) constructor.newInstance();
+            Constructor<?> constructor = loaderClass.getConstructor(ResolverConfiguration.class);
+            catalogLoader = (CatalogLoader) constructor.newInstance(config);
         } catch (ClassNotFoundException|NoSuchMethodException|InstantiationException
                  |IllegalAccessException| InvocationTargetException ex) {
             throw new IllegalArgumentException("Failed to instantiate catalog loader: " + loaderClassName + ": " + ex.getMessage());
         }
         catalogLoader.setPreferPublic(config.getFeature(ResolverFeature.PREFER_PUBLIC));
         catalogLoader.setArchivedCatalogs(config.getFeature(ResolverFeature.ARCHIVED_CATALOGS));
+        logger = resolverConfiguration.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Constructs a catalog manager from the current one and a configuration.
@@ -78,6 +81,7 @@ public class CatalogManager implements XMLCatalogResolver {
     protected CatalogManager(CatalogManager current, ResolverConfiguration newConfig) {
         catalogLoader = current.catalogLoader;
         resolverConfiguration = newConfig;
+        logger = resolverConfiguration.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     public ResolverConfiguration getResolverConfiguration() {
@@ -276,7 +280,7 @@ public class CatalogManager implements XMLCatalogResolver {
         }
     }
 
-    private static ExternalIdentifiers normalizeExternalIdentifiers(String systemId, String publicId) {
+    private ExternalIdentifiers normalizeExternalIdentifiers(String systemId, String publicId) {
         if (systemId != null) {
             systemId = URIUtils.normalizeURI(systemId);
         }
@@ -288,7 +292,7 @@ public class CatalogManager implements XMLCatalogResolver {
         if (systemId != null && systemId.startsWith("urn:publicid:")) {
             String decodedSysId = PublicId.decodeURN(systemId);
             if (publicId != null && !publicId.equals(decodedSysId)) {
-                logger.log(ResolverLogger.ERROR, "urn:publicid: system identifier differs from public identifier; using public identifier");
+                logger.log(AbstractLogger.ERROR, "urn:publicid: system identifier differs from public identifier; using public identifier");
             } else {
                 publicId = decodedSysId;
             }

@@ -2,10 +2,14 @@ package org.xmlresolver;
 
 import org.xml.sax.InputSource;
 import org.xmlresolver.cache.ResourceCache;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.URIUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -49,6 +53,11 @@ import java.util.StringTokenizer;
  * <td>allow-oasis-xml-catalog-pi</td>
  * <td>Boolean¹</td>
  * </tr>
+ * <tr><th>{@link ResolverFeature#ARCHIVED_CATALOGS}</th>
+ * <td>xml.catalog.archivedCatalogs</td>
+ * <td>archived-catalogs</td>
+ * <td>Boolean¹</td>
+ * </tr>
  * <tr><th>{@link ResolverFeature#CACHE_DIRECTORY}</th>
  * <td>xml.catalog.cache</td>
  * <td>cache</td>
@@ -76,6 +85,11 @@ import java.util.StringTokenizer;
  * </tr>
  * <tr><th>{@link ResolverFeature#CLASSPATH_CATALOGS}</th>
  * <td>xml.catalog.classpathCatalogs</td>
+ * <td>default-logger-log-level</td>
+ * <td>String</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#DEFAULT_LOGGER_LOG_LEVEL}</th>
+ * <td>xml.catalog.defaultLoggerLogLevel</td>
  * <td>classpath-catalogs</td>
  * <td>Boolean¹</td>
  * </tr>
@@ -104,6 +118,11 @@ import java.util.StringTokenizer;
  * <td>prefer</td>
  * <td>“<code>public</code>” or “<code>system</code>”³</td>
  * </tr>
+ * <tr><th>{@link ResolverFeature#RESOLVER_LOGGER_CLASS}</th>
+ * <td>xml.catalog.resolverLoggerClass</td>
+ * <td>resolver-logger-class</td>
+ * <td>String</td>
+ * </tr>
  * <tr><th>{@link ResolverFeature#URI_FOR_SYSTEM}</th>
  * <td>xml.catalog.uriForSystem</td>
  * <td>uri-for-system</td>
@@ -123,10 +142,10 @@ import java.util.StringTokenizer;
  * </tr>
  * </tfoot>
  * </table>
+ * <p>Several additional features can only be set to objects at runtime and have no corresponding properties.</p>
  */
 
 public class XMLResolverConfiguration implements ResolverConfiguration {
-    private static final ResolverLogger logger = new ResolverLogger(XMLResolverConfiguration.class);
     private static final ResolverFeature<?>[] knownFeatures = { ResolverFeature.CATALOG_FILES,
             ResolverFeature.PREFER_PUBLIC, ResolverFeature.PREFER_PROPERTY_FILE,
             ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.CATALOG_ADDITIONS,
@@ -135,7 +154,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
             ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL,
             ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER,
-            ResolverFeature.ARCHIVED_CATALOGS, ResolverFeature.THROW_URI_EXCEPTIONS};
+            ResolverFeature.ARCHIVED_CATALOGS, ResolverFeature.THROW_URI_EXCEPTIONS,
+            ResolverFeature.RESOLVER_LOGGER_CLASS, ResolverFeature.RESOLVER_LOGGER,
+            ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL};
 
     private static List<String> classpathCatalogList = null;
 
@@ -158,6 +179,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean archivedCatalogs = ResolverFeature.ARCHIVED_CATALOGS.getDefaultValue();
     private Boolean throwUriExceptions = ResolverFeature.THROW_URI_EXCEPTIONS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
+    private String resolverLoggerClass = ResolverFeature.RESOLVER_LOGGER_CLASS.getDefaultValue();
+    private String defaultLoggerLogLevel = ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL.getDefaultValue();
+    private ResolverLogger resolverLogger = null;
 
     /** Construct a default configuration.
      *
@@ -207,14 +231,25 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
      * @param catalogFiles A list of catalog files.
      */
     public XMLResolverConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
-        logger.log(ResolverLogger.CONFIG, "XMLResolver version %s", BuildConfig.VERSION);
         if (classLoader == null) {
             classLoader = getClass().getClassLoader();
         }
         showConfigChanges = false;
         catalogs = new ArrayList<>();
         additionalCatalogs = new ArrayList<>();
+
+        // We have a tiny little bit of a chicken-and-egg problem here. The logger
+        // can be configured, but we want to emit log messages during configuration.
+        // The FallbackLogger buffers them until we have a configuration...
+        FallbackLogger fallbackLogger = new FallbackLogger();
+        resolverLogger = fallbackLogger;
         loadConfiguration(propertyFiles, catalogFiles);
+
+        // Now get the real logger and forward any fallback messages to it.
+        resolverLogger = null;
+        resolverLogger = getFeature(ResolverFeature.RESOLVER_LOGGER);
+        fallbackLogger.forward(resolverLogger);
+
         showConfigChanges = true;
     }
 
@@ -250,6 +285,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         archivedCatalogs = current.archivedCatalogs;
         throwUriExceptions = current.throwUriExceptions;
         showConfigChanges = current.showConfigChanges;
+        resolverLoggerClass = current.resolverLoggerClass;
+        resolverLogger = current.resolverLogger;
+        defaultLoggerLogLevel = current.defaultLoggerLogLevel;
     }
 
     private void loadConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
@@ -429,6 +467,18 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Throw URI exceptions: %s", property);
             throwUriExceptions = isTrue(property);
         }
+
+        property = System.getProperty("xml.catalog.resolverLoggerClass");
+        if (property != null) {
+            showConfigChange("Resolver logger class: %s", property);
+            resolverLoggerClass = property;
+        }
+
+        property = System.getProperty("xml.catalog.defaultLoggerLogLevel");
+        if (property != null) {
+            showConfigChange("Default logger log level: %s", property);
+            defaultLoggerLogLevel = property;
+        }
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
@@ -457,7 +507,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                         try {
                             token = new URL(propertiesURL, token).toString();
                         } catch (MalformedURLException e) {
-                            logger.log(ResolverLogger.ERROR, "Cannot make absolute: " + token);
+                            resolverLogger.log(AbstractLogger.ERROR, "Cannot make absolute: " + token);
                         }
                     }
                     showConfigChange("Catalog: %s", token);
@@ -476,7 +526,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                         try {
                             token = new URL(propertiesURL, token).toURI().toString();
                         } catch (URISyntaxException | MalformedURLException e) {
-                            logger.log(ResolverLogger.ERROR, "Cannot make absolute: " + token);
+                            resolverLogger.log(AbstractLogger.ERROR, "Cannot make absolute: " + token);
                         }
                     }
                     showConfigChange("Catalog: %s", token);
@@ -565,30 +615,45 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Throw URI exceptions: %s", property);
             throwUriExceptions = isTrue(property);
         }
+
+        property = properties.getProperty("resolver-logger-class");
+        if (property != null) {
+            showConfigChange("Resolver logger class: %s", property);
+            resolverLoggerClass = property;
+        }
+
+        property = properties.getProperty("default-logger-log-level");
+        if (property != null) {
+            showConfigChange("Default logger log level: %s", property);
+            defaultLoggerLogLevel = property;
+        }
+
     }
 
     private void showConfig() {
-        logger.log(ResolverLogger.CONFIG, "Logging: %s", System.getProperty("xml.catalog.logging"));
-        logger.log(ResolverLogger.CONFIG, "Prefer public: %s", preferPublic);
-        logger.log(ResolverLogger.CONFIG, "Prefer property file: %s", preferPropertyFile);
-        logger.log(ResolverLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
-        logger.log(ResolverLogger.CONFIG, "Parse RDDL: %s", parseRddl);
-        logger.log(ResolverLogger.CONFIG, "URI for system: %s", uriForSystem);
-        logger.log(ResolverLogger.CONFIG, "Merge http/https: %s", mergeHttps);
-        logger.log(ResolverLogger.CONFIG, "Mask jar URIs: %s", maskJarUris);
-        logger.log(ResolverLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
-        logger.log(ResolverLogger.CONFIG, "Cache directory: %s", cacheDirectory);
-        logger.log(ResolverLogger.CONFIG, "Catalog loader: %s", catalogLoader);
-        logger.log(ResolverLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
-        logger.log(ResolverLogger.CONFIG, "Archived catalogs: %s", archivedCatalogs);
-        logger.log(ResolverLogger.CONFIG, "Throw URI exceptions: %s", throwUriExceptions);
-        logger.log(ResolverLogger.CONFIG, "Class loader: %s", classLoader);
+        resolverLogger.log(AbstractLogger.CONFIG, "Logging: %s", System.getProperty("xml.catalog.logging"));
+        resolverLogger.log(AbstractLogger.CONFIG, "Prefer public: %s", preferPublic);
+        resolverLogger.log(AbstractLogger.CONFIG, "Prefer property file: %s", preferPropertyFile);
+        resolverLogger.log(AbstractLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
+        resolverLogger.log(AbstractLogger.CONFIG, "Parse RDDL: %s", parseRddl);
+        resolverLogger.log(AbstractLogger.CONFIG, "URI for system: %s", uriForSystem);
+        resolverLogger.log(AbstractLogger.CONFIG, "Merge http/https: %s", mergeHttps);
+        resolverLogger.log(AbstractLogger.CONFIG, "Mask jar URIs: %s", maskJarUris);
+        resolverLogger.log(AbstractLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
+        resolverLogger.log(AbstractLogger.CONFIG, "Cache directory: %s", cacheDirectory);
+        resolverLogger.log(AbstractLogger.CONFIG, "Catalog loader: %s", catalogLoader);
+        resolverLogger.log(AbstractLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
+        resolverLogger.log(AbstractLogger.CONFIG, "Archived catalogs: %s", archivedCatalogs);
+        resolverLogger.log(AbstractLogger.CONFIG, "Throw URI exceptions: %s", throwUriExceptions);
+        resolverLogger.log(AbstractLogger.CONFIG, "Class loader: %s", classLoader);
+        resolverLogger.log(AbstractLogger.CONFIG, "Logger class: %s", resolverLoggerClass);
+        resolverLogger.log(AbstractLogger.CONFIG, "Default logger log level: %s", defaultLoggerLogLevel);
         for (String catalog: catalogs) {
-            logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
+            resolverLogger.log(AbstractLogger.CONFIG, "Catalog: %s", catalog);
         }
         if (classpathCatalogs) {
             for (String catalog : findClasspathCatalogFiles()) {
-                logger.log(ResolverLogger.CONFIG, "Catalog: %s", catalog);
+                resolverLogger.log(AbstractLogger.CONFIG, "Catalog: %s", catalog);
             }
         }
     }
@@ -724,7 +789,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             cache = null;
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
-            logger.log(ResolverLogger.CONFIG, "Catalog manager: %s", manager.toString());
+            resolverLogger.log(AbstractLogger.CONFIG, "Catalog manager: %s", manager.toString());
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
             uriForSystem = (Boolean) value;
             showConfigChange("URI-for-system: %s", uriForSystem);
@@ -749,43 +814,55 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.THROW_URI_EXCEPTIONS) {
             throwUriExceptions = (Boolean) value;
             showConfigChange("Throw URI exceptions: %s", throwUriExceptions);
+        } else if (feature == ResolverFeature.RESOLVER_LOGGER_CLASS) {
+            resolverLoggerClass = (String) value;
+            showConfigChange("Resolver logger class: %s", resolverLoggerClass);
+            // Re-initialize the logger so that it is an instance of the requested class
+            resolverLogger = null;
+            resolverLogger = getFeature(ResolverFeature.RESOLVER_LOGGER);
+        } else if (feature == ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL) {
+            defaultLoggerLogLevel = (String) value;
+            showConfigChange("Default logger log level: %s", defaultLoggerLogLevel);
+        } else if (feature == ResolverFeature.RESOLVER_LOGGER) {
+            resolverLogger = (ResolverLogger) value;
+            showConfigChange("Resolver logger: %s", resolverLogger);
         } else {
-            logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
+            resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
     }
 
     private void showConfigChange(String message) {
         if (showConfigChanges) {
-            logger.log(ResolverLogger.CONFIG, message);
+            resolverLogger.log(AbstractLogger.CONFIG, message);
         }
     }
 
     private void showConfigChange(String message, Object value) {
         if (showConfigChanges) {
             if (value == null) {
-                logger.log(ResolverLogger.CONFIG, message, "null");
+                resolverLogger.log(AbstractLogger.CONFIG, message, "null");
             } else {
-                logger.log(ResolverLogger.CONFIG, message, value.toString());
+                resolverLogger.log(AbstractLogger.CONFIG, message, value.toString());
             }
         }
     }
 
     private List<String> findClasspathCatalogFiles() {
         if (classpathCatalogList == null) {
-            logger.log(ResolverLogger.CONFIG, "Searching for catalogs on classpath:");
+            resolverLogger.log(AbstractLogger.CONFIG, "Searching for catalogs on classpath:");
             try {
                 for (URL url : ((URLClassLoader) XMLResolverConfiguration.class.getClassLoader()).getURLs()) {
-                    logger.log(ResolverLogger.CONFIG, "    " + url.toString());
+                    resolverLogger.log(AbstractLogger.CONFIG, "    " + url.toString());
                 }
             } catch (ClassCastException ex) {
-                logger.log(ResolverLogger.CONFIG, "    Unknown: cannot determine class path in JDK9+");
+                resolverLogger.log(AbstractLogger.CONFIG, "    Unknown: cannot determine class path in JDK9+");
             }
             ArrayList<String> catalogs = new ArrayList<>();
             try {
                 Enumeration<URL> resources = XMLResolverConfiguration.class.getClassLoader().getResources("org/xmlresolver/catalog.xml");
                 while (resources.hasMoreElements()) {
                     URL catalog = resources.nextElement();
-                    logger.log(ResolverLogger.CONFIG, "Catalog: " + catalog.toString());
+                    resolverLogger.log(AbstractLogger.CONFIG, "Catalog: " + catalog.toString());
                     catalogs.add(catalog.toString());
                 }
             } catch (IOException ex) {
@@ -866,8 +943,24 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) archivedCatalogs;
         } else if (feature == ResolverFeature.THROW_URI_EXCEPTIONS) {
             return (T) throwUriExceptions;
+        } else if (feature == ResolverFeature.RESOLVER_LOGGER_CLASS) {
+            return (T) resolverLoggerClass;
+        } else if (feature == ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL) {
+            return (T) defaultLoggerLogLevel;
+        } else if (feature == ResolverFeature.RESOLVER_LOGGER) {
+            if (resolverLogger == null) {
+                try {
+                    Class<?> loggerClass = Class.forName(resolverLoggerClass);
+                    Constructor<?> constructor = loggerClass.getConstructor(ResolverConfiguration.class);
+                    resolverLogger = (ResolverLogger) constructor.newInstance(this);
+                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
+                        | IllegalAccessException | InvocationTargetException ex) {
+                    throw new IllegalArgumentException("Failed to instantiate logger: " + resolverLoggerClass + ": " + ex.getMessage());
+                }
+            }
+            return (T) resolverLogger;
         } else {
-            logger.log(ResolverLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
+            resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
             return null;
         }
     }
@@ -886,6 +979,54 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return false;
         } else {
             return "true".equalsIgnoreCase(aString) || "yes".equalsIgnoreCase(aString) || "1".equalsIgnoreCase(aString);
+        }
+    }
+
+    private static class FallbackLogger extends AbstractLogger {
+        private ArrayList<Message> messages = new ArrayList<>();
+        private String fallbackLogging = System.getProperty("xml.catalog.FallbackLoggerLogLevel");
+
+
+        @Override
+        public void log(String cat, String message, Object... params) {
+            messages.add(new Message(cat, message, params));
+            if (fallbackLogging != null) {
+                // If you turned this on, you must be desperate.
+                System.err.println(logMessage(cat, message, params));
+            }
+        }
+
+        @Override
+        public void warn(String message) {
+            // never called
+        }
+
+        @Override
+        public void info(String message) {
+            // never called
+        }
+
+        @Override
+        public void debug(String message) {
+            // never called
+        }
+
+        public void forward(ResolverLogger logger) {
+            for (Message message : messages) {
+                logger.log(message.category, message.message, message.params);
+            }
+            messages.clear();
+        }
+
+        private static class Message {
+            public final String category;
+            public final String message;
+            public final Object[] params;
+            public Message(String level, String message, Object... params) {
+                this.category = level;
+                this.message = message;
+                this.params = params;
+            }
         }
     }
 }

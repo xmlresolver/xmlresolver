@@ -37,7 +37,7 @@ public class ResolverTestLocalhost extends CacheManager {
         config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
 
         // Make sure the Docker container is running where we expect.
-        ResourceConnection conn = new ResourceConnection("http://localhost:8222/docs/sample/sample.dtd", true);
+        ResourceConnection conn = new ResourceConnection(config, "http://localhost:8222/docs/sample/sample.dtd", true);
         assertEquals(200, conn.getStatusCode());
     }
 

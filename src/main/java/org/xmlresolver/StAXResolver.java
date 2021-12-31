@@ -9,6 +9,9 @@
 
 package org.xmlresolver;
 
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
+
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
@@ -28,7 +31,7 @@ import javax.xml.stream.XMLStreamException;
  *
  */
 public class StAXResolver implements XMLResolver {
-    protected static ResolverLogger logger = new ResolverLogger(StAXResolver.class);
+    protected final ResolverLogger logger;
     ResourceResolver resolver = null;
     
     /** Creates a new instance of StAXResolver.
@@ -36,7 +39,9 @@ public class StAXResolver implements XMLResolver {
      * The default resolver is a new ResourceResolver that uses a static catalog shared by all threads.
      */
     public StAXResolver() {
-        resolver = new CatalogResolver();
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        resolver = new CatalogResolver(config);
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Creates a new instance of a StAXResolver.
@@ -47,6 +52,7 @@ public class StAXResolver implements XMLResolver {
      */
     public StAXResolver(XMLResolverConfiguration config) {
         resolver = new CatalogResolver(config);
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Creates a new instance of a StAXResolver.
@@ -57,6 +63,8 @@ public class StAXResolver implements XMLResolver {
      */
     public StAXResolver(ResourceResolver resolver) {
         this.resolver = resolver;
+        logger = resolver.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
+
     }
 
     /** Get the configuration used by this resolver.
@@ -69,17 +77,17 @@ public class StAXResolver implements XMLResolver {
 
     /** Implements the {@link javax.xml.stream.XMLResolver} interface. */
     public Object resolveEntity(String publicId, String systemId, String baseURI, String namespace) throws XMLStreamException {
-        logger.log(ResolverLogger.REQUEST, "resolveEntity: %s/%s (baseURI: %s, %s)",
+        logger.log(AbstractLogger.REQUEST, "resolveEntity: %s/%s (baseURI: %s, %s)",
                 systemId, namespace, baseURI, publicId);
 
         ResolvedResource rsrc = resolver.resolveEntity(null, publicId, systemId, baseURI);
 
         if (rsrc == null) {
-            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (baseURI: %s, %s) → null",
+            logger.log(AbstractLogger.RESPONSE, "resolvedEntity: %s/%s (baseURI: %s, %s) → null",
                     systemId, namespace, baseURI, publicId);
             return null;
         } else {
-            logger.log(ResolverLogger.RESPONSE, "resolvedEntity: %s/%s (baseURI: %s, %s) → %s",
+            logger.log(AbstractLogger.RESPONSE, "resolvedEntity: %s/%s (baseURI: %s, %s) → %s",
                     systemId, namespace, baseURI, publicId, rsrc.getResolvedURI());
             return rsrc.getInputStream();
         }

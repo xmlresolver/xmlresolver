@@ -1,12 +1,14 @@
 package org.xmlresolver.catalog.entry;
 
+import org.xmlresolver.ResolverConfiguration;
+
 import java.net.URI;
 
 public class EntryNotation extends EntryResource {
     public final String name;
 
-    public EntryNotation(URI baseURI, String id, String name, String uri) {
-        super(baseURI, id, uri);
+    public EntryNotation(ResolverConfiguration config, URI baseURI, String id, String name, String uri) {
+        super(config, baseURI, id, uri);
         this.name = name;
     }
 

@@ -1,6 +1,9 @@
 package org.xmlresolver.catalog.entry;
 
-import org.xmlresolver.ResolverLogger;
+import org.xmlresolver.ResolverConfiguration;
+import org.xmlresolver.ResolverFeature;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -8,7 +11,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public abstract class Entry {
-    public static ResolverLogger logger = new ResolverLogger(Entry.class);
+    protected final ResolverLogger logger;
+    protected final ResolverConfiguration config;
+
     public enum Type {
         NULL, CATALOG, DELEGATE_PUBLIC, DELEGATE_SYSTEM, DELEGATE_URI,
         DOCTYPE, DOCUMENT, DTD_DECL,ENTITY, GROUP, LINKTYPE, NEXT_CATALOG,
@@ -25,20 +30,22 @@ public abstract class Entry {
     public final String id;
     public final HashMap<String,String> extra = new HashMap<>();
 
-    public Entry(URI baseURI, String id) {
+    public Entry(ResolverConfiguration config, URI baseURI, String id) {
         this.id = id;
         if (baseURI.isAbsolute()) {
             this.baseURI = baseURI;
         } else {
             throw new IllegalArgumentException("Base URI of catalog entry must be absolute: " + baseURI);
         }
+        this.config = config;
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     public void setProperty(String name, String value) {
         if (NCNAME_RE.matcher(name).matches()) {
             extra.put(name, value);
         } else {
-            logger.log(ResolverLogger.ERROR, "Property name invalid: " + name);
+            logger.log(AbstractLogger.ERROR, "Property name invalid: " + name);
         }
     }
 

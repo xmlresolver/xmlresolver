@@ -6,6 +6,8 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.sources.ResolverInputSource;
 import org.xmlresolver.sources.ResolverLSInput;
 import org.xmlresolver.sources.ResolverSAXSource;
@@ -36,15 +38,18 @@ import java.io.IOException;
  */
 
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
-    private static final ResolverLogger logger = new ResolverLogger(Resolver.class);
-    protected CatalogResolver resolver = null;
+    private final ResolverLogger logger;
+    protected final XMLResolverConfiguration config;
+    protected final CatalogResolver resolver;
 
     /** Creates a new instance of Resolver.
      *
      * The default resolver is a new ResourceResolver that uses a static catalog shared by all threads.
      */
     public Resolver() {
-        resolver = new CatalogResolver();
+        config = new XMLResolverConfiguration();
+        resolver = new CatalogResolver(config);
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Creates a new instance of a Resolver.
@@ -54,7 +59,9 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
      * @param config The configuration to use.
      */
     public Resolver(XMLResolverConfiguration config) {
+        this.config = config;
         resolver = new CatalogResolver(config);
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** Creates a new instance of a Resolver.
@@ -64,7 +71,9 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
      * @param resolver The resource resolver to use.
      */
     public Resolver(CatalogResolver resolver) {
+        config = resolver.getConfiguration();
         this.resolver = resolver;
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /** What version is this?
@@ -110,11 +119,11 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
         ResolvedResource rsrc = null;
         if (type == null || "http://www.w3.org/TR/REC-xml".equals(type)) {
-            logger.log(ResolverLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
+            logger.log(AbstractLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
                     systemId, baseURI, publicId);
             rsrc = resolver.resolveEntity(null, publicId, systemId, baseURI);
         } else {
-            logger.log(ResolverLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
+            logger.log(AbstractLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
                     type, systemId, namespaceURI, baseURI, publicId);
 
             String purpose = null;

@@ -7,11 +7,11 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.ResolverConstants;
 import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.ResolverLogger;
 import org.xmlresolver.ResourceConnection;
 import org.xmlresolver.CatalogManager;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryUri;
+import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.utils.PublicId;
 import org.xmlresolver.utils.URIUtils;
 
@@ -19,7 +19,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +36,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /** Implements a resource cache.
  *
@@ -141,13 +139,17 @@ public class ResourceCache extends CatalogManager {
     private File entryDir = null;
     private File expiredDir = null;
 
+    private final CacheParser cacheParser;
+    private final ArrayList<CacheInfo> cacheInfo = new ArrayList<> ();
+
     private CacheEntryCatalog catalog = null;
     private CacheInfo defaultCacheInfo = null;
-    private final ArrayList<CacheInfo> cacheInfo = new ArrayList<> ();
     private String cacheVersion = null;
 
     public ResourceCache(ResolverConfiguration config) {
         super(config);
+        cacheParser = new CacheParser(config);
+
         // In case there is no control.xml file...
         defaultCacheInfo = new CacheInfo(defaultPattern, true, deleteWait, cacheSize, cacheSpace, maxAge);
 
@@ -172,16 +174,16 @@ public class ResourceCache extends CatalogManager {
         File fDir = new File(dir);
         try {
             cacheDir = fDir.getCanonicalFile();
-            logger.log(ResolverLogger.CACHE, "Cache dir: %s", cacheDir);
+            logger.log(AbstractLogger.CACHE, "Cache dir: %s", cacheDir);
             if (!cacheDir.exists()) {
                 cacheDir.mkdirs();
             }
             if (!cacheDir.exists()) {
-                logger.log(ResolverLogger.ERROR, "Cannot create cache directory: %s", cacheDir);
+                logger.log(AbstractLogger.ERROR, "Cannot create cache directory: %s", cacheDir);
                 cacheDir = null;
             }
         } catch (IOException ioe) {
-            logger.log(ResolverLogger.ERROR, "IOException getting cache directory: %s", dir);
+            logger.log(AbstractLogger.ERROR, "IOException getting cache directory: %s", dir);
             cacheDir = null;
         }
 
@@ -213,7 +215,7 @@ public class ResourceCache extends CatalogManager {
                     }
                 }
             } catch (ParserConfigurationException | SAXException | IOException ex) {
-                logger.log(ResolverLogger.ERROR, "Failed to parse cache control file: %s", ex.getMessage());
+                logger.log(AbstractLogger.ERROR, "Failed to parse cache control file: %s", ex.getMessage());
             }
         } else {
             update = true;
@@ -257,7 +259,7 @@ public class ResourceCache extends CatalogManager {
             ps.println("</cache-control>\n");
             ps.close();
         } catch (SecurityException|IOException ex) {
-            logger.log(ResolverLogger.CACHE, "Failed to write cache control file: %s: %s",
+            logger.log(AbstractLogger.CACHE, "Failed to write cache control file: %s: %s",
                     control.getAbsolutePath(), ex.getMessage());
         }
     }
@@ -406,7 +408,7 @@ public class ResourceCache extends CatalogManager {
 
         // Flush oldest entries...
         if (cacheCount > info.cacheSize || cacheSize > info.cacheSpace) {
-            logger.log(ResolverLogger.CACHE, "Too many cache entries, or cache size too large: expiring oldest entries");
+            logger.log(AbstractLogger.CACHE, "Too many cache entries, or cache size too large: expiring oldest entries");
             flushCache(info);
         }
 
@@ -417,7 +419,7 @@ public class ResourceCache extends CatalogManager {
         long cacheTime = entry.time;
         String cachedEtag = entry.etag();
 
-        ResourceConnection rconn = new ResourceConnection(entry.uri.toASCIIString(), true);
+        ResourceConnection rconn = new ResourceConnection(resolverConfiguration, entry.uri.toASCIIString(), true);
         rconn.close();
         String etag = rconn.getEtag();
         long lastModified = rconn.getLastModified();
@@ -437,7 +439,7 @@ public class ResourceCache extends CatalogManager {
         }
 
         if (rconn.getStatusCode() != 200) {
-            logger.log(ResolverLogger.CACHE, "Not expired: %s (HTTP %d)", entry.uri, rconn.getStatusCode());
+            logger.log(AbstractLogger.CACHE, "Not expired: %s (HTTP %d)", entry.uri, rconn.getStatusCode());
             return false;
         }
 
@@ -445,18 +447,18 @@ public class ResourceCache extends CatalogManager {
 
         if (lastModified < 0) {
             if (etagsDiffer) {
-                logger.log(ResolverLogger.CACHE, "Expired: %s (no last-modified header, etags differ)", entry.uri);
+                logger.log(AbstractLogger.CACHE, "Expired: %s (no last-modified header, etags differ)", entry.uri);
                 return true;
             } else {
-                logger.log(ResolverLogger.CACHE, "Not expired: %s (no last-modified header, etags identical)", entry.uri);
+                logger.log(AbstractLogger.CACHE, "Not expired: %s (no last-modified header, etags identical)", entry.uri);
                 return false;
             }
         } else if (lastModified > cacheTime || etagsDiffer) {
-            logger.log(ResolverLogger.CACHE, "Expired: %s", entry.uri);
+            logger.log(AbstractLogger.CACHE, "Expired: %s", entry.uri);
             catalog.expire(entry);
             return true;
         } else {
-            logger.log(ResolverLogger.CACHE, "Not expired: %s", entry.uri);
+            logger.log(AbstractLogger.CACHE, "Not expired: %s", entry.uri);
             return false;
         }
     }
@@ -489,7 +491,7 @@ public class ResourceCache extends CatalogManager {
             info = defaultCacheInfo;
         }
 
-        logger.log(ResolverLogger.CACHE, "Cache cacheURI: %s (%s)", info.cache, uri);
+        logger.log(AbstractLogger.CACHE, "Cache cacheURI: %s (%s)", info.cache, uri);
 
         return info.cache;
     }
@@ -543,12 +545,12 @@ public class ResourceCache extends CatalogManager {
         if (entry == null || entry.expired) {
             if (cacheURI(uri.toString())) {
                 try {
-                    ResourceConnection conn = new ResourceConnection(uri.toString());
+                    ResourceConnection conn = new ResourceConnection(resolverConfiguration, uri.toString());
                     if (conn.getStream() != null && conn.getStatusCode() == 200) {
                         entry = addNamespaceURI(conn, nature, purpose);
                     }
                 } catch (NoClassDefFoundError ncdfe) {
-                    logger.log(ResolverLogger.ERROR, "Apache HTTP library classes apparently unavailable, not attempting to cache");
+                    logger.log(AbstractLogger.ERROR, "Apache HTTP library classes apparently unavailable, not attempting to cache");
                     return null;
                 }
             }
@@ -561,12 +563,12 @@ public class ResourceCache extends CatalogManager {
         if (entry == null || entry.expired) {
             if (cacheURI(systemId.toString())) {
                 try {
-                    ResourceConnection conn = new ResourceConnection(systemId.toString());
+                    ResourceConnection conn = new ResourceConnection(resolverConfiguration, systemId.toString());
                     if (conn.getStatusCode() == 200 && conn.getStream() != null) {
                         entry = addSystem(conn, publicId);
                     }
                 } catch (NoClassDefFoundError ncdfe) {
-                    logger.log(ResolverLogger.ERROR, "Apache HTTP library classes apparently unavailable, not attempting to cache");
+                    logger.log(AbstractLogger.ERROR, "Apache HTTP library classes apparently unavailable, not attempting to cache");
                     return null;
                 }
             }
@@ -584,7 +586,7 @@ public class ResourceCache extends CatalogManager {
             return;
         }
 
-        catalog = new CacheEntryCatalog(cacheDir.toURI(), null, true);
+        catalog = new CacheEntryCatalog(resolverConfiguration, cacheDir.toURI(), null, true);
         dataDir = new File(cacheDir, "data");
         entryDir = new File(cacheDir, "entry");
         expiredDir = new File(cacheDir, "expired");
@@ -592,7 +594,7 @@ public class ResourceCache extends CatalogManager {
         if ((!dataDir.exists() && !dataDir.mkdir())
                 || (!entryDir.exists() && !entryDir.mkdir())
                 || (!expiredDir.exists() && !expiredDir.mkdir())) {
-            logger.log(ResolverLogger.CACHE, "Failed to setup data, entry, and expired directories in cache");
+            logger.log(AbstractLogger.CACHE, "Failed to setup data, entry, and expired directories in cache");
             cacheDir = null;
             return;
         }
@@ -601,7 +603,7 @@ public class ResourceCache extends CatalogManager {
         try {
             lock.lock();
         } catch (IOException ex) {
-            logger.log(ResolverLogger.CACHE, "Failed to obtain lock on cache: " + ex.getMessage());
+            logger.log(AbstractLogger.CACHE, "Failed to obtain lock on cache: " + ex.getMessage());
             return;
         }
 
@@ -622,7 +624,7 @@ public class ResourceCache extends CatalogManager {
                         handler.setBaseURI(file.toURI());
                         parser.parse(source, handler);
                     } catch (ParserConfigurationException | SAXException | IOException ex) {
-                        logger.log(ResolverLogger.CACHE, "Failed to read cache entry: " + file.toURI() + ": " + ex.getMessage());
+                        logger.log(AbstractLogger.CACHE, "Failed to read cache entry: " + file.toURI() + ": " + ex.getMessage());
                     }
                 }
             }
@@ -645,14 +647,14 @@ public class ResourceCache extends CatalogManager {
                 fos.write("The timestamp on this file indicates when the cache was last pruned.\n");
                 fos.close();
             } catch (SecurityException | IOException cex) {
-                logger.log(ResolverLogger.CACHE, "Failed to create cache cleanup file" + cleanup.getAbsolutePath());
+                logger.log(AbstractLogger.CACHE, "Failed to create cache cleanup file" + cleanup.getAbsolutePath());
                 return;
             }
             age = threshold + 1;
         }
 
         if (age > threshold) {
-            logger.log(ResolverLogger.CACHE, "Cleaning up expired cache entries");
+            logger.log(AbstractLogger.CACHE, "Cleaning up expired cache entries");
 
             // if there are any expired entries that are too old, remove them
             File[] files = expiredDir.listFiles();
@@ -660,9 +662,9 @@ public class ResourceCache extends CatalogManager {
                 for (File file : files) {
                     age = now - file.lastModified();
                     if (age > deleteWait * 1000) {
-                        logger.log(ResolverLogger.CACHE, "Deleting expired entry: %s", file.getName());
+                        logger.log(AbstractLogger.CACHE, "Deleting expired entry: %s", file.getName());
                         if (!file.delete()) {
-                            logger.log(ResolverLogger.CACHE, "Failed to delete expired cache entry: " + file.getAbsolutePath());
+                            logger.log(AbstractLogger.CACHE, "Failed to delete expired cache entry: " + file.getAbsolutePath());
                         }
                     }
                 }
@@ -678,9 +680,9 @@ public class ResourceCache extends CatalogManager {
                     if (!entry.exists()) {
                         entry = new File(expiredDir, entryName + ".xml");
                         if (!entry.exists()) {
-                            logger.log(ResolverLogger.CACHE, "Deleting expired data: %s", file.getName());
+                            logger.log(AbstractLogger.CACHE, "Deleting expired data: %s", file.getName());
                             if (!file.delete()) {
-                                logger.log(ResolverLogger.CACHE, "Failed to delete expired cache entry: " + file.getAbsolutePath());
+                                logger.log(AbstractLogger.CACHE, "Failed to delete expired cache entry: " + file.getAbsolutePath());
                             }
                         }
                     }
@@ -705,16 +707,16 @@ public class ResourceCache extends CatalogManager {
                     }
 
                     if (!found) {
-                        logger.log(ResolverLogger.CACHE, "Deleting dangling entry: %s", file.getName());
+                        logger.log(AbstractLogger.CACHE, "Deleting dangling entry: %s", file.getName());
                         if (!file.delete()) {
-                            logger.log(ResolverLogger.CACHE, "Failed to delete expired cache entry: " + file.getAbsolutePath());
+                            logger.log(AbstractLogger.CACHE, "Failed to delete expired cache entry: " + file.getAbsolutePath());
                         }
                     }
                 }
             }
 
             if (!cleanup.setLastModified(now)) {
-                logger.log(ResolverLogger.CACHE, "Failed to update last modified time of cache cleanup file");
+                logger.log(AbstractLogger.CACHE, "Failed to update last modified time of cache cleanup file");
             }
         }
     }
@@ -733,7 +735,7 @@ public class ResourceCache extends CatalogManager {
     private CacheEntry addNamespaceURI(ResourceConnection connection, String nature, String purpose) {
         loadCache();
         if (cacheDir == null) {
-            logger.log(ResolverLogger.CACHE, "Attempting to cache URI, but no cache is available");
+            logger.log(AbstractLogger.CACHE, "Attempting to cache URI, but no cache is available");
             return null;
         }
 
@@ -746,9 +748,9 @@ public class ResourceCache extends CatalogManager {
 
         URI name = connection.getURI();
         if (nature == null && purpose == null) {
-            logger.log(ResolverLogger.CACHE, "Caching resource for uri: %s", name);
+            logger.log(AbstractLogger.CACHE, "Caching resource for uri: %s", name);
         } else {
-            logger.log(ResolverLogger.CACHE, "Caching resource for namespace: %s (nature: %s, purpose: %s)",
+            logger.log(AbstractLogger.CACHE, "Caching resource for namespace: %s (nature: %s, purpose: %s)",
                     name, nature, purpose);
         }
 
@@ -787,9 +789,9 @@ public class ResourceCache extends CatalogManager {
 
             catalog.writeCacheEntry(entry, entryFile);
         } catch (NoSuchAlgorithmException nsae) {
-            logger.log(ResolverLogger.CACHE, "Failed to obtain SHA-256 digest?");
+            logger.log(AbstractLogger.CACHE, "Failed to obtain SHA-256 digest?");
         } catch (IOException ioe) {
-            logger.log(ResolverLogger.ERROR, "Failed to cache resource '%s' to '%s'", name, localFile.getAbsolutePath());
+            logger.log(AbstractLogger.ERROR, "Failed to cache resource '%s' to '%s'", name, localFile.getAbsolutePath());
         } finally {
             lock.unlock();
         }
@@ -800,7 +802,7 @@ public class ResourceCache extends CatalogManager {
     private synchronized CacheEntry addSystem(ResourceConnection connection, String publicId) {
         loadCache();
         if (cacheDir == null) {
-            logger.log(ResolverLogger.CACHE, "Attempting to cache system ID, but no cache is available");
+            logger.log(AbstractLogger.CACHE, "Attempting to cache system ID, but no cache is available");
             return null;
         }
 
@@ -808,7 +810,7 @@ public class ResourceCache extends CatalogManager {
         try {
             lock.lock();
         } catch (IOException ex) {
-            logger.log(ResolverLogger.ERROR, "Failed to obtain directory lock to cache resource: %s", connection.getURI());
+            logger.log(AbstractLogger.ERROR, "Failed to obtain directory lock to cache resource: %s", connection.getURI());
             return null;
         }
 
@@ -816,7 +818,7 @@ public class ResourceCache extends CatalogManager {
         String contentType = connection.getContentType();
         InputStream resource = connection.getStream();
 
-        logger.log(ResolverLogger.CACHE, "Caching systemId: %s", name);
+        logger.log(AbstractLogger.CACHE, "Caching systemId: %s", name);
         File localFile = null;
 
         try {
@@ -872,9 +874,9 @@ public class ResourceCache extends CatalogManager {
                 catalog.writeCacheEntry(entry, entryFile);
             }
         } catch (NoSuchAlgorithmException nsae) {
-            logger.log(ResolverLogger.CACHE, "Failed to obtain SHA-256 digest?");
+            logger.log(AbstractLogger.CACHE, "Failed to obtain SHA-256 digest?");
         } catch (IOException ioe) {
-            logger.log(ResolverLogger.ERROR, "Failed to cache resource '%s' to '%s'", name, localFile.getAbsolutePath());
+            logger.log(AbstractLogger.ERROR, "Failed to cache resource '%s' to '%s'", name, localFile.getAbsolutePath());
         } finally {
             lock.unlock();
         }
@@ -933,7 +935,7 @@ public class ResourceCache extends CatalogManager {
             catalog.flushCache(info.uriPattern, info.cacheSize, info.cacheSpace, expiredDir);
             lock.unlock();
         } catch (IOException ex) {
-            logger.log(ResolverLogger.ERROR, "Failed to obtain lock to expire cache");
+            logger.log(AbstractLogger.ERROR, "Failed to obtain lock to expire cache");
         }
     }
 
@@ -1074,19 +1076,19 @@ public class ResourceCache extends CatalogManager {
                 isControl = ResolverConstants.XMLRESOURCE_EXT_NS.equals(uri) && "cache-control".equals(localName);
                 if (isControl) {
                     cacheVersion = attributes.getValue("", "version");
-                    deleteWait = CacheParser.parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
-                    cacheSize = CacheParser.parseLong(attributes.getValue("", "size"), default_cacheSize);
-                    cacheSpace = CacheParser.parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
-                    maxAge = CacheParser.parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
+                    deleteWait = cacheParser.parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
+                    cacheSize = cacheParser.parseLong(attributes.getValue("", "size"), default_cacheSize);
+                    cacheSpace = cacheParser.parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
+                    maxAge = cacheParser.parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
                     defaultCacheInfo = new CacheInfo(defaultPattern, true, deleteWait, cacheSize, cacheSpace, maxAge);
                 }
             }
 
             if (isControl && depth == 1 && ResolverConstants.XMLRESOURCE_EXT_NS.equals(uri)) {
-                deleteWait = CacheParser.parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
-                cacheSize = CacheParser.parseLong(attributes.getValue("", "size"), default_cacheSize);
-                cacheSpace = CacheParser.parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
-                maxAge = CacheParser.parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
+                deleteWait = cacheParser.parseTimeLong(attributes.getValue("", "delete-wait"), default_deleteWait);
+                cacheSize = cacheParser.parseLong(attributes.getValue("", "size"), default_cacheSize);
+                cacheSpace = cacheParser.parseSizeLong(attributes.getValue("", "space"), default_cacheSpace);
+                maxAge = cacheParser.parseTimeLong(attributes.getValue("", "max-age"), default_maxAge);
                 String cacheRegex = attributes.getValue("", "uri");
                 switch (localName) {
                     case "cache":
@@ -1102,7 +1104,7 @@ public class ResourceCache extends CatalogManager {
                         }
                         break;
                     default:
-                        logger.log(ResolverLogger.ERROR, "Unexpected element in cache control file: %s", localName);
+                        logger.log(AbstractLogger.ERROR, "Unexpected element in cache control file: %s", localName);
                         break;
                 }
             }
@@ -1158,7 +1160,7 @@ public class ResourceCache extends CatalogManager {
                     try {
                         timestamp = Long.parseLong(longStr);
                     } catch (NumberFormatException ex) {
-                        logger.log(ResolverLogger.ERROR, "Bad numeric value in cache file: %s", longStr);
+                        logger.log(AbstractLogger.ERROR, "Bad numeric value in cache file: %s", longStr);
                         return;
                     }
                 }
@@ -1167,13 +1169,13 @@ public class ResourceCache extends CatalogManager {
                 try {
                     localURI = URIUtils.newURI(uri);
                 } catch (URISyntaxException ex) {
-                    logger.log(ResolverLogger.ERROR, "Cached URI is invalid: %s", uri);
+                    logger.log(AbstractLogger.ERROR, "Cached URI is invalid: %s", uri);
                     return;
                 }
 
                 File local = new File(localURI.getPath());
                 if (!local.exists()) {
-                    logger.log(ResolverLogger.CACHE, "Cached resource disappeared: %s", uri);
+                    logger.log(AbstractLogger.CACHE, "Cached resource disappeared: %s", uri);
                     return;
                 }
 
@@ -1193,7 +1195,7 @@ public class ResourceCache extends CatalogManager {
                         entry = catalog.addPublic(baseURI, publicId, uri, timestamp);
                         break;
                     default:
-                        logger.log(ResolverLogger.CACHE, "Unexpected cache entry: " + localName);
+                        logger.log(AbstractLogger.CACHE, "Unexpected cache entry: " + localName);
                         return;
                 }
 

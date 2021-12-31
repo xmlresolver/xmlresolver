@@ -1,49 +1,45 @@
-package org.xmlresolver;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.xmlresolver.logging;
 
 import java.util.Formatter;
 import java.util.HashMap;
 
-/** This class centralizes the logging functionality so that it con be controlled a little more
- *  dynamically.
- *
- *  <p>In principle, I think this should be possible with the various logging framework
- *  mechanisms, but I've found them to be fiddly to setup. Gradle, in particular, seems to
- *  have very coarse distinctions.</p>
- *
- *  <p>Historically, I tried to use "trace" level logging for the really gory details, but that
- *  doesn't seem widely supported. This class mostly uses .debug and .info with other
- *  mechanisms to select which messages to print.</p>
- *
- *  <p>One argument against this approach is that it will require the evaluation of the logged
- *  messages even when the logging will eventually be ignored. Yes, that's true. But on the
- *  other hand, the resolver is probably going to do I/O, so it's not like concatenating
- *  a couple of strings is going to be the bottleneck!</p>
+/** The abstract logger implements some of the core functionality needed regardless of
+ * how the messages are processed.
  */
 
-public class ResolverLogger {
+public abstract class AbstractLogger implements ResolverLogger {
+    /** Requests for resource resolution. */
     public static final String REQUEST = "request";
+    /** Responses describing how a request was resolved. */
     public static final String RESPONSE = "response";
+    /** Trace (or debuggin) messages. */
     public static final String TRACE = "trace";
+    /** Error messages. */
     public static final String ERROR = "error";
+    /** Messages related to how the cache is used. */
     public static final String CACHE = "cache";
+    /** Messages related to resolver configuration. */
     public static final String CONFIG = "config";
+    /** Warning messages. */
     public static final String WARNING = "warning";
 
-    private static final int DEBUG = 1;
-    private static final int INFO = 2;
-    private static final int WARN = 3;
+    protected static final int DEBUG = 1;
+    protected static final int INFO = 2;
+    protected static final int WARN = 3;
 
-    private final Logger logger;
-    private final HashMap<String, Integer> categories = new HashMap<>();
-    private String catalogLogging = null;
+    protected final HashMap<String, Integer> categories = new HashMap<>();
+    protected String catalogLogging = null;
 
-    public ResolverLogger(Class<?> klass) {
-        this.logger = LoggerFactory.getLogger(klass);
+    /** Initializes properties of the abstract class. */
+    public AbstractLogger() {
+        // nop
     }
 
+    /**
+     * Returns the log level, "debug", "info", or worn", associated with a category.
+     * @param cat The category.
+     * @return The level. If no level has been configured for that category, the default is "debug".
+     */
     public String getCategory(String cat) {
         if (categories.containsKey(cat)) {
             if (INFO == categories.get(cat)) {
@@ -55,6 +51,13 @@ public class ResolverLogger {
         return "debug";
     }
 
+    /**
+     * Set the log level for a category. After this call, messages in the specified category
+     * will be logged at the specified level. Valid levels are "debug", "info", and "warn".
+     * An invalid level is treated as "debug".
+     * @param cat The category.
+     * @param level The level.
+     */
     public void setCategory(String cat, String level) {
         if ("info".equals(level)) {
             categories.put(cat, INFO);
@@ -63,14 +66,12 @@ public class ResolverLogger {
         } else {
             categories.put(cat, DEBUG);
             if (!"debug".equals(level)) {
-                logger.info("Incorrect logging level specified: " + level + " treated as 'debug'");
+                info("Incorrect logging level specified: " + level + " treated as 'debug'");
             }
         }
     }
 
-    public void log(String cat, String message, Object... params) {
-        updateLoggingCategories();
-
+    protected String logMessage(String cat, String message, Object... params) {
         StringBuilder sb = new StringBuilder();
         sb.append(cat);
         sb.append(": ");
@@ -82,18 +83,36 @@ public class ResolverLogger {
             formatter.format(message, params);
         }
 
+        return sb.toString();
+    }
+
+    /**
+     * Log a message.
+     *
+     * <p>The category is used to determine what level of logging is
+     * expected for this message. The message is then formatted with its parameters
+     * and logged.</p>
+     *
+     * <p>The message and its parameters are formatted with {@link Formatter}.</p>
+     *
+     * @param cat The category.
+     * @param message The message.
+     * @param params The message parameters.
+     */
+    public void log(String cat, String message, Object... params) {
+        updateLoggingCategories();
         Integer deflevel = categories.getOrDefault("*", DEBUG);
         Integer level = categories.getOrDefault(cat, deflevel);
 
         switch (level) {
             case WARN:
-                logger.warn(sb.toString());
+                warn(logMessage(cat, message, params));
                 break;
             case INFO:
-                logger.info(sb.toString());
+                info(logMessage(cat, message, params));
                 break;
             default:
-                logger.debug(sb.toString());
+                debug(logMessage(cat, message, params));
         }
     }
 

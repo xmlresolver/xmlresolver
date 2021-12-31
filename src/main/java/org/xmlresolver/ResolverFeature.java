@@ -1,6 +1,7 @@
 package org.xmlresolver;
 
 import org.xmlresolver.cache.ResourceCache;
+import org.xmlresolver.logging.ResolverLogger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -267,7 +268,7 @@ public class ResolverFeature<T> {
      * loader is required, you can specify it with this feature.</p>
      */
     public static final ResolverFeature<ClassLoader> CLASSLOADER = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/classloader", (ClassLoader) null);
+            "http://xmlresolver.org/feature/classloader", null);
 
     /**
      * Adds support for placing ZIP files on the catalog path.
@@ -289,5 +290,37 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> THROW_URI_EXCEPTIONS = new ResolverFeature<>(
             "http://xmlresolver.org/feature/throw-uri-exceptions", false);
+
+    /**
+     * Identifies the resolver logger class.
+     *
+     * <p>The {@link org.xmlresolver.logging.DefaultLogger DefaultLogger} class writes log messages
+     * to <code>System.err</code>. The {@link org.xmlresolver.logging.SystemLogger SystemLogger} uses
+     * a logging backend. (You must configure a concrete backend for the logging facade on your
+     * classpath.)</p>
+     */
+    public static final ResolverFeature<String> RESOLVER_LOGGER_CLASS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/resolver-logger-class", "org.xmlresolver.logging.DefaultLogger");
+
+    /**
+     * Identifies the resolver logger.
+     *
+     * <p>This feature can get and set an instance of the logger. The logger is usually
+     * configured with the <code>RESOLVER_LOGGER_CLASS</code> feature. If the logger
+     * has been configured that way, an attempt to get the <code>RESOLVER_LOGGER</code>
+     * should instantiate the class.</p>
+     */
+    public static final ResolverFeature<ResolverLogger> RESOLVER_LOGGER = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/resolver-logger", null);
+
+    /**
+     * Specify the logging level for the default logger.
+     *
+     * <p>This feature only applies to the {@link org.xmlresolver.logging.DefaultLogger} (or other classes
+     * that use it). In particular, it has no effect if the {@link org.xmlresolver.logging.SystemLogger} is used.
+     * How that is configured depends on the concrete backend selected at runtime.</p>
+     */
+    public static final ResolverFeature<String> DEFAULT_LOGGER_LOG_LEVEL = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/default-logger-log-level", "warn");
 
 }

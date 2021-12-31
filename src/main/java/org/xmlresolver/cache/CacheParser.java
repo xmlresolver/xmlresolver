@@ -1,6 +1,9 @@
 package org.xmlresolver.cache;
 
-import org.xmlresolver.ResolverLogger;
+import org.xmlresolver.ResolverConfiguration;
+import org.xmlresolver.ResolverFeature;
+import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.ResolverLogger;
 
 import java.util.regex.Pattern;
 
@@ -8,7 +11,7 @@ import java.util.regex.Pattern;
  *
  */
 public class CacheParser {
-    protected static ResolverLogger logger = new ResolverLogger(CacheParser.class);
+    protected final ResolverLogger logger;
 
     private static final Pattern sizeK = Pattern.compile("^[0-9]+k$", Pattern.CASE_INSENSITIVE);
     private static final Pattern sizeM = Pattern.compile("^[0-9]+m$", Pattern.CASE_INSENSITIVE);
@@ -19,7 +22,11 @@ public class CacheParser {
     private static final Pattern timeD = Pattern.compile("^[0-9]+d$", Pattern.CASE_INSENSITIVE);
     private static final Pattern timeW = Pattern.compile("^[0-9]+w$", Pattern.CASE_INSENSITIVE);
 
-    public static long parseLong(String longStr, long defVal) {
+    public CacheParser(ResolverConfiguration config) {
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+    }
+
+    public long parseLong(String longStr, long defVal) {
         if (longStr == null) {
             return defVal;
         }
@@ -27,12 +34,12 @@ public class CacheParser {
         try {
             return Long.parseLong(longStr);
         } catch (NumberFormatException nfe) {
-            logger.log(ResolverLogger.ERROR, "Bad numeric value: %s", longStr);
+            logger.log(AbstractLogger.ERROR, "Bad numeric value: %s", longStr);
             return defVal;
         }
     }
 
-    public static long parseSizeLong(String longStr, long defVal) {
+    public long parseSizeLong(String longStr, long defVal) {
         if (longStr == null) {
             return defVal;
         }
@@ -52,7 +59,7 @@ public class CacheParser {
         return parseLong(longStr, units, defVal);
     }
 
-    public static long parseTimeLong(String longStr, long defVal) {
+    public long parseTimeLong(String longStr, long defVal) {
         if (longStr == null) {
             return defVal;
         }
@@ -77,12 +84,12 @@ public class CacheParser {
         return parseLong(longStr, units, defVal);
     }
 
-    public static long parseLong(String longStr, long units, long defVal) {
+    public long parseLong(String longStr, long units, long defVal) {
         try {
             long val = Long.parseLong(longStr);
             return val * units;
         } catch (NumberFormatException nfe) {
-            logger.log(ResolverLogger.ERROR, "Bad numeric value: %s", longStr);
+            logger.log(AbstractLogger.ERROR, "Bad numeric value: %s", longStr);
             return defVal;
         }
     }
