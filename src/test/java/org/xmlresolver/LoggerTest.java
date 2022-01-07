@@ -20,6 +20,44 @@ public class LoggerTest {
     }
 
     @Test
+    public void changeConfigurationDefaultLoggingLevel() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        ResolverLogger logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+        assertNotNull(logger);
+        assertEquals(DefaultLogger.class, logger.getClass());
+        DefaultLogger deflog = (DefaultLogger) logger;
+        String orig = config.getFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL);
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "info");
+        assertEquals("info", deflog.getLogLevel());
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "warn");
+        assertEquals("warn", deflog.getLogLevel());
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, orig);
+    }
+
+    @Test
+    public void changeDefaultLoggerLoggingLevel() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        ResolverLogger logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+        assertNotNull(logger);
+        assertEquals(DefaultLogger.class, logger.getClass());
+        DefaultLogger deflog = (DefaultLogger) logger;
+        String orig = config.getFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL);
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "info");
+        deflog.setLogLevel("warn");
+        assertEquals("warn", deflog.getLogLevel());
+        assertEquals("info", config.getFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL));
+
+        deflog.setLogLevel("debug");
+        assertEquals("debug", deflog.getLogLevel());
+        assertEquals("info", config.getFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL));
+
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "warn");
+        assertEquals("warn", deflog.getLogLevel());
+
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, orig);
+    }
+
+    @Test
     public void systemLogger() {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.RESOLVER_LOGGER_CLASS, "org.xmlresolver.logging.SystemLogger");
