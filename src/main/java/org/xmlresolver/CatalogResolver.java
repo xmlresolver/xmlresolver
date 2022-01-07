@@ -139,30 +139,40 @@ public class CatalogResolver implements ResourceResolver {
             }
         }
 
-        if (cache.cacheURI(absolute)) {
-            try {
+        try {
+            // There's no point attempting to cache data: URIs.
+            if (absolute.startsWith("data:")) {
+                URI absuri = new URI(absolute);
+                return uncachedResource(absuri, absuri);
+            }
+
+            if (cache.cacheURI(absolute)) {
                 URI absuri = new URI(absolute);
                 logger.log(AbstractLogger.RESPONSE, "resolveURI: cached %s", absolute);
                 return resource(absolute, absuri, cache.cachedUri(absuri));
-            } catch (URISyntaxException use) {
-                logger.log(AbstractLogger.ERROR, "URI syntax exception: %s", absolute);
-                if (throwExceptions) {
-                    throw new IllegalArgumentException(use);
-                }
-                logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
-                return null;
-            } catch (IllegalArgumentException ex) {
-                logger.log(AbstractLogger.ERROR, "URI argument exception: %s", absolute);
-                if (throwExceptions) {
-                    throw ex;
-                }
+            } else {
                 logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
                 return null;
             }
-        } else {
-            logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
-            return null;
+        } catch (URISyntaxException use) {
+            logger.log(AbstractLogger.ERROR, "URI syntax exception: %s", absolute);
+            if (throwExceptions) {
+                throw new IllegalArgumentException(use);
+            }
+        } catch (IllegalArgumentException ex) {
+            logger.log(AbstractLogger.ERROR, "URI argument exception: %s", absolute);
+            if (throwExceptions) {
+                throw ex;
+            }
+        } catch (IOException ex) {
+            logger.log(AbstractLogger.ERROR, "I/O exception: %s", absolute);
+            if (throwExceptions) {
+                throw new IllegalArgumentException(ex);
+            }
         }
+
+        logger.log(AbstractLogger.RESPONSE, "resolveURI: null");
+        return null;
     }
 
     /** Resolve external identifiers and other entity-like resources.
@@ -288,9 +298,33 @@ public class CatalogResolver implements ResourceResolver {
             return null;
         }
 
-        if (cache.cacheURI(absSystem.toString())) {
-            logger.log(AbstractLogger.RESPONSE, "resolveEntity: cached %s", absSystem);
-            return resource(absSystem.toString(), absSystem, cache.cachedSystem(absSystem, publicId));
+        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+
+        try {
+            // There's no point attempting to cache data: URIs.
+            if ("data".equals(absSystem.getScheme())) {
+                return uncachedResource(absSystem, absSystem);
+            }
+
+            if (cache.cacheURI(absSystem.toString())) {
+                logger.log(AbstractLogger.RESPONSE, "resolveEntity: cached %s", absSystem);
+                return resource(absSystem.toString(), absSystem, cache.cachedSystem(absSystem, publicId));
+            }
+        } catch (URISyntaxException use) {
+            logger.log(AbstractLogger.ERROR, "URI syntax exception: %s", absSystem);
+            if (throwExceptions) {
+                throw new IllegalArgumentException(use);
+            }
+        } catch (IllegalArgumentException ex) {
+            logger.log(AbstractLogger.ERROR, "URI argument exception: %s", absSystem);
+            if (throwExceptions) {
+                throw ex;
+            }
+        } catch (IOException ex) {
+            logger.log(AbstractLogger.ERROR, "I/O exception: %s", absSystem);
+            if (throwExceptions) {
+                throw new IllegalArgumentException(ex);
+            }
         }
 
         logger.log(AbstractLogger.RESPONSE, "resolveEntity: null");
