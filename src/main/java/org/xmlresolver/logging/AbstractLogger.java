@@ -26,6 +26,7 @@ public abstract class AbstractLogger implements ResolverLogger {
     protected static final int DEBUG = 1;
     protected static final int INFO = 2;
     protected static final int WARN = 3;
+    protected static final int NONE = 4;
 
     protected final HashMap<String, Integer> categories = new HashMap<>();
     protected String catalogLogging = null;
@@ -36,16 +37,24 @@ public abstract class AbstractLogger implements ResolverLogger {
     }
 
     /**
-     * Returns the log level, "debug", "info", or worn", associated with a category.
+     * Returns the log level, "debug", "info", worn", or "none" associated with a category.
      * @param cat The category.
      * @return The level. If no level has been configured for that category, the default is "debug".
      */
     public String getCategory(String cat) {
         if (categories.containsKey(cat)) {
-            if (INFO == categories.get(cat)) {
-                return "info";
-            } else if (WARN == categories.get(cat)) {
-                return "warn";
+            switch (categories.get(cat)) {
+                case INFO:
+                    return "info";
+                case WARN:
+                    return "warn";
+                case NONE:
+                    return "none";
+                case DEBUG:
+                    return "debug";
+                default:
+                    // this "can't" happen
+                    break;
             }
         }
         return "debug";
@@ -59,15 +68,23 @@ public abstract class AbstractLogger implements ResolverLogger {
      * @param level The level.
      */
     public void setCategory(String cat, String level) {
-        if ("info".equals(level)) {
-            categories.put(cat, INFO);
-        } else if ("warn".equals(level)) {
-            categories.put(cat, WARN);
-        } else {
-            categories.put(cat, DEBUG);
-            if (!"debug".equals(level)) {
+        switch (level) {
+            case "info":
+                categories.put(cat, INFO);
+                break;
+            case "warn":
+                categories.put(cat, WARN);
+                break;
+            case "debug":
+                categories.put(cat, DEBUG);
+                break;
+            case "none":
+                categories.put(cat, NONE);
+                break;
+            default:
+                categories.put(cat, DEBUG);
                 info("Incorrect logging level specified: " + level + " treated as 'debug'");
-            }
+                break;
         }
     }
 
@@ -105,6 +122,8 @@ public abstract class AbstractLogger implements ResolverLogger {
         Integer level = categories.getOrDefault(cat, deflevel);
 
         switch (level) {
+            case NONE:
+                break;
             case WARN:
                 warn(logMessage(cat, message, params));
                 break;

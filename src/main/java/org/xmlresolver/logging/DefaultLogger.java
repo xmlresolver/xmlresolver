@@ -7,11 +7,12 @@ import org.xmlresolver.ResolverFeature;
  * The default logger logs to {@link System#err}.
  *
  * <p>By default, the {@link ResolverFeature#DEFAULT_LOGGER_LOG_LEVEL DEFAULT_LOGGER_LOG_LEVEL} feature determines
- * which messages are logged. The valid levels are "debug", "info", and "warn". An invalid level
+ * which messages are logged. The valid levels are "debug", "info", "warn", and "none". An invalid level
  * is treated as "warn".</p>
  *
  * <p>If the level is set to "debug", all messages will be printed. If set to "info", info and warning
- * messages will be printed. If set to "warn", only warning messages will be printed.</p>
+ * messages will be printed. If set to "warn", only warning messages will be printed. If set to "none",
+ * no messages are printed.</p>
  *
  * <p>If the configuration's <code>DEFAULT_LOGGER_LOG_LEVEL</code> is changed, that change will be
  * detected by the logger and it will use that level going forward. The value can also be changed
@@ -52,7 +53,10 @@ public class DefaultLogger extends AbstractLogger {
                 return "debug";
             case AbstractLogger.WARN:
                 return "warn";
+            case AbstractLogger.NONE:
+                return "none";
             default:
+                // This "can't" happen.
                 return "unknown";
         }
     }
@@ -64,16 +68,23 @@ public class DefaultLogger extends AbstractLogger {
     public void setLogLevel(String level) {
         currentLoggingLevel = level;
 
-        if ("info".equalsIgnoreCase(level)) {
-            logLevel = AbstractLogger.INFO;
-        } else if ("debug".equalsIgnoreCase(level)) {
-            logLevel = AbstractLogger.DEBUG;
-        } else if ("warn".equalsIgnoreCase(level)) {
-            logLevel = AbstractLogger.WARN;
-        } else {
-            System.err.println("Invalid default logger log level: " + level);
-            logLevel = AbstractLogger.WARN;
-            currentLoggingLevel = "warn";
+        switch (level) {
+            case "info":
+                logLevel = AbstractLogger.INFO;
+                break;
+            case "debug":
+                logLevel = AbstractLogger.DEBUG;
+                break;
+            case "warn":
+                logLevel = AbstractLogger.WARN;
+                break;
+            case "none":
+                logLevel = AbstractLogger.NONE;
+                break;
+            default:
+                System.err.println("Invalid default logger log level: " + level);
+                logLevel = AbstractLogger.WARN;
+                currentLoggingLevel = "warn";
         }
     }
 
