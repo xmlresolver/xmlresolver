@@ -33,7 +33,7 @@ public abstract class URIUtils {
             return uri;
         }
         String fixSlashes = uri.replaceAll("\\\\", "/");
-        if (fixSlashes.length() >=2 && fixSlashes.charAt(1) == ':') {
+        if (fixSlashes.length() >= 2 && fixSlashes.charAt(1) == ':') {
             return "file:///" + fixSlashes;
         }
         return fixSlashes;
