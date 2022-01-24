@@ -88,13 +88,13 @@ import java.util.*;
  * </tr>
  * <tr><th>{@link ResolverFeature#CLASSPATH_CATALOGS}</th>
  * <td>xml.catalog.classpathCatalogs</td>
- * <td>default-logger-log-level</td>
+ * <td>classpath-catalogs</td>
  * <td>String</td>
  * </tr>
  * <tr><th>{@link ResolverFeature#DEFAULT_LOGGER_LOG_LEVEL}</th>
  * <td>xml.catalog.defaultLoggerLogLevel</td>
- * <td>classpath-catalogs</td>
- * <td>Boolean¹</td>
+ * <td>default-logger-log-level</td>
+ * <td>String</td>
  * </tr>
  * <tr><th>{@link ResolverFeature#MASK_JAR_URIS}</th>
  * <td>xml.catalog.maskJarUris</td>
@@ -119,7 +119,7 @@ import java.util.*;
  * <tr><th>{@link ResolverFeature#PREFER_PUBLIC}</th>
  * <td>xml.catalog.prefer</td>
  * <td>prefer</td>
- * <td>“<code>public</code>” or “<code>system</code>”³</td>
+ * <td>"<code>public</code>" or "<code>system</code>"³</td>
  * </tr>
  * <tr><th>{@link ResolverFeature#RESOLVER_LOGGER_CLASS}</th>
  * <td>xml.catalog.resolverLoggerClass</td>
@@ -134,14 +134,14 @@ import java.util.*;
  * </tbody>
  * <tfoot>
  * <tr>
- * <td colspan=”4”>¹ Any of “true”, “yes”, or “1” is true; everything else is false.<td>
+ * <td colspan="4">¹ Any of "true", "yes", or "1" is true; everything else is false.<td>
  * </tr>
  * <tr>
- * <td colspan=”4”>² The list of strings is semicolon delimited<td>
+ * <td colspan="4">² The list of strings is semicolon delimited<td>
  * </tr>
  * <tr>
- * <td colspan=”4”>³ Public is preferred if the value is “public”, any other value
- * is equivalent to “system”.</td>
+ * <td colspan="4">³ Public is preferred if the value is "public", any other value
+ * is equivalent to "system".</td>
  * </tr>
  * </tfoot>
  * </table>

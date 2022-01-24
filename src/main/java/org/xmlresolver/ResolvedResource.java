@@ -9,8 +9,8 @@ import java.net.URI;
  * the resolver interfaces defined by SAX, DOM, etc. expect open streams to be returned. This
  * abstract class provides the information necessary to support those APIs.</p>
  *
- * <p>The “local” URI is always the URI returned by catalog resolution.
- * The “resolved” URI is <i>almost always</i> the same.
+ * <p>The "local" URI is always the URI returned by catalog resolution.
+ * The "resolved" URI is <i>almost always</i> the same.
  * They can be different when catalog resolution returns a <code>jar:</code> or
  * <code>classpath:</code> URI. Those schemes are not supported by the {@link
  * java.net.URI} class in a useful way. This will cause problems if the
