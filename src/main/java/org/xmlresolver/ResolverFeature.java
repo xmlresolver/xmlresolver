@@ -3,12 +3,7 @@ package org.xmlresolver;
 import org.xmlresolver.cache.ResourceCache;
 import org.xmlresolver.logging.ResolverLogger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * An individual resolver feature. The complete set of known features is instantiated as a

@@ -2,12 +2,7 @@ package org.xmlresolver.catalog.query;
 
 import org.xmlresolver.CatalogManager;
 import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.catalog.entry.Entry;
-import org.xmlresolver.catalog.entry.EntryCatalog;
-import org.xmlresolver.catalog.entry.EntryDelegateSystem;
-import org.xmlresolver.catalog.entry.EntryRewriteSystem;
-import org.xmlresolver.catalog.entry.EntrySystem;
-import org.xmlresolver.catalog.entry.EntrySystemSuffix;
+import org.xmlresolver.catalog.entry.*;
 import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;

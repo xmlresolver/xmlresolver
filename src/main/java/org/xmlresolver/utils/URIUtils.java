@@ -12,7 +12,6 @@ package org.xmlresolver.utils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 
 /** URI utility methods.
  *

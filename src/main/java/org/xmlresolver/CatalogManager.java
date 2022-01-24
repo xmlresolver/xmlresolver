@@ -2,13 +2,7 @@ package org.xmlresolver;
 
 import org.xml.sax.InputSource;
 import org.xmlresolver.catalog.entry.EntryCatalog;
-import org.xmlresolver.catalog.query.QueryDoctype;
-import org.xmlresolver.catalog.query.QueryDocument;
-import org.xmlresolver.catalog.query.QueryEntity;
-import org.xmlresolver.catalog.query.QueryNotation;
-import org.xmlresolver.catalog.query.QueryPublic;
-import org.xmlresolver.catalog.query.QuerySystem;
-import org.xmlresolver.catalog.query.QueryUri;
+import org.xmlresolver.catalog.query.*;
 import org.xmlresolver.loaders.CatalogLoader;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
