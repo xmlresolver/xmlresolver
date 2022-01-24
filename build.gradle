@@ -94,7 +94,7 @@ if (OperatingSystem.current().isWindows()) {
 } else {
   task buildData(type: Exec) {
     workingDir "data"
-    commandLine ".\\gradlew", "dist"
+    commandLine "./gradlew", "dist"
   }
 }
 
