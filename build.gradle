@@ -89,7 +89,7 @@ docker_container.configure {
 if (OperatingSystem.current().isWindows()) {
   task buildData(type: Exec) {
     workingDir "data"
-    commandLine ".\\gradlew", "dist"
+    commandLine "cmd", "/c", ".\\gradlew", "dist"
   }
 } else {
   task buildData(type: Exec) {
