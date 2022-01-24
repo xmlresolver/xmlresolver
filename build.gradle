@@ -4,7 +4,7 @@ plugins {
   id "signing"
   id 'com.github.gmazzo.buildconfig' version "2.0.2"
   id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.3'
-  id 'com.nwalsh.gradle.docker.container' version '0.0.3'
+  id 'com.nwalsh.gradle.docker.container' version '0.0.5'
 }
 
 repositories {
@@ -54,6 +54,7 @@ dependencies {
   )
 }
 
+import org.gradle.internal.os.OperatingSystem;
 import com.nwalsh.gradle.saxon.SaxonXsltTask
 import com.nwalsh.gradle.docker.DockerContainer
 
@@ -85,16 +86,24 @@ docker_container.configure {
 
 // ============================================================
 
-task buildData(type: Exec) {
-  workingDir "data"
-  commandLine "./gradlew", "dist"
+if (OperatingSystem.current().isWindows()) {
+  task buildData(type: Exec) {
+    workingDir "data"
+    commandLine "cmd", "/c", ".\\gradlew", "dist"
+  }
+} else {
+  task buildData(type: Exec) {
+    workingDir "data"
+    commandLine "./gradlew", "dist"
+  }
 }
 
 task copyData(dependsOn: ["buildData"]) {
   def srcpath = null
   doFirst {
     File databuild = new File("data/build")
-    databuild.listFiles().each { fn ->
+    databuild.listFiles().each { fnfile ->
+      def fn = fnfile.toString().replace("\\", "/") // Normalize for Windows
       if (fn.toString().startsWith("data/build/xmlresolverdata")) {
         if (srcpath != null) {
           throw new GradleException("More than one version of the data?")

@@ -2,11 +2,7 @@ package org.xmlresolver.cache;
 
 import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.ResolverConstants;
-import org.xmlresolver.catalog.entry.Entry;
-import org.xmlresolver.catalog.entry.EntryCatalog;
-import org.xmlresolver.catalog.entry.EntryPublic;
-import org.xmlresolver.catalog.entry.EntrySystem;
-import org.xmlresolver.catalog.entry.EntryUri;
+import org.xmlresolver.catalog.entry.*;
 import org.xmlresolver.logging.AbstractLogger;
 
 import java.io.File;

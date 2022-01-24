@@ -18,6 +18,27 @@ import java.nio.charset.StandardCharsets;
  * @author ndw
  */
 public abstract class URIUtils {
+    private static Boolean isWindows = null;
+
+    private static boolean checkWindows() {
+        if (isWindows == null) {
+            String os = System.getProperty("os.name", "unknown").toLowerCase();
+            isWindows = os.contains("win");
+        }
+        return isWindows;
+    }
+
+    private static String windowsPathURI(String uri) {
+        if (!checkWindows()) {
+            return uri;
+        }
+        String fixSlashes = uri.replaceAll("\\\\", "/");
+        if (fixSlashes.length() >= 2 && fixSlashes.charAt(1) == ':') {
+            return "file:///" + fixSlashes;
+        }
+        return fixSlashes;
+    }
+
     /**
      * Creates a URI for the users current working directory.
      *
@@ -28,7 +49,7 @@ public abstract class URIUtils {
      * @return a file: URI for the current working directory
      */
     public static URI cwd() {
-        String dir = System.getProperty("user.dir");
+        String dir = windowsPathURI(System.getProperty("user.dir"));
         if (!dir.endsWith("/")) {
             dir += "/";
         }
@@ -126,7 +147,7 @@ public abstract class URIUtils {
                 sb.append(ch);
             }
         }
-        uri = sb.toString();
+        uri = windowsPathURI(sb.toString());
 
         URI resolved = URI.create(uri);
         if (resolved.isAbsolute()) {

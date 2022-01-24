@@ -1,6 +1,7 @@
 package org.xmlresolver;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlresolver.utils.URIUtils;
@@ -16,15 +17,23 @@ import static org.junit.Assert.assertTrue;
 public class RddlTest extends CacheManager {
     public static final String catalog = "src/test/resources/docker.xml";
     public static final URI catloc = URIUtils.cwd().resolve(catalog);
+    private static final String relativeCacheDir = "build/rddl-cache";
 
     XMLResolverConfiguration config = null;
     CatalogResolver resolver = null;
 
+    @BeforeClass
+    public static void setupCache() {
+        // Only do this once for the whole test suite.
+        // On Windows, if this is run @Before, it sometimes runs afoul of documents
+        // that haven't been closed yet and can't be removed.
+        clearCache(relativeCacheDir);
+    }
+
     @Before
     public void setup() {
-        File cache = clearCache("build/rddl-cache");
-
         config = new XMLResolverConfiguration(catalog);
+        File cache = new File(URIUtils.cwd().getPath() + relativeCacheDir);
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, cache.getAbsolutePath());
         resolver = new CatalogResolver(config);
 
