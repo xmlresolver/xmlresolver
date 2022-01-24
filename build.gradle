@@ -54,6 +54,7 @@ dependencies {
   )
 }
 
+import org.gradle.internal.os.OperatingSystem;
 import com.nwalsh.gradle.saxon.SaxonXsltTask
 import com.nwalsh.gradle.docker.DockerContainer
 
@@ -85,9 +86,16 @@ docker_container.configure {
 
 // ============================================================
 
-task buildData(type: Exec) {
-  workingDir "data"
-  commandLine "./gradlew", "dist"
+if (OperatingSystem.current().isWindows()) {
+  task buildData(type: Exec) {
+    workingDir "data"
+    commandLine ".\\gradlew", "dist"
+  }
+} else {
+  task buildData(type: Exec) {
+    workingDir "data"
+    commandLine ".\\gradlew", "dist"
+  }
 }
 
 task copyData(dependsOn: ["buildData"]) {
