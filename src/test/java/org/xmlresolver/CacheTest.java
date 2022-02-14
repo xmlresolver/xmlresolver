@@ -119,5 +119,35 @@ public class CacheTest extends CacheManager {
         cache.removeCacheInfo("^frabble:");
         cache.removeCacheInfo("\\.dtd$");
     }
+
+    @Test
+    public void testCacheDisabled() {
+        XMLResolverConfiguration localConfig = new XMLResolverConfiguration();
+        localConfig.setFeature(ResolverFeature.CACHE_DIRECTORY, "/tmp/cache");
+        localConfig.setFeature(ResolverFeature.CACHE_ENABLED, false);
+        ResourceCache localCache = new ResourceCache(localConfig);
+        assertNull(localCache.directory());
+        assertFalse(localCache.cacheURI("http://example.com/test.dtd"));
+    }
+
+    @Test
+    public void testCacheDisabledByProperty() {
+        XMLResolverConfiguration localConfig = new XMLResolverConfiguration();
+        assertTrue(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
+
+        String value = System.getProperty("xml.catalog.cacheEnabled");
+        System.setProperty("xml.catalog.cacheEnabled", "false");
+
+        localConfig = new XMLResolverConfiguration();
+        assertFalse(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
+
+        if (value == null) {
+            System.clearProperty("xml.catalog.cacheEnabled");
+        } else {
+            System.setProperty("xml.catalog.cacheEnabled", value);
+        }
+    }
+
+
 }
 
