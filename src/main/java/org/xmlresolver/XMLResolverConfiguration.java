@@ -280,6 +280,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         cacheDirectory = current.cacheDirectory;
         cacheUnderHome = current.cacheUnderHome;
         cache = current.cache;
+        cacheEnabled = current.cacheEnabled;
         if (current.manager == null) {
             manager = null;
         } else {
