@@ -8,10 +8,12 @@
 package org.xmlresolver;
 
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xmlresolver.tools.ResolvingXMLReader;
+import org.xmlresolver.utils.URIUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +45,18 @@ public class ClasspathTest {
         resolver = new Resolver(config);
         catresolver = resolver.getCatalogResolver();
     }
+
+    @Test
+    public void testResolveUri() {
+        try {
+            URI baseURI = new URI("classpath:/my/class/path/");
+            URI resolved = URIUtils.resolve(baseURI, "my-file.xml");
+            Assert.assertEquals("classpath:my/class/path/my-file.xml", resolved.toString());
+        } catch (Exception ex) {
+            fail();
+        }
+    }
+
 
     @Test
     public void testLookup() {
