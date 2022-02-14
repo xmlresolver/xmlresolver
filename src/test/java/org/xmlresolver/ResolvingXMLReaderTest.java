@@ -5,13 +5,14 @@
  * Created on January 11, 2007, 9:57 AM
  */
 
-package org.xmlresolver.tools;
+package org.xmlresolver;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.XMLResolverConfiguration;
+import org.xmlresolver.tools.ResolvingXMLReader;
 
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
