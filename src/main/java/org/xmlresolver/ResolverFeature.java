@@ -347,4 +347,11 @@ public class ResolverFeature<T> {
     public static final ResolverFeature<String> ACCESS_EXTERNAL_DOCUMENT = new ResolverFeature<>(
             "http://xmlresolver.org/feature/access-external-document", "all");
 
+    /**
+     * Is the cache enabled?
+     *
+     * <p>If the cache <em>is not</em> enabled, no attempt will be made to create or use a cache.</p>
+     */
+    public static final ResolverFeature<Boolean> CACHE_ENABLED = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/cache-enabled", true);
 }

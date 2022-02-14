@@ -67,6 +67,11 @@ import java.util.*;
  * <td>cache-under-home</td>
  * <td>Boolean¹</td>
  * </tr>
+ * <tr><th>{@link ResolverFeature#CACHE_ENABLED}</th>
+ * <td>xml.catalog.cacheEnabled</td>
+ * <td>cache-enabled</td>
+ * <td>Boolean¹</td>
+ * </tr>
  * <tr><th>{@link ResolverFeature#CATALOG_ADDITIONS}</th>
  * <td>xml.catalog.additions</td>
  * <td>catalog-additions</td>
@@ -149,6 +154,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.PREFER_PUBLIC, ResolverFeature.PREFER_PROPERTY_FILE,
             ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.CATALOG_ADDITIONS,
             ResolverFeature.CACHE_DIRECTORY, ResolverFeature.CACHE_UNDER_HOME,
+            ResolverFeature.CACHE_ENABLED,
             ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS, ResolverFeature.MASK_JAR_URIS,
             ResolverFeature.CATALOG_MANAGER, ResolverFeature.URI_FOR_SYSTEM,
             ResolverFeature.CATALOG_LOADER_CLASS, ResolverFeature.PARSE_RDDL,
@@ -167,6 +173,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean allowCatalogPI = ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue();
     private String cacheDirectory = ResolverFeature.CACHE_DIRECTORY.getDefaultValue();
     private Boolean cacheUnderHome = ResolverFeature.CACHE_UNDER_HOME.getDefaultValue();
+    private Boolean cacheEnabled = ResolverFeature.CACHE_ENABLED.getDefaultValue();
     private ResourceCache cache = ResolverFeature.CACHE.getDefaultValue(); // null
     private CatalogManager manager = ResolverFeature.CATALOG_MANAGER.getDefaultValue(); // also null
     private Boolean uriForSystem = ResolverFeature.URI_FOR_SYSTEM.getDefaultValue();
@@ -424,6 +431,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             cacheUnderHome = isTrue(property);
         }
 
+        property = System.getProperty("xml.catalog.cacheEnabled");
+        if (property != null) {
+            showConfigChange("Cache enabled: %s", property);
+            cacheEnabled = isTrue(property);
+        }
+
         property = System.getProperty("xml.catalog.uriForSystem");
         if (property != null) {
             showConfigChange("URI-for-system: %s", property);
@@ -584,6 +597,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             cacheUnderHome = isTrue(property);
         }
 
+        property = properties.getProperty("cache-enabled");
+        if (property != null) {
+            showConfigChange("Cache enabled: %s", property);
+            cacheEnabled = isTrue(property);
+        }
+
         property = properties.getProperty("uri-for-system");
         if (property != null) {
             showConfigChange("URI-for-system: %s", property);
@@ -668,6 +687,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         resolverLogger.log(AbstractLogger.CONFIG, "Mask jar URIs: %s", maskJarUris);
         resolverLogger.log(AbstractLogger.CONFIG, "Cache under home: %s", cacheUnderHome);
         resolverLogger.log(AbstractLogger.CONFIG, "Cache directory: %s", cacheDirectory);
+        resolverLogger.log(AbstractLogger.CONFIG, "Cache enabled: %s", cacheEnabled);
         resolverLogger.log(AbstractLogger.CONFIG, "Catalog loader: %s", catalogLoader);
         resolverLogger.log(AbstractLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
         resolverLogger.log(AbstractLogger.CONFIG, "Archived catalogs: %s", archivedCatalogs);
@@ -816,6 +836,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             cacheUnderHome = (Boolean) value;
             showConfigChange("Cache under home: %s", cacheUnderHome);
+            cache = null;
+        } else if (feature == ResolverFeature.CACHE_ENABLED) {
+            cacheEnabled = (Boolean) value;
+            showConfigChange("Cache enabled: %s", cacheEnabled);
             cache = null;
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
@@ -973,6 +997,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) cache;
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             return (T) cacheUnderHome;
+        } else if (feature == ResolverFeature.CACHE_ENABLED) {
+            return (T) cacheEnabled;
         } else if (feature == ResolverFeature.CLASSLOADER) {
             return (T) classLoader;
         } else if (feature == ResolverFeature.ARCHIVED_CATALOGS) {

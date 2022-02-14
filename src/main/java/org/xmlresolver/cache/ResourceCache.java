@@ -138,6 +138,14 @@ public class ResourceCache extends CatalogManager {
 
     public ResourceCache(ResolverConfiguration config) {
         super(config);
+
+        if (!config.getFeature(ResolverFeature.CACHE_ENABLED)) {
+            cacheDir = null;
+            cacheParser = null;
+            defaultCacheInfo = new CacheInfo(defaultPattern, false, deleteWait, cacheSize, cacheSpace, maxAge);
+            return;
+        }
+
         cacheParser = new CacheParser(config);
 
         // In case there is no control.xml file...
