@@ -1,9 +1,6 @@
 package org.xmlresolver.loaders;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
+import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.*;
 import org.xmlresolver.catalog.entry.Entry;
@@ -22,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -134,14 +132,23 @@ public class XmlLoader implements CatalogLoader {
 
         synchronized (catalogMap) {
             try {
-                SAXParserFactory spf = SAXParserFactory.newInstance();
-                spf.setNamespaceAware(true);
-                spf.setValidating(false);
-                spf.setXIncludeAware(false);
-                SAXParser parser = spf.newSAXParser();
                 CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
 
-                parser.parse(source, handler);
+                Supplier<XMLReader> supplier = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER);
+                if (supplier != null) {
+                    XMLReader reader = supplier.get();
+                    reader.setContentHandler(handler);
+                    reader.parse(source);
+                } else {
+                    // Wat?
+                    SAXParserFactory spf = SAXParserFactory.newInstance();
+                    spf.setNamespaceAware(true);
+                    spf.setValidating(false);
+                    spf.setXIncludeAware(false);
+                    SAXParser parser = spf.newSAXParser();
+                    parser.parse(source, handler);
+                }
+
                 EntryCatalog entry = handler.catalog();
                 catalogMap.put(catalog, entry);
             } catch (ParserConfigurationException | SAXException | IOException ex) {

@@ -1,9 +1,16 @@
 package org.xmlresolver;
 
+import com.thaiopensource.resolver.xml.sax.SAX;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xmlresolver.cache.ResourceCache;
 import org.xmlresolver.logging.ResolverLogger;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * An individual resolver feature. The complete set of known features is instantiated as a
@@ -354,4 +361,58 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> CACHE_ENABLED = new ResolverFeature<>(
             "http://xmlresolver.org/feature/cache-enabled", true);
+
+    /**
+     * Identify the SAXParserFactory class.
+     *
+     * <p>If unconfigured, parsers are created with {@link #XMLREADER_SUPPLIER}.</p>
+     *
+     * <p>This feature and the {@link #XMLREADER_SUPPLIER} are different mechanisms for
+     * configuring the same underlying feature: how does the resolver get an XML parser if it needs one? (For
+     * example, it needs one to parse the cache, but the {@link org.xmlresolver.tools.ResolvingXMLFilter ResolvingXMLFilter} and
+     * {@link org.xmlresolver.tools.ResolvingXMLReader ResolvingXMLReader} also use this mechanism.)</p>
+     *
+     * <p>The <code>SAXPARSERFACTORY_CLASS</code> is initially <code>null</code> and the
+     * <code>XMLREADER_SUPPLIER</code> is used. The purpose of the <code>SAXPARSERFACTORY_CLASS</code>
+     * is to allow the factory to be configured with a property since the {@link #XMLREADER_SUPPLIER} cannot.</p>
+     *
+     * <p>If a <code>SAXPARSERFACTORY_CLASS</code> is specified, it will be used in favor of the default
+     * <code>XMLREADER_SUPPLIER.</code> If an <code>XMLREADER_SUPPLIER</code> is explicitly set after the
+     * configuration is initialized, it will set this feature to <code>null</code> and take precedence.</p>
+     */
+    public static final ResolverFeature<String> SAXPARSERFACTORY_CLASS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/saxparserfactory-class", null);
+
+    /**
+     * Configure the default XML reader.
+     *
+     * <p>The default supplier is obtained with <code>SAXParserFactory.newInstance()</code> and
+     * the global mechanisms that it uses.</p>
+     *
+     * <p>This feature and the {@link #SAXPARSERFACTORY_CLASS} are different mechanisms for
+     * configuring the same underlying feature: how does the resolver get an XML parser if it needs one? (For
+     * example, it needs one to parse the cache, but the {@link org.xmlresolver.tools.ResolvingXMLFilter ResolvingXMLFilter} and
+     * {@link org.xmlresolver.tools.ResolvingXMLReader ResolvingXMLReader} also use this mechanism.)</p>
+     *
+     * <p>The {@link #SAXPARSERFACTORY_CLASS} is initially <code>null</code> and the
+     * <code>XMLREADER_SUPPLIER</code> is used. The purpose of the <code>SAXPARSERFACTORY_CLASS</code>
+     * is to allow the factory to be configured with a property since the <code>XMLREADER_SUPPLIER</code> cannot.</p>
+     *
+     * <p>If a <code>SAXPARSERFACTORY_CLASS</code> is specified, it will be used in favor of the default
+     * <code>XMLREADER_SUPPLIER.</code> If an <code>XMLREADER_SUPPLIER</code> is explicitly set after the
+     * configuration is initialized, it will set this feature to <code>null</code> and take precedence.</p>
+     */
+    public static final ResolverFeature<Supplier<XMLReader>> XMLREADER_SUPPLIER = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/xmlreader-supplier", () -> {
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            factory.setValidating(false);
+            factory.setXIncludeAware(false);
+            SAXParser parser = factory.newSAXParser();
+            return parser.getXMLReader();
+        } catch (ParserConfigurationException| SAXException ex) {
+            return null;
+        }
+    });
 }
