@@ -9,10 +9,17 @@
 
 package org.xmlresolver.tools;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xmlresolver.Resolver;
+import org.xmlresolver.ResolverFeature;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.function.Supplier;
 
 /** An implementation of {@link org.xml.sax.XMLReader} that performs catalog resolution.
  *
@@ -24,19 +31,14 @@ import javax.xml.parsers.SAXParserFactory;
 public class ResolvingXMLReader extends ResolvingXMLFilter {
     /** Construct an XML Reader with the default {@link javax.xml.parsers.SAXParserFactory} and resolver.
      *
-     * <p>The default parser is configured to be namespace aware and non-validating.</p>
+     * <p>If the reader is obtained with an {@link ResolverFeature#XMLREADER_SUPPLIER XMLREADER_SUPPLIER},
+     * it is the users responsibility to configure the reader. If the parser is instantiated through
+     * {@link ResolverFeature#SAXPARSERFACTORY_CLASS}, it will be configured to be
+     * namespace aware and non-validating.</p>
      */
     public ResolvingXMLReader() {
         super();
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        spf.setNamespaceAware(true);
-        spf.setValidating(false);
-        try {
-            SAXParser parser = spf.newSAXParser();
-            setParent(parser.getXMLReader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        initialize(null);
     }
 
     /** Construct an XML Reader with the specified {@link javax.xml.parsers.SAXParserFactory} and default resolver.
@@ -45,12 +47,7 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
      */
     public ResolvingXMLReader(SAXParserFactory factory) {
         super();
-        try {
-            SAXParser parser = factory.newSAXParser();
-            setParent(parser.getXMLReader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        initialize(factory);
     }
 
     /** Construct an XML Reader with the default {@link javax.xml.parsers.SAXParserFactory} and the specified resolver.
@@ -61,15 +58,7 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
      */
     public ResolvingXMLReader(Resolver resolver) {
         super(resolver);
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        spf.setNamespaceAware(true);
-        spf.setValidating(false);
-        try {
-            SAXParser parser = spf.newSAXParser();
-            setParent(parser.getXMLReader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        initialize(null);
     }
 
     /** Construct an XML Reader with the specified {@link javax.xml.parsers.SAXParserFactory} and resolver.
@@ -79,11 +68,40 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
      */
     public ResolvingXMLReader(SAXParserFactory factory, Resolver resolver) {
         super(resolver);
+        initialize(factory);
+    }
+
+    private void initialize(SAXParserFactory userFactory) {
+        SAXParserFactory factory = userFactory;
+        if (factory != null) {
+            try {
+                factory.setNamespaceAware(true);
+                factory.setValidating(false);
+                SAXParser parser = factory.newSAXParser();
+                setParent(parser.getXMLReader());
+                return;
+            } catch (ParserConfigurationException | SAXException ex) {
+                ex.printStackTrace();
+                throw new RuntimeException(ex);
+            }
+        }
+
+        Supplier<XMLReader> readerSupplier = resolver.getConfiguration().getFeature(ResolverFeature.XMLREADER_SUPPLIER);
+        if (readerSupplier != null) {
+            setParent(readerSupplier.get());
+            return;
+        }
+
+        // This should never happen, but fallback is fallback...
+        factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
         try {
             SAXParser parser = factory.newSAXParser();
             setParent(parser.getXMLReader());
         } catch (Exception ex) {
             ex.printStackTrace();
+            throw new RuntimeException(ex);
         }
     }
 }

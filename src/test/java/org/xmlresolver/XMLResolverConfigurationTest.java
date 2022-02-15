@@ -10,6 +10,7 @@
 package org.xmlresolver;
 
 import org.junit.Test;
+import org.xml.sax.XMLReader;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,8 +18,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -364,6 +367,43 @@ public class XMLResolverConfigurationTest {
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
+    }
+
+    @Test
+    public void testSAXParserFactoryClass() {
+        String name = "xml.catalog.saxParserFactoryClass";
+        String value = System.getProperty(name);
+        System.setProperty(name, "org.xmlresolver.MySAXParserFactory");
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        XMLReader reader = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER).get();
+        assertTrue(MySAXParserFactory.parserCount > 0);
+        if (value == null) {
+            System.clearProperty(name);
+        } else {
+            System.setProperty(name, value);
+        }
+    }
+
+    @Test
+    public void testXmlReaderSupplier() {
+        String name = "xml.catalog.saxParserFactoryClass";
+        String value = System.getProperty(name);
+        System.setProperty(name, "org.xmlresolver.MySAXParserFactory");
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+
+        Supplier<XMLReader> defaultSupplier = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER);
+        config.setFeature(ResolverFeature.XMLREADER_SUPPLIER, MyXMLReaderSupplier.supplier());
+
+        assertNull(config.getFeature(ResolverFeature.SAXPARSERFACTORY_CLASS));
+
+        XMLReader reader = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER).get();
+        assertTrue(MyXMLReaderSupplier.parserCount > 0);
+
+        if (value == null) {
+            System.clearProperty(name);
+        } else {
+            System.setProperty(name, value);
+        }
     }
 
 }

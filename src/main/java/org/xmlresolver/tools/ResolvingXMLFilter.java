@@ -43,8 +43,8 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
 
     /** Are we in the prolog? Is an oasis-xml-catalog PI valid now? */
     private boolean processXMLCatalogPI = false;
-    private static Resolver staticResolver = null;
-    private Resolver resolver = null;
+    protected static Resolver staticResolver = null;
+    protected Resolver resolver = null;
     
     /** The base URI of the input document, if known. */
     private URI baseURI = null;

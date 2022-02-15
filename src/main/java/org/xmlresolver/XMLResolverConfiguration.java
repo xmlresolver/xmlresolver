@@ -1,17 +1,23 @@
 package org.xmlresolver;
 
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xmlresolver.cache.ResourceCache;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.URIUtils;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Configures an XML resolver.
@@ -127,10 +133,20 @@ import java.util.*;
  * <td>resolver-logger-class</td>
  * <td>String</td>
  * </tr>
+ * <tr><th>{@link ResolverFeature#SAXPARSERFACTORY_CLASS}</th>
+ * <td>xml.catalog.saxParserFactoryClass</td>
+ * <td>saxparserfactory-class</td>
+ * <td>String</td>
+ * </tr>
  * <tr><th>{@link ResolverFeature#URI_FOR_SYSTEM}</th>
  * <td>xml.catalog.uriForSystem</td>
  * <td>uri-for-system</td>
  * <td>Boolean¹</td>
+ * </tr>
+ * <tr><th>{@link ResolverFeature#XMLREADER_SUPPLIER}</th>
+ * <td>-</td>
+ * <td>-</td>
+ * <td>Supplier&lt;XMLReader&gt;</td>
  * </tr>
  * </tbody>
  * <tfoot>
@@ -162,7 +178,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.ARCHIVED_CATALOGS, ResolverFeature.THROW_URI_EXCEPTIONS,
             ResolverFeature.RESOLVER_LOGGER_CLASS, ResolverFeature.RESOLVER_LOGGER,
             ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL,
-            ResolverFeature.ACCESS_EXTERNAL_ENTITY, ResolverFeature.ACCESS_EXTERNAL_DOCUMENT};
+            ResolverFeature.ACCESS_EXTERNAL_ENTITY, ResolverFeature.ACCESS_EXTERNAL_DOCUMENT,
+            ResolverFeature.SAXPARSERFACTORY_CLASS, ResolverFeature.XMLREADER_SUPPLIER};
 
     private static List<String> classpathCatalogList = null;
 
@@ -190,6 +207,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private String defaultLoggerLogLevel = ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL.getDefaultValue();
     private String accessExternalEntity = ResolverFeature.ACCESS_EXTERNAL_ENTITY.getDefaultValue();
     private String accessExternalDocument = ResolverFeature.ACCESS_EXTERNAL_DOCUMENT.getDefaultValue();
+    private String saxParserFactoryClass = ResolverFeature.SAXPARSERFACTORY_CLASS.getDefaultValue();
+    private Supplier<XMLReader> xmlReaderSupplier = ResolverFeature.XMLREADER_SUPPLIER.getDefaultValue();
     private ResolverLogger resolverLogger = null;
 
     /** Construct a default configuration.
@@ -300,6 +319,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         defaultLoggerLogLevel = current.defaultLoggerLogLevel;
         accessExternalEntity = current.accessExternalEntity;
         accessExternalDocument = current.accessExternalDocument;
+        saxParserFactoryClass = current.saxParserFactoryClass;
+        xmlReaderSupplier = current.xmlReaderSupplier;
     }
 
     private void loadConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
@@ -369,6 +390,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 }
                 catalogs.add(fn);
             }
+        }
+
+        if (saxParserFactoryClass != null) {
+            // Call setFeature to perform additional initialization for this property.
+            setFeature(ResolverFeature.SAXPARSERFACTORY_CLASS, saxParserFactoryClass);
         }
 
         showConfig();
@@ -508,6 +534,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (property != null) {
             showConfigChange("Access external document: %s", property);
             accessExternalDocument = property;
+        }
+
+        property = System.getProperty("xml.catalog.saxParserFactoryClass");
+        if (property != null) {
+            showConfigChange("SAXParserFactory class: %s", property);
+            saxParserFactoryClass = property;
         }
     }
 
@@ -675,6 +707,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Access external document: %s", property);
             accessExternalDocument = property;
         }
+
+        property = properties.getProperty("saxparserfactory-class");
+        if (property != null) {
+            showConfigChange("SAXParserFactory class: %s", property);
+            saxParserFactoryClass = property;
+        }
     }
 
     private void showConfig() {
@@ -697,6 +735,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         resolverLogger.log(AbstractLogger.CONFIG, "Logger class: %s", resolverLoggerClass);
         resolverLogger.log(AbstractLogger.CONFIG, "Access external entity: %s", accessExternalEntity);
         resolverLogger.log(AbstractLogger.CONFIG, "Access external document: %s", accessExternalDocument);
+        resolverLogger.log(AbstractLogger.CONFIG, "SAXParserFactory class: %s", saxParserFactoryClass);
+        resolverLogger.log(AbstractLogger.CONFIG, "XMLReader supplier: %s", xmlReaderSupplier);
 
         resolverLogger.log(AbstractLogger.CONFIG, "Default logger log level: %s", defaultLoggerLogLevel);
         for (String catalog: catalogs) {
@@ -887,6 +927,36 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.ACCESS_EXTERNAL_DOCUMENT) {
             accessExternalDocument = (String) value;
             showConfigChange("Access external document: %s", accessExternalDocument);
+        } else if (feature == ResolverFeature.SAXPARSERFACTORY_CLASS) {
+            try {
+                Class<?> factoryClass = Class.forName((String) value);
+                Constructor<?> constructor = factoryClass.getConstructor();
+                SAXParserFactory factory = (SAXParserFactory) constructor.newInstance();
+                factory.setNamespaceAware(true);
+                factory.setValidating(false);
+                factory.setXIncludeAware(false);
+                // Instantiate one so we know if it'll work.
+                XMLReader reader = factory.newSAXParser().getXMLReader();
+                assert reader != null;
+                xmlReaderSupplier = () -> {
+                    try {
+                        SAXParser parser = factory.newSAXParser();
+                        return parser.getXMLReader();
+                    } catch (ParserConfigurationException | SAXException ex) {
+                        return null;
+                    }
+                };
+            } catch (Exception ex) {
+                // It's bad, you know.
+                throw new RuntimeException(ex);
+            }
+
+            saxParserFactoryClass = (String) value;
+            showConfigChange("SAXParserFactory class: %s", saxParserFactoryClass);
+        } else if (feature == ResolverFeature.XMLREADER_SUPPLIER) {
+            saxParserFactoryClass = null;
+            xmlReaderSupplier = (Supplier<XMLReader>) value;
+            showConfigChange("XMLReader supplier: %s", xmlReaderSupplier);
         } else {
             resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -1026,6 +1096,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) accessExternalEntity;
         } else if (feature == ResolverFeature.ACCESS_EXTERNAL_DOCUMENT) {
             return (T) accessExternalDocument;
+        } else if (feature == ResolverFeature.SAXPARSERFACTORY_CLASS) {
+            return (T) saxParserFactoryClass;
+        } else if (feature == ResolverFeature.XMLREADER_SUPPLIER) {
+            return (T) xmlReaderSupplier;
         } else {
             resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
             return null;

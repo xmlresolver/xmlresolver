@@ -3,6 +3,7 @@ package org.xmlresolver.cache;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.*;
 import org.xmlresolver.catalog.entry.Entry;
@@ -194,13 +195,10 @@ public class ResourceCache extends CatalogManager {
         File control = new File(cacheDir, "control.xml");
         if (control.exists()) {
             try {
-                SAXParserFactory spf = SAXParserFactory.newInstance();
-                spf.setNamespaceAware(true);
-                spf.setValidating(false);
-                spf.setXIncludeAware(false);
-                SAXParser parser = spf.newSAXParser();
+                XMLReader reader = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER).get();
+                reader.setContentHandler(new CacheHandler(deleteWait, cacheSize, cacheSpace, maxAge));
                 InputSource source = new InputSource(control.getAbsolutePath());
-                parser.parse(source, new CacheHandler(deleteWait, cacheSize, cacheSpace, maxAge));
+                reader.parse(source);
                 parsed = true;
 
                 // Caching file and classpath URIs is going to be confusing.
@@ -212,7 +210,7 @@ public class ResourceCache extends CatalogManager {
                         cacheInfo.add(new CacheInfo(pattern, false));
                     }
                 }
-            } catch (ParserConfigurationException | SAXException | IOException ex) {
+            } catch (SAXException | IOException ex) {
                 logger.log(AbstractLogger.ERROR, "Failed to parse cache control file: %s", ex.getMessage());
             }
         } else {
