@@ -2,8 +2,8 @@ plugins {
   id "java"
   id "maven-publish"
   id "signing"
-  id 'com.github.gmazzo.buildconfig' version "2.0.2"
-  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.3'
+  id 'com.github.gmazzo.buildconfig' version "3.0.3"
+  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.6'
   id 'com.nwalsh.gradle.docker.container' version '0.0.5'
 }
 
@@ -31,13 +31,13 @@ configurations {
 
 dependencies {
   implementation (
-    [group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'],
-    [group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'],
+    [group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.1.3'],
+    [group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.1.3'],
     [group: 'xml-apis', name: 'xml-apis', version: '1.4.01' ]
   )
 
   compileOnly (
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' ]
+    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36' ]
   )
 
   validatingImplementation (
@@ -45,8 +45,8 @@ dependencies {
   )
 
   testImplementation (
-    [group: 'junit', name: 'junit', version: '4.12'],
-    [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30' ],
+    [group: 'junit', name: 'junit', version: '4.13.2'],
+    [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36' ],
     files("src/test/resources/data1.jar"),
     files("src/test/resources/data2.jar"),
     files("src/test/resources/data3.jar"),
