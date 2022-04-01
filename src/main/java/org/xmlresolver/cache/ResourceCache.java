@@ -742,7 +742,7 @@ public class ResourceCache extends CatalogManager {
             return null;
         }
 
-        URI name = connection.getURI();
+        URI name = connection.getUri();
         if (nature == null && purpose == null) {
             logger.log(AbstractLogger.CACHE, "Caching resource for uri: %s", name);
         } else {
@@ -806,11 +806,11 @@ public class ResourceCache extends CatalogManager {
         try {
             lock.lock();
         } catch (IOException ex) {
-            logger.log(AbstractLogger.ERROR, "Failed to obtain directory lock to cache resource: %s", connection.getURI());
+            logger.log(AbstractLogger.ERROR, "Failed to obtain directory lock to cache resource: %s", connection.getUri());
             return null;
         }
 
-        URI name = connection.getURI();
+        URI name = connection.getUri();
         String contentType = connection.getContentType();
         InputStream resource = connection.getStream();
 
