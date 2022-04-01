@@ -84,6 +84,7 @@ public class ValidatingXmlLoader implements CatalogLoader {
     /** Load the specified catalog from the specified stream.
      *
      * @param catalog The catalog URI.
+     * @param source The input source.
      * @return The parsed catalog, if it was available and valid.
      * @throws CatalogInvalidException if the catalog is invalid.
      */
