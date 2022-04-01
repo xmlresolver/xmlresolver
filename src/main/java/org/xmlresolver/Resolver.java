@@ -38,7 +38,12 @@ import java.io.IOException;
  */
 
 public class Resolver implements URIResolver, EntityResolver, EntityResolver2, NamespaceResolver, LSResourceResolver {
-    private final ResolverLogger logger;
+    public static final String PURPOSE_SCHEMA_VALIDATION = "http://www.rddl.org/purposes#schema-validation";
+    public static final String NATURE_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+    public static final String NATURE_XML_SCHEMA_1_1 = "http://www.w3.org/2001/XMLSchema/v1.1";
+    public static final String NATURE_RELAX_NG = "http://relaxng.org/ns/structure/1.0";
+
+        private final ResolverLogger logger;
     protected final XMLResolverConfiguration config;
     protected final CatalogResolver resolver;
 
@@ -128,10 +133,10 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
             String purpose = null;
             // If it looks like it's going to be used for validation, ...
-            if ("http://www.w3.org/2001/XMLSchema".equals(type)
-                    || "http://www.w3.org/XML/XMLSchema/v1.1".equals(type)
-                    || "http://relaxng.org/ns/structure/1.0".equals(type)) {
-                purpose = "http://www.rddl.org/purposes#schema-validation";
+            if (NATURE_XML_SCHEMA.equals(type)
+                    || NATURE_XML_SCHEMA_1_1.equals(type)
+                    || NATURE_RELAX_NG.equals(type)) {
+                purpose = PURPOSE_SCHEMA_VALIDATION;
             }
 
             rsrc = resolver.resolveNamespace(systemId, baseURI, type, purpose);

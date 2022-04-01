@@ -1,0 +1,8 @@
+<book xmlns="http://xmlresolver.org/ns/sample">
+<title>A sample book</title>
+<article>
+<p>This <link xmlns:xlink="http://www.w3.org/1999/xlink"
+              xlink:href="http://xmlresolver.org/ns/sample">book</link>
+is very short.</p>
+</article>
+</book>

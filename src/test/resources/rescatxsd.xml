@@ -1,0 +1,15 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+
+  <public publicId="-//Sample//DTD Sample 1.0//EN"
+          uri="sample10/sample.dtd"/>
+
+  <system systemId="https://example.com/sample/1.0/sample.dtd"
+          uri="sample10/sample.dtd"/>
+
+  <uri name="https://example.com/sample/1.0/uri.dtd"
+       uri="sample10/sample.dtd"/>
+
+  <uri name="http://xmlresolver.org/ns/sample"
+       uri="sample10/sample.xsd"/>
+
+</catalog>

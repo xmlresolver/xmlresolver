@@ -5,7 +5,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmlresolver.cache.ResourceCache;
 import org.xmlresolver.logging.AbstractLogger;
+import org.xmlresolver.logging.DefaultLogger;
 import org.xmlresolver.logging.ResolverLogger;
+import org.xmlresolver.logging.SystemLogger;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -1082,13 +1084,25 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) defaultLoggerLogLevel;
         } else if (feature == ResolverFeature.RESOLVER_LOGGER) {
             if (resolverLogger == null) {
-                try {
-                    Class<?> loggerClass = Class.forName(resolverLoggerClass);
-                    Constructor<?> constructor = loggerClass.getConstructor(ResolverConfiguration.class);
-                    resolverLogger = (ResolverLogger) constructor.newInstance(this);
-                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
-                        | IllegalAccessException | InvocationTargetException ex) {
-                    throw new IllegalArgumentException("Failed to instantiate logger: " + resolverLoggerClass + ": " + ex.getMessage());
+                // Don't use reflection if we don't have to. (Supports GraalVM and other environments
+                // where reflection is difficult/impossible to configure.)
+                switch (resolverLoggerClass) {
+                    case "org.xmlresolver.logging.DefaultLogger":
+                        resolverLogger = new DefaultLogger(this);
+                        break;
+                    case "org.xmlresolver.logging.SystemLogger":
+                        resolverLogger = new SystemLogger(this);
+                        break;
+                    default:
+                        try {
+                            Class<?> loggerClass = Class.forName(resolverLoggerClass);
+                            Constructor<?> constructor = loggerClass.getConstructor(ResolverConfiguration.class);
+                            resolverLogger = (ResolverLogger) constructor.newInstance(this);
+                        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
+                                | IllegalAccessException | InvocationTargetException ex) {
+                            throw new IllegalArgumentException("Failed to instantiate logger: " + resolverLoggerClass + ": " + ex.getMessage());
+                        }
+                        break;
                 }
             }
             return (T) resolverLogger;

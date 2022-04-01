@@ -1,4 +1,4 @@
-<!DOCTYPE "https://xmlresolver.org/ns/sample-as-uri/sample.dtd">
+<!DOCTYPE book SYSTEM "https://xmlresolver.org/ns/sample-as-uri/sample.dtd">
 <book xmlns="http://xmlresolver.org/ns/sample"
 <title>A sample book</title>
 <article>
