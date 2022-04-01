@@ -378,7 +378,7 @@ public class CatalogResolver implements ResourceResolver {
      * be downloaded and returned. If it cannot parse the document or cannot find the markup that
      * it is looking for, it will return the resource that represents the namespace URI.</p>
      *
-     * @param href The URI of the resource.
+     * @param uri The namespace URI.
      * @param baseURI The base URI of the resource.
      * @param nature The RDDL nature of the resource.
      * @param purpose The RDDL purpose of the resource.
@@ -386,17 +386,17 @@ public class CatalogResolver implements ResourceResolver {
      * @return The resolved resource or null if no resolution was possible.
      */
     @Override
-    public ResolvedResource resolveNamespace(String href, String baseURI, String nature, String purpose) {
+    public ResolvedResource resolveNamespace(String uri, String baseURI, String nature, String purpose) {
         logger.log(AbstractLogger.REQUEST, "resolveNamespace: %s (base: %s, nature: %s, purpose: %s)",
-                href, baseURI, nature, purpose);
+                uri, baseURI, nature, purpose);
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
 
         URI absolute = null;
         try {
-            absolute = new URI(href);
+            absolute = new URI(uri);
             if (absolute.isAbsolute()) {
-                if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), href)) {
+                if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), uri)) {
                     logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): null");
                     return null;
                 }
@@ -411,21 +411,21 @@ public class CatalogResolver implements ResourceResolver {
             }
         }
 
-        URI resolved = catalog.lookupNamespaceURI(href, nature, purpose);
+        URI resolved = catalog.lookupNamespaceURI(uri, nature, purpose);
         if (resolved == null && baseURI != null) {
             try {
-                absolute = new URI(baseURI).resolve(href);
+                absolute = new URI(baseURI).resolve(uri);
                 // If we can make it absolute, we want it to be absolute from here on out
-                href = absolute.toString();
+                uri = absolute.toString();
 
                 if (absolute.isAbsolute()) {
-                    if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), href)) {
+                    if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), uri)) {
                         logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): null");
                         return null;
                     }
                 }
 
-                resolved = catalog.lookupNamespaceURI(href, nature, purpose);
+                resolved = catalog.lookupNamespaceURI(uri, nature, purpose);
             } catch (URISyntaxException ex) {
                 if (throwExceptions) {
                     throw new IllegalArgumentException(ex);
@@ -451,17 +451,17 @@ public class CatalogResolver implements ResourceResolver {
                     if (resolved != null) {
                         rddl = checkRddl(resolved, nature, purpose, null);
                     } else {
-                        rddl = checkRddl(URIUtils.newURI(href), nature, purpose, null);
+                        rddl = checkRddl(URIUtils.newURI(uri), nature, purpose, null);
                     }
                 } catch (URISyntaxException ex) {
-                    logger.log(AbstractLogger.ERROR, "URI syntax exception: " + href);
+                    logger.log(AbstractLogger.ERROR, "URI syntax exception: " + uri);
                     if (throwExceptions) {
                         throw new IllegalArgumentException(ex);
                     }
                     logger.log(AbstractLogger.RESPONSE, "resolveNamespace: null");
                     return null;
                 } catch (IllegalArgumentException ex) {
-                    logger.log(AbstractLogger.ERROR, "URI argument exception: " + href);
+                    logger.log(AbstractLogger.ERROR, "URI argument exception: " + uri);
                     if (throwExceptions) {
                         throw ex;
                     }
@@ -471,13 +471,13 @@ public class CatalogResolver implements ResourceResolver {
             }
 
             if (rddl != null) {
-                ResolvedResource local = resolveURI(rddl.toString(), href);
+                ResolvedResource local = resolveURI(rddl.toString(), uri);
                 if (local != null) {
                     logger.log(AbstractLogger.RESPONSE, "resolveNamespace: %s", local.getLocalURI());
                     return local;
                 } else {
                     logger.log(AbstractLogger.RESPONSE, "resolveNamespace: %s", rddl);
-                    return resource(href, rddl, cached);
+                    return resource(uri, rddl, cached);
                 }
             }
         }
