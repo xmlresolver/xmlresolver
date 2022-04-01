@@ -7,6 +7,7 @@ import org.xmlresolver.loaders.CatalogLoader;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.PublicId;
+import org.xmlresolver.utils.SaxProducer;
 import org.xmlresolver.utils.URIUtils;
 
 import java.lang.reflect.Constructor;
@@ -145,6 +146,23 @@ public class CatalogManager implements XMLCatalogResolver {
      */
     public EntryCatalog loadCatalog(URI catalog, InputSource source)  {
         return catalogLoader.loadCatalog(catalog, source);
+    }
+
+    /**
+     * Load the specified catalog by sending events to the ContentHandler.
+     *
+     * <p>This method exists so that a catalog can be loaded even if it doesn't have a URI
+     * that can be dereferenced. It must still have a URI.</p>
+     *
+     * <p>The manager maintains a set of the catalogs that it has loaded. If an attempt is
+     * made to load a catalog twice, the previously loaded catalog is returned.</p>
+     *
+     * @param catalog The catalog URI.
+     * @param producer The producer that delivers events to the ContentHandler.
+     * @return The parsed catalog.
+     */
+    public EntryCatalog loadCatalog(URI catalog, SaxProducer producer)  {
+        return catalogLoader.loadCatalog(catalog, producer);
     }
 
     /**

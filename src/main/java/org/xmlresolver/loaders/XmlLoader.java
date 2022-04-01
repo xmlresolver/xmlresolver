@@ -9,6 +9,7 @@ import org.xmlresolver.catalog.entry.EntryNull;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.PublicId;
+import org.xmlresolver.utils.SaxProducer;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -169,6 +170,56 @@ public class XmlLoader implements CatalogLoader {
                 EntryCatalog entry = handler.catalog();
                 catalogMap.put(catalog, entry);
             } catch (ParserConfigurationException | SAXException | IOException ex) {
+                logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+
+                if (archivedCatalogs) {
+                    zipcatalog = archiveCatalog(catalog);
+                }
+            }
+        }
+
+        if (zipcatalog != null) {
+            EntryCatalog zipcat = loadCatalog(zipcatalog);
+            catalogMap.put(catalog, zipcat);
+        }
+
+        return catalogMap.get(catalog);
+    }
+
+    /**
+     * Load the specified catalog by sending events to the ContentHandler.
+     *
+     * <p>This method exists so that a catalog can be loaded even if it doesn't have a URI
+     * that can be dereferenced. It must still have a URI.</p>
+     *
+     * <p>The manager maintains a set of the catalogs that it has loaded. If an attempt is
+     * made to load a catalog twice, the previously loaded catalog is returned.</p>
+     *
+     * @param catalog The catalog URI.
+     * @param producer The producer that delivers SAX events to the handlers.
+     * @return The parsed catalog.
+     */
+    public EntryCatalog loadCatalog(URI catalog, SaxProducer producer) {
+        if (catalogMap.containsKey(catalog)) {
+            return catalogMap.get(catalog);
+        }
+
+        if (!catalog.isAbsolute()) {
+            throw new IllegalArgumentException("Catalog URIs must be absolute: " + catalog);
+        }
+
+        URI zipcatalog = null;
+
+        synchronized (catalogMap) {
+            try {
+                CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
+
+                producer.produce(handler, null, null);
+
+                EntryCatalog entry = handler.catalog();
+                catalogMap.put(catalog, entry);
+            } catch (SAXException | IOException ex) {
                 logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
                 catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
 

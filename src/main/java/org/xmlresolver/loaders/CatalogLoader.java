@@ -3,6 +3,7 @@ package org.xmlresolver.loaders;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xmlresolver.catalog.entry.EntryCatalog;
+import org.xmlresolver.utils.SaxProducer;
 
 import java.net.URI;
 
@@ -42,6 +43,21 @@ public interface CatalogLoader {
      * @return The parsed catalog.
      */
     public EntryCatalog loadCatalog(URI catalog, InputSource source);
+
+    /**
+     * Load the specified catalog by sending events to the ContentHandler.
+     *
+     * <p>This method exists so that a catalog can be loaded even if it doesn't have a URI
+     * that can be dereferenced. It must still have a URI.</p>
+     *
+     * <p>The manager maintains a set of the catalogs that it has loaded. If an attempt is
+     * made to load a catalog twice, the previously loaded catalog is returned.</p>
+     *
+     * @param catalog The catalog URI.
+     * @param producer The producer that delivers events to the ContentHandler.
+     * @return The parsed catalog.
+     */
+    public EntryCatalog loadCatalog(URI catalog, SaxProducer producer);
 
     /** Set the default "prefer public" status for this catalog.
      *

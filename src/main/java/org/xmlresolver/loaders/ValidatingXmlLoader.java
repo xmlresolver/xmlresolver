@@ -13,6 +13,7 @@ import org.xmlresolver.exceptions.CatalogInvalidException;
 import org.xmlresolver.exceptions.CatalogUnavailableException;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
+import org.xmlresolver.utils.SaxProducer;
 
 import java.io.*;
 import java.net.URI;
@@ -156,6 +157,47 @@ public class ValidatingXmlLoader implements CatalogLoader {
         }
 
         return underlyingLoader.loadCatalog(catalog, source);
+    }
+
+    /** Load the specified catalog from the specified stream.
+     *
+     * @param catalog The catalog URI.
+     * @param producer The producer that delivers events to the ContentHandler.
+     * @throws CatalogInvalidException if the catalog is invalid.
+     */
+    @Override
+    public EntryCatalog loadCatalog(URI catalog, SaxProducer producer) {
+        try {
+            MyErrorHandler errorHandler = new MyErrorHandler(config);
+            PropertyMapBuilder builder = new PropertyMapBuilder();
+            builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
+            builder.put(ValidateProperty.ENTITY_RESOLVER, resolver);
+            builder.put(ValidateProperty.URI_RESOLVER, resolver);
+
+            ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
+            URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");
+            if (schemaUrl == null) {
+                throw new CatalogInvalidException("Failed to read catalog schema resource");
+            }
+            InputStream schemaStream = schemaUrl.openStream();
+            InputSource schema = new InputSource(schemaStream);
+            if (!driver.loadSchema(schema)) {
+                if (errorHandler.getMessage() == null) {
+                    throw new CatalogInvalidException("Failed to load catalog schema");
+                } else {
+                    throw new CatalogInvalidException("Failed to load catalog schema: " + errorHandler.getMessage());
+                }
+            }
+            if (!driver.validate(producer)) {
+                String msg = errorHandler.getMessage();
+                throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + msg);
+            };
+
+        } catch (IOException| SAXException ex) {
+            throw new CatalogUnavailableException(ex.getMessage());
+        }
+
+        return underlyingLoader.loadCatalog(catalog, producer);
     }
 
     @Override
