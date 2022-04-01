@@ -1,15 +1,17 @@
 package org.xmlresolver;
 
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.protocol.RedirectLocations;
+import org.apache.hc.client5.http.utils.URIUtils;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpResponse;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 
@@ -50,7 +52,7 @@ public class ResourceConnection {
                 httpclient = HttpClients.createDefault();
                 HttpClientContext context = HttpClientContext.create();
 
-                HttpRequestBase httpreq = null;
+                HttpUriRequestBase httpreq = null;
                 if (headOnly) {
                     httpreq = new HttpHead(uri);
                 } else {
@@ -58,20 +60,20 @@ public class ResourceConnection {
                 }
 
                 HttpResponse httpResponse = httpclient.execute(httpreq, context);
-                HttpHost target = context.getTargetHost();
-                List<URI> redirectLocations = context.getRedirectLocations();
-                URI location = URIUtils.resolve(httpreq.getURI(), target, redirectLocations);
+                HttpHost target = context.getHttpRoute().getTargetHost();
+                RedirectLocations redirectLocations = context.getRedirectLocations();
+                URI location = URIUtils.resolve(httpreq.getUri(), target, redirectLocations.getAll());
                 if (uri.equals(location)) {
                     redirect = null;
                 } else {
                     redirect = location;
                 }
 
-                statusCode = httpResponse.getStatusLine().getStatusCode();
+                statusCode = httpResponse.getCode();
                 contentType = getHeader(httpResponse, "Content-Type", "application/octet-stream");
                 etag = getHeader(httpResponse, "Etag", null);
                 if (!headOnly) {
-                    stream = httpResponse.getEntity().getContent();
+                    stream = ((ClassicHttpResponse)httpResponse).getEntity().getContent();
                 }
 
                 SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
@@ -136,7 +138,7 @@ public class ResourceConnection {
         return etag;
     }
 
-    public URI getURI() {
+    public URI getUri() {
         return uri;
     }
     
