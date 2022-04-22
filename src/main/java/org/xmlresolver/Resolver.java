@@ -139,7 +139,9 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
                 purpose = PURPOSE_SCHEMA_VALIDATION;
             }
 
-            rsrc = resolver.resolveNamespace(systemId, baseURI, type, purpose);
+            if(systemId != null ) {
+                rsrc = resolver.resolveNamespace(systemId, baseURI, type, purpose);
+            }
         }
 
         if (rsrc == null) {
