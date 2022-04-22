@@ -122,7 +122,7 @@ public class ResolverTest {
                 baseURI.toASCIIString()
         );
 
-        assertNull("null expected if neither systemId nor publicId are specified", result);
+        assertNull("null expected if schema resource is requested w/o systemId", result);
     }
 
 }
