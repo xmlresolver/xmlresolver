@@ -9,6 +9,7 @@ package org.xmlresolver;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
@@ -106,4 +107,22 @@ public class ResolverTest {
             fail();
         }
     }
+
+    @Test
+    public void testSchemaWithoutSystemIdReturnsNull() {
+        URI baseURI = URIUtils.cwd().resolve("src/test/resources/sample10/sample.xsd");
+        XMLResolverConfiguration rconfig = new XMLResolverConfiguration("src/test/resources/rescatxsd.xml");
+        Resolver resolver = new Resolver(rconfig);
+
+        LSInput result = resolver.resolveResource(
+                "http://www.w3.org/2001/XMLSchema",
+                "http://xmlresolver.org/some/custom/namespace",
+                null,
+                null,
+                baseURI.toASCIIString()
+        );
+
+        assertNull("null expected if schema resource is requested w/o systemId", result);
+    }
+
 }
