@@ -181,7 +181,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.RESOLVER_LOGGER_CLASS, ResolverFeature.RESOLVER_LOGGER,
             ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL,
             ResolverFeature.ACCESS_EXTERNAL_ENTITY, ResolverFeature.ACCESS_EXTERNAL_DOCUMENT,
-            ResolverFeature.SAXPARSERFACTORY_CLASS, ResolverFeature.XMLREADER_SUPPLIER};
+            ResolverFeature.SAXPARSERFACTORY_CLASS, ResolverFeature.XMLREADER_SUPPLIER,
+            ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS};
 
     private static List<String> classpathCatalogList = null;
 
@@ -211,6 +212,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private String accessExternalDocument = ResolverFeature.ACCESS_EXTERNAL_DOCUMENT.getDefaultValue();
     private String saxParserFactoryClass = ResolverFeature.SAXPARSERFACTORY_CLASS.getDefaultValue();
     private Supplier<XMLReader> xmlReaderSupplier = ResolverFeature.XMLREADER_SUPPLIER.getDefaultValue();
+    private Boolean fixWindowsSystemIdentifiers = ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS.getDefaultValue();
     private ResolverLogger resolverLogger = null;
 
     /** Construct a default configuration.
@@ -543,6 +545,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("SAXParserFactory class: %s", property);
             saxParserFactoryClass = property;
         }
+
+        property = System.getProperty("xml.catalog.fixWindowsSystemIdentifiers");
+        if (property != null) {
+            showConfigChange("Fix windows system identifiers: %s", property);
+            fixWindowsSystemIdentifiers = isTrue(property);
+        }
     }
 
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
@@ -715,6 +723,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("SAXParserFactory class: %s", property);
             saxParserFactoryClass = property;
         }
+
+        property = properties.getProperty("fix-windows-system-identifiers");
+        if (property != null) {
+            showConfigChange("Fix windows system identifiers: %s", property);
+            fixWindowsSystemIdentifiers = isTrue(property);
+        }
     }
 
     private void showConfig() {
@@ -739,6 +753,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         resolverLogger.log(AbstractLogger.CONFIG, "Access external document: %s", accessExternalDocument);
         resolverLogger.log(AbstractLogger.CONFIG, "SAXParserFactory class: %s", saxParserFactoryClass);
         resolverLogger.log(AbstractLogger.CONFIG, "XMLReader supplier: %s", xmlReaderSupplier);
+        resolverLogger.log(AbstractLogger.CONFIG, "Fix Windows system identifiers: %s", fixWindowsSystemIdentifiers);
 
         resolverLogger.log(AbstractLogger.CONFIG, "Default logger log level: %s", defaultLoggerLogLevel);
         for (String catalog: catalogs) {
@@ -959,6 +974,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             saxParserFactoryClass = null;
             xmlReaderSupplier = (Supplier<XMLReader>) value;
             showConfigChange("XMLReader supplier: %s", xmlReaderSupplier);
+        } else if (feature == ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS) {
+            fixWindowsSystemIdentifiers = (Boolean) value;
+            showConfigChange("Fix windows system identifiers: %s", fixWindowsSystemIdentifiers);
         } else {
             resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
         }
@@ -1114,6 +1132,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) saxParserFactoryClass;
         } else if (feature == ResolverFeature.XMLREADER_SUPPLIER) {
             return (T) xmlReaderSupplier;
+        } else if (feature == ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS) {
+            return (T) fixWindowsSystemIdentifiers;
         } else {
             resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
             return null;
@@ -1138,8 +1158,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     private static class FallbackLogger extends AbstractLogger {
-        private ArrayList<Message> messages = new ArrayList<>();
-        private String fallbackLogging = System.getProperty("xml.catalog.FallbackLoggerLogLevel");
+        private final ArrayList<Message> messages = new ArrayList<>();
+        private final String fallbackLogging = System.getProperty("xml.catalog.FallbackLoggerLogLevel");
 
 
         @Override

@@ -415,4 +415,16 @@ public class ResolverFeature<T> {
             return null;
         }
     });
+
+    /**
+     * Fix backslashes in system identifiers on Windows?
+     * <p>System identifiers are URIs and URIs may not contain un-escaped backslashes. However, Windows
+     * uses the backslash as the path separator and it's not uncommon for filenames to appear in system
+     * identifiers. If this flag is set, the resolver will coerce backslashes into forward slashes in
+     * system identifiers.</p>
+     */
+    public static final ResolverFeature<Boolean> FIX_WINDOWS_SYSTEM_IDENTIFIERS = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/fix-windows-system-identifiers", false);
+
+
 }

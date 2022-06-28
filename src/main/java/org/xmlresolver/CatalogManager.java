@@ -149,6 +149,13 @@ public class CatalogManager implements XMLCatalogResolver {
         return new QueryUri(uri, nature, purpose).search(this).uri();
     }
 
+    private String fixWindowsSystemIdentifier(String systemId) {
+        if (URIUtils.isWindows() && resolverConfiguration.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
+            systemId = systemId.replace("\\", "/");
+        }
+        return systemId;
+    }
+
     /**
      * Lookup the specified system and public identifiers in the catalog.
      *
@@ -168,6 +175,7 @@ public class CatalogManager implements XMLCatalogResolver {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public URI lookupPublic(String systemId, String publicId) {
+        systemId = fixWindowsSystemIdentifier(systemId);
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
         return new QueryPublic(external.systemId, external.publicId).search(this).uri();
     }
@@ -188,6 +196,7 @@ public class CatalogManager implements XMLCatalogResolver {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public URI lookupSystem(String systemId) {
+        systemId = fixWindowsSystemIdentifier(systemId);
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, null);
         if (external.systemId == null) {
             return null;
@@ -213,6 +222,7 @@ public class CatalogManager implements XMLCatalogResolver {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public URI lookupDoctype(String entityName, String systemId, String publicId) {
+        systemId = fixWindowsSystemIdentifier(systemId);
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
         return new QueryDoctype(entityName, external.systemId, external.publicId).search(this).uri();
     }
@@ -243,6 +253,7 @@ public class CatalogManager implements XMLCatalogResolver {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public URI lookupEntity(String entityName, String systemId, String publicId) {
+        systemId = fixWindowsSystemIdentifier(systemId);
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
         return new QueryEntity(entityName, external.systemId, external.publicId).search(this).uri();
     }
@@ -261,6 +272,7 @@ public class CatalogManager implements XMLCatalogResolver {
      * @return The mapped value, or <code>null</code> if no matching entry is found.
      */
     public URI lookupNotation(String notationName, String systemId, String publicId) {
+        systemId = fixWindowsSystemIdentifier(systemId);
         ExternalIdentifiers external = normalizeExternalIdentifiers(systemId, publicId);
         return new QueryNotation(notationName, external.systemId, external.publicId).search(this).uri();
     }

@@ -193,7 +193,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     attributes "Implementation-Vendor": "Norman Walsh"
     attributes "Implementation-Title": "XML Resolver API documentation"
     attributes "Implementation-Version": resolverVersion
-    attributes "Automatic-Module-Name": "org.xmlresolver.xmlresolver-javadoc"
+    attributes "Automatic-Module-Name": "org.xmlresolver.xmlresolver_javadoc"
   }
 }
 assemble.dependsOn javadocJar
@@ -207,7 +207,7 @@ task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
     attributes "Implementation-Vendor": "Norman Walsh"
     attributes "Implementation-Title": "XML Resolver sources"
     attributes "Implementation-Version": resolverVersion
-    attributes "Automatic-Module-Name": "org.xmlresolver.xmlresolver-sources"
+    attributes "Automatic-Module-Name": "org.xmlresolver.xmlresolver_sources"
   }
 }
 assemble.dependsOn sourcesJar
