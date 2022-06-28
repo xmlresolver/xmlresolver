@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class URIUtils {
     private static Boolean isWindows = null;
 
-    private static boolean checkWindows() {
+    public static boolean isWindows() {
         if (isWindows == null) {
             String os = System.getProperty("os.name", "unknown").toLowerCase();
             isWindows = os.contains("win");
@@ -29,7 +29,7 @@ public abstract class URIUtils {
     }
 
     private static String windowsPathURI(String uri) {
-        if (!checkWindows()) {
+        if (!isWindows()) {
             return uri;
         }
         String fixSlashes = uri.replaceAll("\\\\", "/");
