@@ -59,6 +59,8 @@ public class ResolverTestLocalhost extends CacheManager {
 
         // These aren't found in the catalog
 
+        System.out.println("TEST PERF?");
+
         Source source = resolver.resolve("http://localhost:8222/docs/sample/sample.xsl","file:/tmp/test.xsl");
         System.err.println("SOURCE1: " + source);
         assertNull(source);
