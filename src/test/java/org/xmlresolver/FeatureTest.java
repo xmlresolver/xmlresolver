@@ -66,7 +66,12 @@ public class FeatureTest {
 
     @Test
     public void testFeatureCacheDirectory() {
-        stringFeature(ResolverFeature.CACHE_DIRECTORY);
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        knownFeature(config, ResolverFeature.CACHE_DIRECTORY);
+        String orig = config.getFeature(ResolverFeature.CACHE_DIRECTORY);
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, "/tmp/apple pie");
+        Assert.assertEquals("/tmp/apple pie", config.getFeature(ResolverFeature.CACHE_DIRECTORY));
+        config.setFeature(ResolverFeature.CACHE_DIRECTORY, orig);
     }
 
     @Test
