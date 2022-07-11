@@ -870,7 +870,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
             cacheDirectory = (String) value;
             showConfigChange("Cache directory: %s", cacheDirectory);
-            cache = null;
+            if (cache == null) {
+                cache = new ResourceCache(this);
+            } else {
+                cache.reset();
+            }
             return;
         } else if (feature == ResolverFeature.CACHE) {
             cache = (ResourceCache) value;
@@ -894,11 +898,19 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             cacheUnderHome = (Boolean) value;
             showConfigChange("Cache under home: %s", cacheUnderHome);
-            cache = null;
+            if (cache == null) {
+                cache = new ResourceCache(this);
+            } else {
+                cache.reset();
+            }
         } else if (feature == ResolverFeature.CACHE_ENABLED) {
             cacheEnabled = (Boolean) value;
             showConfigChange("Cache enabled: %s", cacheEnabled);
-            cache = null;
+            if (cache == null) {
+                cache = new ResourceCache(this);
+            } else {
+                cache.reset();
+            }
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
             resolverLogger.log(AbstractLogger.CONFIG, "Catalog manager: %s", manager.toString());
