@@ -35,6 +35,7 @@ public class ResolverTestLocalhost extends CacheManager {
         config = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
         config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
+        config.setFeature(ResolverFeature.CACHE_ENABLED, false);
 
         // Make sure the Docker container is running where we expect.
         ResourceConnection conn = new ResourceConnection(config, "http://localhost:8222/docs/sample/sample.dtd", true);
@@ -60,10 +61,8 @@ public class ResolverTestLocalhost extends CacheManager {
         // These aren't found in the catalog
 
         Source source = resolver.resolve("http://localhost:8222/docs/sample/sample.xsl","file:/tmp/test.xsl");
-        System.err.println("SOURCE1: " + source);
         assertNull(source);
         source = resolver.resolve("../helloworld.xml","http://localhost:8222/docs/sample/sample.xsl");
-        System.err.println("SOURCE1: " + source);
         assertNull(source);
     }
 
