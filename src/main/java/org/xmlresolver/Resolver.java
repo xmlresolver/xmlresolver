@@ -43,7 +43,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public static final String NATURE_XML_SCHEMA_1_1 = "http://www.w3.org/2001/XMLSchema/v1.1";
     public static final String NATURE_RELAX_NG = "http://relaxng.org/ns/structure/1.0";
 
-        private final ResolverLogger logger;
+    private final ResolverLogger logger;
     protected final XMLResolverConfiguration config;
     protected final CatalogResolver resolver;
 
