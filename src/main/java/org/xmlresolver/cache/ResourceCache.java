@@ -22,6 +22,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -130,16 +131,25 @@ public class ResourceCache extends CatalogManager {
     private File entryDir = null;
     private File expiredDir = null;
 
-    private final CacheParser cacheParser;
+    private final ResolverConfiguration config;
     private final ArrayList<CacheInfo> cacheInfo = new ArrayList<> ();
 
+    private CacheParser cacheParser = null;
     private CacheEntryCatalog catalog = null;
     private CacheInfo defaultCacheInfo = null;
     private String cacheVersion = null;
 
     public ResourceCache(ResolverConfiguration config) {
         super(config);
+        this.config = config;
+        reset();
+    }
 
+    /** Reset the cache configuration.
+     * <p>If the cache configuration is changed, calling <code>reset</code> will adjust
+     * this cache to reflect the new settings.</p>
+     */
+    public void reset() {
         if (!config.getFeature(ResolverFeature.CACHE_ENABLED)) {
             cacheDir = null;
             cacheParser = null;
@@ -238,7 +248,7 @@ public class ResourceCache extends CatalogManager {
 
         File control = new File(cacheDir, "control.xml");
         try {
-            PrintStream ps = new PrintStream(new FileOutputStream(control));
+            PrintStream ps = new PrintStream(Files.newOutputStream(control.toPath()));
             ps.println("<cache-control version='2' xmlns='" + ResolverConstants.XMLRESOURCE_EXT_NS + "'>");
             for (CacheInfo info : cacheInfo) {
                 if (info.cache) {

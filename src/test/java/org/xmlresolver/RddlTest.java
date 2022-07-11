@@ -135,6 +135,7 @@ public class RddlTest extends CacheManager {
         XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/catalog.xml");
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
         config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
+        config.setFeature(ResolverFeature.CACHE_ENABLED, false);
         config.setFeature(ResolverFeature.PARSE_RDDL, true);
         CatalogResolver resolver = new CatalogResolver(config);
 

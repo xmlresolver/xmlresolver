@@ -2,17 +2,14 @@ package org.xmlresolver;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.InputSource;
 import org.xmlresolver.cache.CacheInfo;
 import org.xmlresolver.cache.ResourceCache;
 import org.xmlresolver.utils.URIUtils;
 
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class CacheTest extends CacheManager {
     private static final String cacheDir = "build/test-cache";
@@ -146,6 +143,26 @@ public class CacheTest extends CacheManager {
         } else {
             System.setProperty("xml.catalog.cacheEnabled", value);
         }
+    }
+
+    @Test
+    public void testCacheDisabledAfterInitialization() {
+        try {
+            XMLResolverConfiguration localConfig = new XMLResolverConfiguration();
+            assertTrue(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
+
+            Resolver resolver = new Resolver(localConfig);
+            resolver.getConfiguration().setFeature(ResolverFeature.CACHE_ENABLED, false);
+
+            InputSource source = resolver.resolveEntity(null, "https://jats.nlm.nih.gov/publishing/1.3/JATS-journalpublishing1-3.dtd");
+            assertNull(source);
+
+            source = resolver.resolveEntity(null, "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
+            assertNotNull(source);
+        } catch (Exception ex) {
+            fail();
+        }
+
     }
 
 
