@@ -47,6 +47,9 @@ jobs:
           paths:
             - distributions
 
+      - run:
+          command: .circleci/publish.sh
+
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
