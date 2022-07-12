@@ -7,6 +7,9 @@ plugins {
   id 'com.nwalsh.gradle.docker.container' version '0.0.5'
 }
 
+sourceCompatibility=1.8
+targetCompatibility=1.8
+
 repositories {
   mavenLocal()
   mavenCentral()
