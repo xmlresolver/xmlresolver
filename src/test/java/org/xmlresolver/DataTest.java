@@ -280,7 +280,7 @@ public class DataTest {
 
     @Test
     public void gen_lookupSystemd1e84() {
-        URI result = manager.lookupSystem("https://www.w3.org/2001/datatypes.xsd");
+        URI result = manager.lookupSystem("https://www.w3.org/2001/datatypes.dtd");
         assertNotNull(result);
     }
 
@@ -946,7 +946,7 @@ public class DataTest {
 
     @Test
     public void gen_lookupSystemd1e257() {
-        URI result = manager.lookupSystem("https://www.w3.org/2009/XMLSchema/datatypes.xsd");
+        URI result = manager.lookupSystem("https://www.w3.org/2009/XMLSchema/datatypes.dtd");
         assertNotNull(result);
     }
 
