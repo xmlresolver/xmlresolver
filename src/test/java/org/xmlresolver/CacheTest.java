@@ -1,5 +1,6 @@
 package org.xmlresolver;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -23,6 +24,7 @@ public class CacheTest extends CacheManager {
 
         config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, cache.getAbsolutePath());
+        config.setFeature(ResolverFeature.CACHE_ENABLED, true);
         this.cache = new ResourceCache(config);
     }
 
@@ -78,6 +80,7 @@ public class CacheTest extends CacheManager {
 
         XMLResolverConfiguration secondConfig = new XMLResolverConfiguration();
         secondConfig.setFeature(ResolverFeature.CACHE_DIRECTORY, URIUtils.cwd().resolve(cacheDir).getPath());
+        secondConfig.setFeature(ResolverFeature.CACHE_ENABLED, true);
         ResourceCache secondCache = new ResourceCache(secondConfig);
 
         assertEquals(6, secondCache.getCacheInfoList().size());
@@ -128,11 +131,16 @@ public class CacheTest extends CacheManager {
     }
 
     @Test
-    public void testCacheDisabledByProperty() {
+    public void testCacheEnabledByProperty() {
         XMLResolverConfiguration localConfig = new XMLResolverConfiguration();
-        assertTrue(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
+        assertFalse(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
 
         String value = System.getProperty("xml.catalog.cacheEnabled");
+        System.setProperty("xml.catalog.cacheEnabled", "true");
+
+        localConfig = new XMLResolverConfiguration();
+        assertTrue(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
+
         System.setProperty("xml.catalog.cacheEnabled", "false");
 
         localConfig = new XMLResolverConfiguration();
@@ -149,7 +157,7 @@ public class CacheTest extends CacheManager {
     public void testCacheDisabledAfterInitialization() {
         try {
             XMLResolverConfiguration localConfig = new XMLResolverConfiguration();
-            assertTrue(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
+            assertFalse(localConfig.getFeature(ResolverFeature.CACHE_ENABLED));
 
             Resolver resolver = new Resolver(localConfig);
             resolver.getConfiguration().setFeature(ResolverFeature.CACHE_ENABLED, false);
@@ -162,7 +170,59 @@ public class CacheTest extends CacheManager {
         } catch (Exception ex) {
             fail();
         }
+    }
 
+    @Test
+    public void testCacheDirectoryCreated() {
+        String property = "xml.catalog.cache";
+        String value = System.getProperty(property);
+
+        String cacheDir = "/tmp/cache-testxmlresolver99383";
+        System.setProperty(property, cacheDir);
+
+        XMLResolverConfiguration localConfig = new XMLResolverConfiguration();
+        localConfig.setFeature(ResolverFeature.CACHE_ENABLED, true);
+        String dir = localConfig.getFeature(ResolverFeature.CACHE_DIRECTORY);
+
+        Assert.assertEquals(cacheDir, dir);
+        File fdir = new File(cacheDir);
+
+        Assert.assertTrue(fdir.exists());
+
+        fdir = new File(cacheDir + "/control.xml");
+        Assert.assertTrue(fdir.delete());
+
+        fdir = new File(cacheDir);
+        Assert.assertTrue(fdir.delete());
+
+        if (value == null) {
+            System.clearProperty(property);
+        } else {
+            System.setProperty(property, value);
+        }
+    }
+
+    @Test
+    public void testCacheDirectoryNotCreated() {
+        String property = "xml.catalog.cache";
+        String value = System.getProperty(property);
+
+        String cacheDir = "/tmp/cache-testxmlresolver99383";
+        System.setProperty(property, cacheDir);
+
+        XMLResolverConfiguration localConfig = new XMLResolverConfiguration();
+        String dir = localConfig.getFeature(ResolverFeature.CACHE_DIRECTORY);
+
+        Assert.assertEquals(cacheDir, dir);
+        File fdir = new File(cacheDir);
+
+        Assert.assertFalse(fdir.exists());
+
+        if (value == null) {
+            System.clearProperty(property);
+        } else {
+            System.setProperty(property, value);
+        }
     }
 
 

@@ -360,7 +360,7 @@ public class ResolverFeature<T> {
      * <p>If the cache <em>is not</em> enabled, no attempt will be made to create or use a cache.</p>
      */
     public static final ResolverFeature<Boolean> CACHE_ENABLED = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/cache-enabled", true);
+            "http://xmlresolver.org/feature/cache-enabled", false);
 
     /**
      * Identify the SAXParserFactory class.
