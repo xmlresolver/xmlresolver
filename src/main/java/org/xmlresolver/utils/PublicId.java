@@ -50,13 +50,16 @@ public abstract class PublicId {
    * </ul>
    *
    * <p>This method is declared static so that other classes
-   * can use it directly.</p>
+   * can use it directly. If the public identifier is null, null is returned.</p>
    *
    * @param publicId The unnormalized public identifier.
-   *
    * @return The normalized identifier.
    */
   public static String normalize(String publicId) {
+    if (publicId == null) {
+      return null;
+    }
+
     String normal = publicId.replace('\t', ' ');
     normal = normal.replace('\r', ' ');
     normal = normal.replace('\n', ' ');
@@ -75,13 +78,16 @@ public abstract class PublicId {
    * Encode a public identifier as a "publicid" URN.
    *
    * <p>This method is declared static so that other classes
-   * can use it directly.</p>
+   * can use it directly. If the public identifier is null, null is returned.</p>
    *
    * @param publicId The unnormalized public identifier.
-   *
    * @return The normalized identifier.
    */
   public static URI encodeURN(String publicId) {
+    if (publicId == null) {
+      return null;
+    }
+
     String urn = PublicId.normalize(publicId)
             .replace("%", "%25")
             .replace(";", "%3B")
@@ -102,13 +108,17 @@ public abstract class PublicId {
    * Decode a "publicid" URN into a public identifier.
    *
    * <p>This method is declared static so that other classes
-   * can use it directly.</p>
+   * can use it directly. If the URN is null, null is returned.</p>
    *
    * @param urn The urn:publicid: URN
    *
    * @return The normalized identifier.
    */
   public static String decodeURN(String urn) {
+    if (urn == null) {
+      return null;
+    }
+
     if (urn.startsWith("urn:publicid:")) {
       String publicId = urn.substring(13)
               .replace("%2F", "/")

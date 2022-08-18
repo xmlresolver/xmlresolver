@@ -30,7 +30,7 @@
   <systemSuffix systemIdSuffix="/2.0/sample.dtd"
                 uri="sample20/sample-suffix.dtd"/>
 
-  <delegatePublic publicIdStartString="-//Sample Delegated//"
+  <delegatePublic publicIdStartString="-//Sample    Delegated//"
                   catalog="lookup-delegated.xml"/>
 
   <!-- ============================================================ -->
