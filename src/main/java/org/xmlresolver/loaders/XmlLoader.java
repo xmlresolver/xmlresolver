@@ -8,6 +8,7 @@ import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryNull;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
+import org.xmlresolver.utils.PublicId;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -384,7 +385,7 @@ public class XmlLoader implements CatalogLoader {
                     break;
                 case "public":
                     // In XML, there will always be a system identifier.
-                    publicId = attributes.getValue("", "publicId");
+                    publicId = PublicId.normalize(attributes.getValue("", "publicId"));
                     entry = catalog.addPublic(baseURI, id, publicId, uri, preferPublic);
                     break;
                 case "system":
@@ -401,7 +402,7 @@ public class XmlLoader implements CatalogLoader {
                     entry = catalog.addSystemSuffix(baseURI, id, suffix, uri);
                     break;
                 case "delegatePublic":
-                    start = attributes.getValue("", "publicIdStartString");
+                    start = PublicId.normalize(attributes.getValue("", "publicIdStartString"));
                     entry = catalog.addDelegatePublic(baseURI, id, start, caturi, preferPublic);
                     break;
                 case "delegateSystem":

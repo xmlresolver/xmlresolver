@@ -1,7 +1,8 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
          prefer="public">
 
-  <public publicId="-//Sample//DTD Sample 1.0//EN"
+  <!-- Extra spaces are intentional, see issue #113 -->
+  <public publicId="-//Sample//DTD   Sample   1.0//EN"
           uri="sample10/sample-public.dtd"/>
 
   <system systemId="https://example.com/sample/1.0/sample.dtd"
