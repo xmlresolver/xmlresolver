@@ -544,7 +544,7 @@ public class CatalogResolver implements ResourceResolver {
         return true;
     }
 
-    private ResolvedResourceImpl resource(String requestURI, URI responseURI, CacheEntry cached) {
+    protected ResolvedResourceImpl resource(String requestURI, URI responseURI, CacheEntry cached) {
         boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
         try {
             if (cached == null) {
@@ -573,7 +573,7 @@ public class CatalogResolver implements ResourceResolver {
         }
     }
 
-    private ResolvedResourceImpl uncachedResource(URI req, URI res) throws IOException, URISyntaxException {
+    protected ResolvedResourceImpl uncachedResource(URI req, URI res) throws IOException, URISyntaxException {
         boolean mask = config.getFeature(ResolverFeature.MASK_JAR_URIS);
         URI showResolvedURI = res;
         if (mask && ("jar".equals(showResolvedURI.getScheme()) || "classpath".equals(showResolvedURI.getScheme()))) {
