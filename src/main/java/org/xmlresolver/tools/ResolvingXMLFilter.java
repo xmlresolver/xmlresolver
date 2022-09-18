@@ -234,6 +234,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
                 baseURI = URIUtils.cwd().resolve(baseURI);
             }
         } catch (URISyntaxException use) {
+            systemId = URIUtils.normalizeURI(systemId);
             baseURI = URIUtils.cwd().resolve(systemId);
         }
     }

@@ -158,6 +158,105 @@ public class Resource {
         contentType = conn.getContentType();
     }
 
+    /**
+     * Creates a new instance of Resource from just a URI.
+     *
+     * <p>This version has to use the default class loader to access <code>classpath:</code> URIs.
+     * It is used by the zero-argument constructors for the {@link org.xmlresolver.loaders.XmlLoader}
+     * and {@link org.xmlresolver.loaders.ValidatingXmlLoader}. When possible, pass the resolver
+     * configuration to the constructor.</p>
+     *
+     * @param href The URI
+     * @throws IOException for I/O errors
+     * @throws URISyntaxException if the href cannot be converted to a URI
+     */
+    public Resource(URI href) throws IOException, URISyntaxException {
+        this(null, href);
+    }
+
+    /**
+     * Creates a new instance of Resource from just a URI.
+     *
+     * <p>This version will use the configured class loader to access <code>classpath:</code> URIs.
+     * </p>
+     *
+     * @param config The configuration (used to get the classloader)
+     * @param href The URI
+     * @throws IOException for I/O errors
+     * @throws URISyntaxException if the href cannot be converted to a URI
+     */
+    public Resource(ResolverConfiguration config, URI href) throws IOException, URISyntaxException {
+        if ("data".equals(href.getScheme())) {
+            // This is a little bit crude; see RFC 2397
+            uri = href;
+            localURI = uri;
+            String path = href.getSchemeSpecificPart();
+            int pos = path.indexOf(",");
+            if (pos >= 0) {
+                String mediatype = path.substring(0, pos);
+                String data = path.substring(pos + 1);
+                if (mediatype.endsWith(";base64")) {
+                    // Base64 decode it
+                    stream = new ByteArrayInputStream(Base64.getDecoder().decode(data));
+                    contentType = mediatype.substring(0, mediatype.length() - 7);
+                } else {
+                    // URL decode it
+                    String charset = "UTF-8";
+                    pos = mediatype.indexOf(";charset=");
+                    if (pos > 0) {
+                        charset = mediatype.substring(pos + 9);
+                        pos = charset.indexOf(";");
+                        if (pos >= 0) {
+                            charset = charset.substring(0, pos);
+                        }
+                    }
+                    data = URLDecoder.decode(data, charset);
+                    stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+                    contentType = "".equals(mediatype) ? null : mediatype;
+                }
+                return;
+            } else {
+                throw new URISyntaxException(href.toString(), "Comma separator missing");
+            }
+        }
+
+        if ("classpath".equals(href.getScheme())) {
+            String path = href.getSchemeSpecificPart();
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            // The URI class throws exceptions if you attempt to manipulate
+            // classpath: URIs. Fair enough, given their ad hoc invention
+            // by the Spring framework. We're going to cheat a little bit here
+            // and replace the classpath: URI with the actual URI of the resource
+            // found (if one is found). That means downstream processes will
+            // have a "useful" URI. It still might not work, due to class loaders and
+            // such, but at least it won't immediately blow up.
+            ClassLoader loader;
+            if (config == null) {
+                loader = getClass().getClassLoader();
+            } else {
+                loader = config.getFeature(ResolverFeature.CLASSLOADER);
+            }
+            URL rsrc = loader.getResource(path);
+            if (rsrc == null) {
+                throw new IOException("Not found: " + href);
+            } else {
+                uri = URIUtils.newURI(rsrc.toString());
+                localURI = uri;
+                stream = rsrc.openStream();
+                contentType = null;
+                return;
+            }
+        }
+
+        uri = href;
+        localURI = uri;
+        URLConnection conn = uri.toURL().openConnection();
+        stream = conn.getInputStream();
+        contentType = conn.getContentType();
+    }
+
     /** Return the InputStream associated with the resource.
      *
      * <p>The stream returned is the actual stream used when creating the resource. Reading from this

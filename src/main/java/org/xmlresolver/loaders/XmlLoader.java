@@ -92,7 +92,7 @@ public class XmlLoader implements CatalogLoader {
         }
 
         try {
-            Resource rsrc = new Resource(catalog.toString());
+            Resource rsrc = new Resource(catalog);
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(catalog.toString());
             return loadCatalog(catalog, source);
