@@ -1,0 +1,2 @@
+<!ELEMENT proj (p+)>
+<!ELEMENT p (#PCDATA)*>

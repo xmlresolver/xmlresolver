@@ -1,0 +1,7 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//Sample//DTD Projets et Developpement 1.0//EN"
+          uri="dtd/proj.dtd"/>
+
+</catalog>

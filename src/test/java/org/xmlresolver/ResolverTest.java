@@ -14,8 +14,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 import org.xmlresolver.sources.ResolverInputSource;
+import org.xmlresolver.tools.ResolvingXMLReader;
 import org.xmlresolver.utils.URIUtils;
 
+import javax.xml.catalog.Catalog;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
@@ -125,4 +127,17 @@ public class ResolverTest {
         assertNull("null expected if schema resource is requested w/o systemId", result);
     }
 
+    @Test
+    public void issue117() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("src/test/resources/projets en développement/catalog.xml"));
+        resolver = new Resolver(config);
+        ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
+        try {
+            String fn = URIUtils.normalizeURI("src/test/resources/projets en développement/xml/instance.xml");
+            reader.parse(URIUtils.cwd().resolve(fn).toString());
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
 }

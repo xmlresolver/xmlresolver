@@ -85,6 +85,7 @@ public class CatalogManager implements XMLCatalogResolver {
     public List<URI> catalogs() {
         ArrayList<URI> catlist = new ArrayList<>();
         for (String cat : resolverConfiguration.getFeature(ResolverFeature.CATALOG_FILES)) {
+            cat = URIUtils.normalizeURI(cat);
             catlist.add(URIUtils.cwd().resolve(cat));
         }
         return catlist;
