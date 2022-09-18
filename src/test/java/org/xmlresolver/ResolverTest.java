@@ -140,4 +140,23 @@ public class ResolverTest {
             fail(ex.getMessage());
         }
     }
+
+    @Test
+    public void issue115() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("src/test/resources/catalog-with-dtd.xml"));
+        resolver = new Resolver(config);
+
+        URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
+        try {
+            InputSource source = resolver.resolveEntity("-//Sample//DTD Simple 1.0//EN", "https://example.com/sample/1.0/sample.dtd");
+            assertTrue(source.getSystemId().endsWith(result.getPath()));
+            assertNotNull(source.getByteStream());
+            ResolverInputSource rsource = ((ResolverInputSource) source);
+            assertEquals(rsource.resolvedURI, result);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
 }
