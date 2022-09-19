@@ -3,10 +3,7 @@ package org.xmlresolver.loaders;
 import com.thaiopensource.util.PropertyMapBuilder;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.xml.sax.*;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.ResolverFeature;
@@ -42,6 +39,16 @@ public class ValidatingXmlLoader implements CatalogLoader {
         underlyingLoader = new XmlLoader(config);
         resolver = XmlLoader.getLoaderResolver();
         catalogMap = new HashMap<>();
+    }
+
+    @Override
+    public void setEntityResolver(EntityResolver resolver) {
+        underlyingLoader.setEntityResolver(resolver);
+    }
+
+    @Override
+    public EntityResolver getEntityResolver() {
+        return underlyingLoader.getEntityResolver();
     }
 
     /** Load the specified catalog.

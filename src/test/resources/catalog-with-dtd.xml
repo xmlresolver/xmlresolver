@@ -3,7 +3,6 @@
           "http://www.oasis-open.org/committees/entity/release/1.1/catalog.dtd">
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
          prefer="public">
-  <public publicId="-//Sample//DTD Simple 1.0//EN"
+  <system systemId="urn:foo:bar"
           uri="sample10/sample.dtd"/>
-  <invalid/>
 </catalog>
