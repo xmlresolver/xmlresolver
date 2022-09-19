@@ -1,5 +1,6 @@
 package org.xmlresolver.loaders;
 
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 
@@ -64,9 +65,26 @@ public interface CatalogLoader {
      */
     public void setArchivedCatalogs(boolean allow);
 
-    /** Return whether or not archived catalogs are allowed.
+    /** Return whether archived catalogs are allowed.
      *
      * @return True if archived catalogs are allowed.
      */
     public boolean getArchivedCatalogs();
+
+    /** Set the entity resolver used when loading catalogs.
+     *
+     * <p>When the resolver loads a catalog, it can't use itself as the entity resolver because
+     * that would cause an infinite loop. Instead, it uses this resolver. The only entities that this
+     * resolver needs to be able to handle are the ones used in document type declarations for
+     * the <em>catalogs</em> themselves.</p>
+     *
+     * @param resolver the resolver
+     */
+    public void setEntityResolver(EntityResolver resolver);
+
+    /** Return the entity resolver used when loading catalogs.
+     *
+     * @return resolver the resolver
+     */
+    public EntityResolver getEntityResolver();
 }

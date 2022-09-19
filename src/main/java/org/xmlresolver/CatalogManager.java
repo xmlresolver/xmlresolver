@@ -78,8 +78,34 @@ public class CatalogManager implements XMLCatalogResolver {
         logger = resolverConfiguration.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
+    /** Get the resolver configuration.
+     *
+     * @return the resolver configuration
+     */
     public ResolverConfiguration getResolverConfiguration() {
         return resolverConfiguration;
+    }
+
+    /** Get the catalog loader.
+     *
+     * <p>This method returns the catalog loader that will be used by this manager
+     * if it attempts to load a catalog.</p>
+     *
+     * @return the catalog loader.
+     */
+    public CatalogLoader getCatalogLoader() {
+        return catalogLoader;
+    }
+
+    /** Set the catalog loader.
+     *
+     * <p>This method sets the catalog loader that will be used by this manager
+     * if it attempts to load a catalog.</p>
+     *
+     * @param loader the catalog loader.
+     */
+    public void setCatalogLoader(CatalogLoader loader) {
+        catalogLoader = loader;
     }
 
     public List<URI> catalogs() {

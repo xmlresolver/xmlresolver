@@ -12,14 +12,11 @@ import org.junit.Test;
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.DefaultHandler2;
+import org.xmlresolver.loaders.CatalogLoader;
 import org.xmlresolver.sources.ResolverInputSource;
 import org.xmlresolver.tools.ResolvingXMLReader;
 import org.xmlresolver.utils.URIUtils;
 
-import javax.xml.catalog.Catalog;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -136,6 +133,121 @@ public class ResolverTest {
         try {
             String fn = URIUtils.normalizeURI("src/test/resources/projets en développement/xml/instance.xml");
             reader.parse(URIUtils.cwd().resolve(fn).toString());
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void issue115_noInternet_noResolver() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("src/test/resources/catalog-with-dtd.xml"));
+        resolver = new Resolver(config);
+
+        CatalogLoader loader = resolver.getConfiguration().getFeature(ResolverFeature.CATALOG_MANAGER).getCatalogLoader();
+        loader.setEntityResolver(null);
+
+        String phost = System.getProperty("http.proxyHost");
+        String pport = System.getProperty("http.proxyPort");
+
+        System.setProperty("http.proxyHost", "127.0.0.1");
+        System.setProperty("http.proxyPort", "41414");
+
+        try {
+            // Parsing the catalog fails because the system identifier can't be resolved.
+            InputSource source = resolver.resolveEntity(null, "urn:foo:bar");
+            assertNull(source);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+
+        if (phost != null) {
+            System.setProperty("http.proxyHost", phost);
+        } else {
+            System.clearProperty("http.proxyHost");
+        }
+        if (phost != null) {
+            System.setProperty("http.proxyPort", pport);
+        } else {
+            System.clearProperty("http.proxyPort");
+        }
+    }
+
+    @Test
+    public void issue115_noInternet_resolver() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("src/test/resources/catalog-with-dtd.xml"));
+        resolver = new Resolver(config);
+
+        String phost = System.getProperty("http.proxyHost");
+        String pport = System.getProperty("http.proxyPort");
+
+        System.setProperty("http.proxyHost", "127.0.0.1");
+        System.setProperty("http.proxyPort", "41414");
+
+        URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
+        try {
+            // The catalog loader resolver handles the DTD, so the catalog is parsed even w/o internet
+            InputSource source = resolver.resolveEntity(null, "urn:foo:bar");
+            assertTrue(source.getSystemId().endsWith(result.getPath()));
+            assertNotNull(source.getByteStream());
+            ResolverInputSource rsource = ((ResolverInputSource) source);
+            assertEquals(rsource.resolvedURI, result);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+
+        if (phost != null) {
+            System.setProperty("http.proxyHost", phost);
+        } else {
+            System.clearProperty("http.proxyHost");
+        }
+        if (phost != null) {
+            System.setProperty("http.proxyPort", pport);
+        } else {
+            System.clearProperty("http.proxyPort");
+        }
+    }
+
+    @Test
+    public void issue115_internet_resolver() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("src/test/resources/catalog-with-dtd.xml"));
+        resolver = new Resolver(config);
+
+        URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
+        try {
+            // In principle this test works just like the noInternet-noResolver test. If you
+            // watch the internet traffic with some sort of sniffer, you can see that the
+            // DTD is resolved locally, but I can't think of a way to test that.
+            InputSource source = resolver.resolveEntity(null, "urn:foo:bar");
+            assertTrue(source.getSystemId().endsWith(result.getPath()));
+            assertNotNull(source.getByteStream());
+            ResolverInputSource rsource = ((ResolverInputSource) source);
+            assertEquals(rsource.resolvedURI, result);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void issue115_internet_noResolver() {
+        // This test is just for completeness. It will pass or fail depending on whether the
+        // OASIS http URI resolves for the catalog.
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("src/test/resources/catalog-with-dtd.xml"));
+        resolver = new Resolver(config);
+
+        CatalogLoader loader = resolver.getConfiguration().getFeature(ResolverFeature.CATALOG_MANAGER).getCatalogLoader();
+        loader.setEntityResolver(null);
+
+        URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
+        try {
+            InputSource source = resolver.resolveEntity(null, "urn:foo:bar");
+            assertTrue(source.getSystemId().endsWith(result.getPath()));
+            assertNotNull(source.getByteStream());
+            ResolverInputSource rsource = ((ResolverInputSource) source);
+            assertEquals(rsource.resolvedURI, result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }

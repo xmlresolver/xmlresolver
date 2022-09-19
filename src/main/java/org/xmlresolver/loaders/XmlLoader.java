@@ -36,10 +36,12 @@ public class XmlLoader implements CatalogLoader {
     private static Resolver loaderResolver = null;
     private boolean preferPublic = true;
     private boolean archivedCatalogs = true;
+    private EntityResolver entityResolver = null;
 
     public XmlLoader(ResolverConfiguration config) {
         this.config = config;
         logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+        entityResolver = new CatalogLoaderResolver();
         catalogMap = new HashMap<>();
     }
 
@@ -69,6 +71,16 @@ public class XmlLoader implements CatalogLoader {
     @Override
     public boolean getArchivedCatalogs() {
         return archivedCatalogs;
+    }
+
+    @Override
+    public void setEntityResolver(EntityResolver resolver) {
+        entityResolver = resolver;
+    }
+
+    @Override
+    public EntityResolver getEntityResolver() {
+        return entityResolver;
     }
 
     public static synchronized Resolver getLoaderResolver() {
@@ -139,6 +151,7 @@ public class XmlLoader implements CatalogLoader {
                 if (supplier != null) {
                     XMLReader reader = supplier.get();
                     reader.setContentHandler(handler);
+                    reader.setEntityResolver(entityResolver);
                     reader.parse(source);
                 } else {
                     // Wat?
@@ -147,6 +160,7 @@ public class XmlLoader implements CatalogLoader {
                     spf.setValidating(false);
                     spf.setXIncludeAware(false);
                     SAXParser parser = spf.newSAXParser();
+                    parser.getXMLReader().setEntityResolver(entityResolver);
                     parser.parse(source, handler);
                 }
 
