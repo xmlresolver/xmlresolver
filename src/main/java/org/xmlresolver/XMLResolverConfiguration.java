@@ -13,11 +13,14 @@ import org.xmlresolver.utils.URIUtils;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -325,6 +328,19 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         accessExternalDocument = current.accessExternalDocument;
         saxParserFactoryClass = current.saxParserFactoryClass;
         xmlReaderSupplier = current.xmlReaderSupplier;
+        fixWindowsSystemIdentifiers = current.fixWindowsSystemIdentifiers;
+    }
+
+    private String getConfigProperty(String name) {
+        String property = System.getProperty(name);
+        if (property == null) {
+            String env = name
+                    .replaceAll("\\.", "_")
+                    .replaceAll("([a-z])([A-Z])", "$1_$2")
+                    .toUpperCase();
+            property = System.getenv(env);
+        }
+        return property;
     }
 
     private void loadConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
@@ -333,10 +349,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         ArrayList<URL> propertyFilesList = new ArrayList<>();
         if (propertyFiles == null) {
             // Do default initialization
-            String propfn = System.getProperty("xmlresolver.properties");
-            if (propfn == null) {
-                propfn = System.getenv("XMLRESOLVER_PROPERTIES");
-            }
+            String propfn = getConfigProperty("xmlresolver.properties");
 
             // Hack: you can set the xmlresolver.properties to the empty string
             // to avoid loading the XMLRESOLVER_PROPERTIES environment. This is
@@ -406,7 +419,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     private void loadSystemPropertiesConfiguration() {
-        String property = System.getProperty("xml.catalog.files");
+        String property = getConfigProperty("xml.catalog.files");
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             showConfigChange("Catalog list cleared");
@@ -420,7 +433,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
         }
 
-        property = System.getProperty("xml.catalog.additions");
+        property = getConfigProperty("xml.catalog.additions");
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             while (tokens.hasMoreTokens()) {
@@ -432,121 +445,121 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
         }
 
-        property = System.getProperty("xml.catalog.prefer");
+        property = getConfigProperty("xml.catalog.prefer");
         if (property != null) {
             showConfigChange("Prefer public: %s", property);
             preferPublic = "public".equals(property);
         }
 
-        property = System.getProperty("xml.catalog.preferPropertyFile");
+        property = getConfigProperty("xml.catalog.preferPropertyFile");
         if (property != null) {
             showConfigChange("Prefer propertyFile: %s", property);
             preferPropertyFile = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.allowPI");
+        property = getConfigProperty("xml.catalog.allowPI");
         if (property != null) {
             showConfigChange("Allow catalog PI: %s", property);
             allowCatalogPI = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.cache");
+        property = getConfigProperty("xml.catalog.cache");
         if (property != null) {
             showConfigChange("Cache directory: %s", property);
             cacheDirectory = property;
         }
 
-        property = System.getProperty("xml.catalog.cacheUnderHome");
+        property = getConfigProperty("xml.catalog.cacheUnderHome");
         if (property != null) {
             showConfigChange("Cache under home: %s", property);
             cacheUnderHome = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.cacheEnabled");
+        property = getConfigProperty("xml.catalog.cacheEnabled");
         if (property != null) {
             showConfigChange("Cache enabled: %s", property);
             cacheEnabled = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.uriForSystem");
+        property = getConfigProperty("xml.catalog.uriForSystem");
         if (property != null) {
             showConfigChange("URI-for-system: %s", property);
             uriForSystem = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.mergeHttps");
+        property = getConfigProperty("xml.catalog.mergeHttps");
         if (property != null) {
             showConfigChange("Merge-https: %s", property);
             mergeHttps = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.maskJarUris");
+        property = getConfigProperty("xml.catalog.maskJarUris");
         if (property != null) {
             showConfigChange("Mask-jar-URIs: %s", property);
             maskJarUris = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.catalogLoaderClass");
+        property = getConfigProperty("xml.catalog.catalogLoaderClass");
         if (property != null) {
             showConfigChange("Catalog loader: %s", property);
             catalogLoader = property;
         }
 
-        property = System.getProperty("xml.catalog.parseRddl");
+        property = getConfigProperty("xml.catalog.parseRddl");
         if (property != null) {
             showConfigChange("Use RDDL: %s", property);
             parseRddl = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.classpathCatalogs");
+        property = getConfigProperty("xml.catalog.classpathCatalogs");
         if (property != null) {
             showConfigChange("Classpath catalogs: %s", property);
             classpathCatalogs = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.archivedCatalogs");
+        property = getConfigProperty("xml.catalog.archivedCatalogs");
         if (property != null) {
             showConfigChange("Archived catalogs: %s", property);
             archivedCatalogs = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.throwUriExceptions");
+        property = getConfigProperty("xml.catalog.throwUriExceptions");
         if (property != null) {
             showConfigChange("Throw URI exceptions: %s", property);
             throwUriExceptions = isTrue(property);
         }
 
-        property = System.getProperty("xml.catalog.resolverLoggerClass");
+        property = getConfigProperty("xml.catalog.resolverLoggerClass");
         if (property != null) {
             showConfigChange("Resolver logger class: %s", property);
             resolverLoggerClass = property;
         }
 
-        property = System.getProperty("xml.catalog.defaultLoggerLogLevel");
+        property = getConfigProperty("xml.catalog.defaultLoggerLogLevel");
         if (property != null) {
             showConfigChange("Default logger log level: %s", property);
             defaultLoggerLogLevel = property;
         }
 
-        property = System.getProperty("xml.catalog.accessExternalEntity");
+        property = getConfigProperty("xml.catalog.accessExternalEntity");
         if (property != null) {
             showConfigChange("Access external entity: %s", property);
             accessExternalEntity = property;
         }
 
-        property = System.getProperty("xml.catalog.accessExternalDocument");
+        property = getConfigProperty("xml.catalog.accessExternalDocument");
         if (property != null) {
             showConfigChange("Access external document: %s", property);
             accessExternalDocument = property;
         }
 
-        property = System.getProperty("xml.catalog.saxParserFactoryClass");
+        property = getConfigProperty("xml.catalog.saxParserFactoryClass");
         if (property != null) {
             showConfigChange("SAXParserFactory class: %s", property);
             saxParserFactoryClass = property;
         }
 
-        property = System.getProperty("xml.catalog.fixWindowsSystemIdentifiers");
+        property = getConfigProperty("xml.catalog.fixWindowsSystemIdentifiers");
         if (property != null) {
             showConfigChange("Fix windows system identifiers: %s", property);
             fixWindowsSystemIdentifiers = isTrue(property);
@@ -556,7 +569,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private void loadPropertiesConfiguration(URL propertiesURL, Properties properties) {
         // Bit of a hack here.
         String property = properties.getProperty("catalog-logging");
-        if (property != null && System.getProperty("xml.catalog.logging") == null) {
+        if (property != null && getConfigProperty("xml.catalog.logging") == null) {
             System.setProperty("xml.catalog.logging", property);
         }
 
@@ -732,7 +745,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     private void showConfig() {
-        resolverLogger.log(AbstractLogger.CONFIG, "Logging: %s", System.getProperty("xml.catalog.logging"));
+        resolverLogger.log(AbstractLogger.CONFIG, "Logging: %s", getConfigProperty("xml.catalog.logging"));
         resolverLogger.log(AbstractLogger.CONFIG, "Prefer public: %s", preferPublic);
         resolverLogger.log(AbstractLogger.CONFIG, "Prefer property file: %s", preferPropertyFile);
         resolverLogger.log(AbstractLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
@@ -1012,20 +1025,31 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
     private List<String> findClasspathCatalogFiles() {
         if (classpathCatalogList == null) {
-            resolverLogger.log(AbstractLogger.CONFIG, "Searching for catalogs on classpath:");
-            try {
-                for (URL url : ((URLClassLoader) XMLResolverConfiguration.class.getClassLoader()).getURLs()) {
-                    resolverLogger.log(AbstractLogger.CONFIG, "    " + url.toString());
-                }
-            } catch (ClassCastException ex) {
-                resolverLogger.log(AbstractLogger.CONFIG, "    Unknown: cannot determine class path in JDK9+");
-            }
+            // Set to avoid duplicates
             ArrayList<String> catalogs = new ArrayList<>();
+
+            // Starting in Java 9, the class loader is no longer a URLClassLoader, so the .getURLs()
+            // trick doesn't work. Instead, we're just going to assume that the java.class.path
+            // system property is correct. It seems to be.
+            String sep = System.getProperty("path.separator");
+            String cpath = System.getProperty("java.class.path");
+            if (sep != null && cpath != null) {
+                resolverLogger.log(AbstractLogger.CONFIG, "Searching for catalogs on classpath:");
+                for (String loc : cpath.split(sep)) {
+                    File dir = new File(loc);
+                    if (dir.exists() && dir.isDirectory()) {
+                        Path path = Paths.get(loc, "catalog.xml");
+                        if (path.toFile().exists()) {
+                            catalogs.add(path.toString());
+                        }
+                    }
+                }
+            }
+
             try {
                 Enumeration<URL> resources = XMLResolverConfiguration.class.getClassLoader().getResources("org/xmlresolver/catalog.xml");
                 while (resources.hasMoreElements()) {
                     URL catalog = resources.nextElement();
-                    resolverLogger.log(AbstractLogger.CONFIG, "Catalog: " + catalog.toString());
                     catalogs.add(catalog.toString());
                 }
             } catch (IOException ex) {
@@ -1171,8 +1195,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
     private static class FallbackLogger extends AbstractLogger {
         private final ArrayList<Message> messages = new ArrayList<>();
-        private final String fallbackLogging = System.getProperty("xml.catalog.FallbackLoggerLogLevel");
-
+        private final String fallbackLogging
+                = System.getProperty("xml.catalog.FallbackLoggerLogLevel") != null
+                ? System.getProperty("xml.catalog.FallbackLoggerLogLevel")
+                : System.getenv("XML_CATALOG_FALLBACK_LOGGER_LOG_LEVEL");
 
         @Override
         public void log(String cat, String message, Object... params) {
