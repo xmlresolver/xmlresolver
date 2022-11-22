@@ -16,7 +16,7 @@ public class LoaderTest {
     @Test
     public void nonValidatingValidCatalog() {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
-        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/catalog.xml"));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/manual-catalog.xml"));
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.XmlLoader");
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
@@ -36,7 +36,7 @@ public class LoaderTest {
     @Test
     public void validatingValidCatalog() {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
-        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/catalog.xml"));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/manual-catalog.xml"));
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
@@ -86,7 +86,7 @@ public class LoaderTest {
     public void validatingMissingCatalog() {
         // File not found isn't a validation error
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
-        config.setFeature(ResolverFeature.CATALOG_FILES, Arrays.asList("./not-a-catalog-in-sight.xml", "classpath:/catalog.xml"));
+        config.setFeature(ResolverFeature.CATALOG_FILES, Arrays.asList("./not-a-catalog-in-sight.xml", "classpath:/manual-catalog.xml"));
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
