@@ -19,6 +19,7 @@ public class CatalogResolverTest {
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, "/tmp/y/cache");
+        config.addCatalog("build/resources/test/manual-catalog.xml");
         resolver = new Resolver(config);
 
         // Make sure the Docker container is running where we expect.

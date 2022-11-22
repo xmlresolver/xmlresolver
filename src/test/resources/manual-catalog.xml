@@ -41,10 +41,4 @@
   <uri name="http://www.w3.org/XML/1998/namespace"
        uri="xmlns-xml.html"/>
 
-  <uri name="http://www.w3.org/2001/xml.xsd" uri="xml.xsd"/>
-
-<!--
-  <nextCatalog catalog="classpath:/org/xmlresolver/data/catalog.xml"/>
--->
-
 </catalog>
