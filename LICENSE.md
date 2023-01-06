@@ -1,4 +1,4 @@
-Copyright 2015 Norman Walsh and contributors.
+Copyright 2015-2023 Norman Walsh and contributors.
 <http://nwalsh.com/>
 
 Licensed under the Apache License, Version 2.0 (the "License");
