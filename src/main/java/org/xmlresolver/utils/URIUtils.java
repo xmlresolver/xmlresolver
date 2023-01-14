@@ -80,6 +80,10 @@ public abstract class URIUtils {
      * @throws URISyntaxException if the string cannot be converted into a URI.
      */
     public static URI newURI(String href) throws URISyntaxException {
+        if (href == null) {
+            return null;
+        }
+
         // This is a tiny bit complicated because I'm trying to avoid creating additional
         // string objects if I don't have to. I wonder if the effort is worth it.
         // Since I haven't measured it, "no".

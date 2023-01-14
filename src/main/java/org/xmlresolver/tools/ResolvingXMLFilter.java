@@ -228,6 +228,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
 
     /** Save the base URI of the document being parsed. */
     private void setupBaseURI(String systemId) {
+        if (systemId == null) {
+            return;
+        }
+
         try {
             baseURI = URIUtils.newURI(systemId);
             if (!baseURI.isAbsolute()) {
