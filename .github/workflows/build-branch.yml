@@ -56,6 +56,16 @@ jobs:
           git submodule update --init
           ./gradlew dist
 
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        if: ${{ env.HAVE_ACCESS_TOKEN == 'true' && env.CI_BRANCH == 'main' && env.CI_TAG != '' }}
+        with:
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          files: |
+            build/distributions/xmlresolver-${{ env.CI_TAG }}.zip
+
       - name: Publish to Sonatype
         if: ${{ env.HAVE_GPGKEYURI == 'true' && env.CI_BRANCH == 'main' && env.CI_TAG != '' }}
         run: |
@@ -67,13 +77,3 @@ jobs:
                   -Psigning.secretKeyRingFile=./secret.gpg \
                   publish
           rm -f secret.gpg
-
-      - name: Publish release
-        uses: softprops/action-gh-release@v1
-        if: ${{ env.HAVE_ACCESS_TOKEN == 'true' && env.CI_BRANCH == 'main' && env.CI_TAG != '' }}
-        with:
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: true
-          files: |
-            build/distributions/xmlresolver-${{ env.CI_TAG }}.zip
