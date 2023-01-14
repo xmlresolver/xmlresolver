@@ -6,9 +6,7 @@ import org.xmlresolver.utils.URIUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class URIUtilsTest {
     @Test
@@ -178,5 +176,15 @@ public class URIUtilsTest {
         URI baseURI = URI.create("classpath:/path/to/resource"); // bogus leading '/'
         URI uri = URIUtils.resolve(baseURI, "alternate");
         assertEquals("classpath:path/to/alternate", uri.toASCIIString());
+    }
+
+    @Test
+    public void test25() {
+        try {
+            URI uri = URIUtils.newURI(null);
+            assertNull(uri);
+        } catch (URISyntaxException ex) {
+            fail();
+        }
     }
 }

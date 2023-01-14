@@ -17,9 +17,16 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 /** The CatalogResolver returns resolved resources in a uniform way.
@@ -29,6 +36,7 @@ import java.util.Stack;
  */
 
 public class CatalogResolver implements ResourceResolver {
+    public static final int FOLLOW_REDIRECT_LIMIT = 100;
     private final ResolverLogger logger;
     private XMLResolverConfiguration config = null;
     private ResourceCache cache = null;
@@ -649,7 +657,29 @@ public class CatalogResolver implements ResourceResolver {
             spf.setNamespaceAware(true);
             spf.setValidating(false);
             spf.setXIncludeAware(false);
+
             URLConnection conn = uri.toURL().openConnection();
+            String location = conn.getHeaderField("location");
+
+            if (location != null) {
+                HashSet<String> seenLocations = new HashSet();
+                while (location != null) {
+                    if (seenLocations.contains(location)) {
+                        return null;
+                    }
+
+                    if (seenLocations.size() > FOLLOW_REDIRECT_LIMIT) {
+                        return null;
+                    }
+
+                    seenLocations.add(location);
+                    URL loc = new URL(location);
+                    conn = loc.openConnection();
+                    location = conn.getHeaderField("location");
+                }
+            }
+
+            Map<String, List<String>> x = conn.getHeaderFields();
             if (contentType == null) {
                 contentType = conn.getContentType();
             }
