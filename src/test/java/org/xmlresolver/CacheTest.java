@@ -161,6 +161,7 @@ public class CacheTest extends CacheManager {
 
             Resolver resolver = new Resolver(localConfig);
             resolver.getConfiguration().setFeature(ResolverFeature.CACHE_ENABLED, false);
+            resolver.getConfiguration().setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
 
             InputSource source = resolver.resolveEntity(null, "https://jats.nlm.nih.gov/publishing/1.3/JATS-journalpublishing1-3.dtd");
             assertNull(source);

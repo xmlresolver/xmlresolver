@@ -1,5 +1,6 @@
 package org.xmlresolver;
 
+import net.sf.saxon.s9api.SaxonApiException;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -67,5 +68,16 @@ public class ParserTest {
             fail();
         }
     }
+
+    @Test
+    public void parseWithRedirect() {
+        ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
+        try {
+            reader.parse("src/test/resources/http.xml");
+        } catch (IOException | SAXException ex) {
+            fail();
+        }
+    }
+
 }
 
