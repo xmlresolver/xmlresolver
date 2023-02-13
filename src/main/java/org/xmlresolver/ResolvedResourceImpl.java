@@ -1,5 +1,7 @@
 package org.xmlresolver;
 
+import org.xmlresolver.utils.RsrcUtils;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
@@ -67,5 +69,9 @@ public class ResolvedResourceImpl extends ResolvedResource {
     @Override
     public Map<String,List<String>> getHeaders() {
         return headers;
+    }
+
+    public String getHeader(String headerName) {
+        return RsrcUtils.getHeader(headerName, headers);
     }
 }

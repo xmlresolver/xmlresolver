@@ -21,6 +21,8 @@ public interface ResolverResourceInfo {
      *
      * <p>If the response included a status code, that value will be returned. For protocols
      * that don't have a status code (such as file:), 200 is returned for convenience.</p>
+     *
+     * @return the status code
      */
     int getStatusCode();
 

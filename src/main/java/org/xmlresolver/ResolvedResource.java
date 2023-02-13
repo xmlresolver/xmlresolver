@@ -1,5 +1,7 @@
 package org.xmlresolver;
 
+import org.xmlresolver.sources.ResolverResourceInfo;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
@@ -52,7 +54,7 @@ import java.util.Map;
  * can continue with all of the URIs resolved locally.</p>
  */
 
-public abstract class ResolvedResource {
+public abstract class ResolvedResource implements ResolverResourceInfo {
     /** The resolved URI.
      *
      * <p>This is the URI that should be reported as the resolved URI.</p>
@@ -91,7 +93,7 @@ public abstract class ResolvedResource {
     /** The status code.
      *
      * <p>This is the status code for this resource. For http: requests, it should be the
-     * code returned. For other resource types, it defaults to 200 for convenience./p>
+     * code returned. For other resource types, it defaults to 200 for convenience.</p>
      *
      * @return The status code of the (final) request.
      */
