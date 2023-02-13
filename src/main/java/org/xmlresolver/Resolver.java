@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.util.HashSet;
 
@@ -117,10 +118,27 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public Source resolve(String href, String base) throws TransformerException {
         ResolvedResource rsrc = resolver.resolveURI(href, base);
         if (rsrc == null) {
-            return null;
+            if (href == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+                return null;
+            }
+
+            try {
+                URI uri = base == null ? null : new URI(base);
+                uri = uri == null ? new URI(href) : uri.resolve(href);
+                rsrc = openConnection(uri);
+            } catch (URISyntaxException | IOException ex) {
+                if (resolver.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
+                    throw new TransformerException(ex);
+                }
+                return null;
+            }
+
+            if (rsrc == null) {
+                return null;
+            }
         }
 
-        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getInputStream()));
+        ResolverSAXSource source = new ResolverSAXSource(rsrc);
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }

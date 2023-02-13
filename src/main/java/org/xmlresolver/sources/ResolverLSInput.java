@@ -3,22 +3,28 @@ package org.xmlresolver.sources;
 import org.w3c.dom.ls.LSInput;
 import org.xmlresolver.ResolvedResource;
 import org.xmlresolver.Resource;
+import org.xmlresolver.utils.RsrcUtils;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /** An {@link LSInput} with a <code>resolvedURI</code>.
  *
  */
-public class ResolverLSInput implements LSInput {
+public class ResolverLSInput implements LSInput, ResolverResourceInfo {
     /** The underlying, resolved URI. */
     public final URI resolvedURI;
     final String publicId;
     final String systemId;
     final InputStream body;
     final URI uri;
+    private final int statusCode;
+    private final Map<String, List<String>> resolvedHeaders;
 
     /** Construct the {@link org.w3c.dom.ls.LSInput} while preserving the local URI.
      *
@@ -32,6 +38,8 @@ public class ResolverLSInput implements LSInput {
         this.publicId = publicId;
         this.systemId = systemId;
         this.uri = rsrc.uri();
+        this.statusCode = 200;
+        this.resolvedHeaders = Collections.emptyMap();
     }
 
     /** Construct the {@link org.w3c.dom.ls.LSInput} while preserving the local URI.
@@ -48,6 +56,8 @@ public class ResolverLSInput implements LSInput {
         this.systemId = rsrc.getResolvedURI().toString();
         this.publicId = publicId;
         this.uri = rsrc.getResolvedURI();
+        this.statusCode = rsrc.getStatusCode();
+        this.resolvedHeaders = rsrc.getHeaders();
     }
 
     /** The LSInput API... */
@@ -153,5 +163,21 @@ public class ResolverLSInput implements LSInput {
      * */
     public void setCertifiedText(boolean b) {
         throw new UnsupportedOperationException("Can't set certified text on resolver LSInput");
+    }
+
+    public URI getResolvedURI() {
+        return resolvedURI;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public Map<String, List<String>> getHeaders() {
+        return resolvedHeaders;
+    }
+
+    public String getHeader(String headerName) {
+        return RsrcUtils.getHeader(headerName, resolvedHeaders);
     }
 }

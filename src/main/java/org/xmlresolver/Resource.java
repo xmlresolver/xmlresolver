@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 /** Represents a web resource.
  *
@@ -288,11 +290,6 @@ public class Resource {
     public URI localUri() {
         return localURI;
     }
-
-    /** Return the resolved URI.
-     *
-     * <p>The resolved URI may be different from the local URI of the resource.</p>
-     */
 
     /** Return the MIME content type associated with the resource.
      *
