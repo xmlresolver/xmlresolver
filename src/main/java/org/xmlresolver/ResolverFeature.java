@@ -98,7 +98,7 @@ public class ResolverFeature<T> {
             "http://xmlresolver.org/feature/prefer-property-file", false);
 
     /**
-     * Determines whether or not the catalog PI in a document
+     * Determines whether the catalog PI in a document
      * may change the list of catalog files to be consulted.
      *
      * <p>It defaults to <code>true</code>, but there's a small performance cost. Each parse needs
@@ -108,6 +108,19 @@ public class ResolverFeature<T> {
      */
     public static final ResolverFeature<Boolean> ALLOW_CATALOG_PI = new ResolverFeature<>(
             "http://xmlresolver.org/feature/allow-catalog-pi", true);
+
+    /**
+     * Should the resolver always return a resource, even when it didn't find it in the catalog?
+     *
+     * <p>It defaults to <code>true</code>, but this is in violation of the entity resolver contract.
+     * The resolver should return null if it fails to find the resource. But some parsers don't follow
+     * redirects and therefore cannot http-to-https redirected URIs. And the source returned by the
+     * resolver contains additional, useful information.</p>
+     * <p>It's worth noting that the .NET contract for the resolver *is* that it always returns
+     * something, so there's that.</p>
+     */
+    public static final ResolverFeature<Boolean> ALWAYS_RESOLVE = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/always-resolve", true);
 
     /**
      * Sets the location of the cache directory.
