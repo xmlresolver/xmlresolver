@@ -30,10 +30,12 @@ public class Jaxp185Test {
         config.setFeature(ResolverFeature.MERGE_HTTPS, true);
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY, "fake");
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT, "fake");
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         restrictedResolver = new Resolver(config);
 
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         unrestrictedResolver = new Resolver(config);
 
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
@@ -41,6 +43,7 @@ public class Jaxp185Test {
         config.setFeature(ResolverFeature.MERGE_HTTPS, true);
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY, "http");
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT, "http");
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         allowHttpMergedResolver = new Resolver(config);
 
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
@@ -48,6 +51,7 @@ public class Jaxp185Test {
         config.setFeature(ResolverFeature.MERGE_HTTPS, true);
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY, "https");
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT, "https");
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         allowHttpsMergedResolver = new Resolver(config);
 
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
@@ -55,6 +59,7 @@ public class Jaxp185Test {
         config.setFeature(ResolverFeature.MERGE_HTTPS, false);
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY, "http");
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT, "http");
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         allowHttpResolver = new Resolver(config);
 
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
@@ -62,6 +67,7 @@ public class Jaxp185Test {
         config.setFeature(ResolverFeature.MERGE_HTTPS, false);
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY, "https");
         config.setFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT, "https");
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         allowHttpsResolver = new Resolver(config);
     }
 

@@ -11,11 +11,18 @@ import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.sources.ResolverInputSource;
 import org.xmlresolver.sources.ResolverLSInput;
 import org.xmlresolver.sources.ResolverSAXSource;
+import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLConnection;
+import java.util.HashSet;
 
 /** An implementation of many resolver interfaces.
  *
@@ -111,10 +118,27 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public Source resolve(String href, String base) throws TransformerException {
         ResolvedResource rsrc = resolver.resolveURI(href, base);
         if (rsrc == null) {
-            return null;
+            if (href == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+                return null;
+            }
+
+            try {
+                URI uri = base == null ? null : new URI(base);
+                uri = uri == null ? new URI(href) : uri.resolve(href);
+                rsrc = openConnection(uri);
+            } catch (URISyntaxException | IOException ex) {
+                if (resolver.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
+                    throw new TransformerException(ex);
+                }
+                return null;
+            }
+
+            if (rsrc == null) {
+                return null;
+            }
         }
 
-        ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getInputStream()));
+        ResolverSAXSource source = new ResolverSAXSource(rsrc);
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -159,7 +183,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             return null;
         }
 
-        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream());
+        ResolverInputSource source = new ResolverInputSource(rsrc);
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -169,10 +193,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
         ResolvedResource rsrc = resolver.resolveEntity(name, publicId, systemId, baseURI);
         if (rsrc == null) {
-            return null;
+            if (systemId == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+                return null;
+            }
+            rsrc = openConnection(systemId);
+            if (rsrc == null) {
+                return null;
+            }
         }
 
-        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream());
+        ResolverInputSource source = new ResolverInputSource(rsrc);
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -182,10 +212,16 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         ResolvedResource rsrc = resolver.resolveEntity(null, publicId, systemId, null);
         if (rsrc == null) {
-            return null;
+            if (systemId == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+                return null;
+            }
+            rsrc = openConnection(systemId);
+            if (rsrc == null) {
+                return null;
+            }
         }
 
-        ResolverInputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream());
+        ResolverInputSource source = new ResolverInputSource(rsrc);
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
     }
@@ -201,5 +237,70 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         ResolverSAXSource source = new ResolverSAXSource(rsrc.getLocalURI(), new InputSource(rsrc.getInputStream()));
         source.setSystemId(rsrc.getResolvedURI().toString());
         return source;
+    }
+
+    protected ResolvedResource openConnection(String absuri) throws IOException {
+        try {
+            return openConnection(URIUtils.cwd().resolve(absuri));
+        } catch (IllegalArgumentException ex) {
+            if (config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
+                throw ex;
+            }
+            return null;
+        }
+    }
+
+    protected ResolvedResource openConnection(URI originalURI) throws IOException {
+        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+
+        HashSet<URI> seen = new HashSet<>();
+        int count = 100;
+
+        URI absoluteURI = originalURI;
+        URLConnection connection = null;
+        boolean done = false;
+        int code = 200;
+
+        while (!done) {
+            if (seen.contains(absoluteURI)) {
+                if (throwExceptions) {
+                    throw new IOException("Redirect loop on " + absoluteURI);
+                }
+                return null;
+            }
+            if (count <= 0) {
+                if (throwExceptions) {
+                    throw new IOException("Too many redirects on " + absoluteURI);
+                }
+                return null;
+            }
+            seen.add(absoluteURI);
+            count--;
+
+            try {
+                connection = absoluteURI.toURL().openConnection();
+                connection.connect();
+            } catch (Exception ex) {
+                if (throwExceptions) {
+                    throw ex;
+                }
+                return null;
+            }
+
+            done = !(connection instanceof HttpURLConnection);
+            if (!done) {
+                HttpURLConnection conn = (HttpURLConnection) connection;
+                code = conn.getResponseCode();
+                if (code >= 300 && code < 400) {
+                    String loc = conn.getHeaderField("location");
+                    absoluteURI = absoluteURI.resolve(loc);
+                } else {
+                    done = true;
+                }
+            }
+        }
+
+        ResolvedResourceImpl rsrc = new ResolvedResourceImpl(originalURI, absoluteURI, connection.getInputStream(), code, connection.getHeaderFields());
+        return rsrc;
     }
 }

@@ -31,6 +31,7 @@ public class CatalogResolverTest {
     public void uriForSystemFail() {
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, false);
         try {
+            resolver.getConfiguration().setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
             InputSource is = resolver.resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
             assertNull(is);
         } catch (Exception ex) {

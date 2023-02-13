@@ -9,6 +9,10 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.xml.sax.InputSource;
 import org.xmlresolver.sources.ResolverInputSource;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * An extension of the {@link Resolver} that implements Xerces {@link org.apache.xerces.xni.parser.XMLEntityResolver XMLEntityResolver}.
  *
@@ -108,7 +112,24 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
             rsrc = resolver.resolveNamespace(namespace, resId.getBaseSystemId(), NATURE_XML_SCHEMA, PURPOSE_SCHEMA_VALIDATION);
         }
 
-        return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream()));
+        if (rsrc == null) {
+            rsrc = openConnection(systemId, baseURI);
+        }
+
+        return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc));
+    }
+
+    private ResolvedResource openConnection(String systemId, String baseURI) {
+        if (systemId != null && config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+            try {
+                URI uri = baseURI == null ? null : new URI(baseURI);
+                uri = uri == null ? new URI(systemId) : uri.resolve(systemId);
+                return openConnection(uri);
+            } catch (IOException | URISyntaxException err) {
+                // What am I supposed to do about this now?
+            }
+        }
+        return null;
     }
 
     private XMLInputSource resolveDTD(XMLDTDDescription resId) {
@@ -116,7 +137,10 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
         if (rsrc == null) {
             rsrc = resolver.resolveEntity(resId.getRootName(), resId.getPublicId(), resId.getExpandedSystemId(), resId.getBaseSystemId());
         }
-        return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream()));
+        if (rsrc == null) {
+            rsrc = openConnection(resId.getLiteralSystemId(), resId.getBaseSystemId());
+        }
+        return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc));
     }
 
     private XMLInputSource resolveEntity(XMLEntityDescription resId) {
@@ -129,7 +153,10 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
         if (rsrc == null) {
             rsrc = resolver.resolveEntity(name, resId.getPublicId(), resId.getExpandedSystemId(), resId.getBaseSystemId());
         }
-        return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream()));
+        if (rsrc == null) {
+            rsrc = openConnection(resId.getLiteralSystemId(), resId.getBaseSystemId());
+        }
+        return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc));
     }
 
     private XMLInputSource resolveSchema(XSDDescription resId) {
@@ -146,8 +173,12 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
             rsrc = resolver.resolveNamespace(resId.getNamespace(), resId.getBaseSystemId(), NATURE_XML_SCHEMA, PURPOSE_SCHEMA_VALIDATION);
         }
 
+        if (rsrc == null) {
+            rsrc = openConnection(resId.getLiteralSystemId(), resId.getBaseSystemId());
+        }
+
         if (rsrc != null) {
-            InputSource source = new ResolverInputSource(rsrc.getLocalURI(), rsrc.getInputStream());
+            InputSource source = new ResolverInputSource(rsrc);
             source.setSystemId(rsrc.getLocalURI().toString());
             return new SAXInputSource(source);
         }

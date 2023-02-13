@@ -253,6 +253,7 @@ public class CatalogResolver implements ResourceResolver {
 
         URI absSystem = null;
 
+        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
         CatalogManager catalog = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         ResolvedResourceImpl result = null;
         URI resolved = catalog.lookupEntity(name, systemId, publicId);
@@ -262,8 +263,6 @@ public class CatalogResolver implements ResourceResolver {
         if (resolved != null) {
             result = resource(systemId, resolved, cache.cachedSystem(resolved, publicId));
         } else {
-            boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
-
             try {
                 if (systemId != null) {
                     absSystem = new URI(systemId);
@@ -313,8 +312,6 @@ public class CatalogResolver implements ResourceResolver {
             logger.log(AbstractLogger.RESPONSE, "resolveEntity: null");
             return null;
         }
-
-        boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
 
         try {
             // There's no point attempting to cache data: URIs.

@@ -63,6 +63,11 @@ import java.util.function.Supplier;
  * <td>allow-oasis-xml-catalog-pi</td>
  * <td>Boolean¹</td>
  * </tr>
+ * <tr><th>{@link ResolverFeature#ALWAYS_RESOLVE}</th>
+ * <td>xml.catalog.alwaysResolve</td>
+ * <td>always-resolve</td>
+ * <td>Boolean¹</td>
+ * </tr>
  * <tr><th>{@link ResolverFeature#ARCHIVED_CATALOGS}</th>
  * <td>xml.catalog.archivedCatalogs</td>
  * <td>archived-catalogs</td>
@@ -173,7 +178,7 @@ import java.util.function.Supplier;
 public class XMLResolverConfiguration implements ResolverConfiguration {
     private static final ResolverFeature<?>[] knownFeatures = { ResolverFeature.CATALOG_FILES,
             ResolverFeature.PREFER_PUBLIC, ResolverFeature.PREFER_PROPERTY_FILE,
-            ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.CATALOG_ADDITIONS,
+            ResolverFeature.ALLOW_CATALOG_PI, ResolverFeature.ALWAYS_RESOLVE, ResolverFeature.CATALOG_ADDITIONS,
             ResolverFeature.CACHE_DIRECTORY, ResolverFeature.CACHE_UNDER_HOME,
             ResolverFeature.CACHE_ENABLED,
             ResolverFeature.CACHE, ResolverFeature.MERGE_HTTPS, ResolverFeature.MASK_JAR_URIS,
@@ -194,6 +199,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean preferPublic = ResolverFeature.PREFER_PUBLIC.getDefaultValue();
     private Boolean preferPropertyFile = ResolverFeature.PREFER_PROPERTY_FILE.getDefaultValue();
     private Boolean allowCatalogPI = ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue();
+    private Boolean alwaysResolve = ResolverFeature.ALWAYS_RESOLVE.getDefaultValue();
     private String cacheDirectory = ResolverFeature.CACHE_DIRECTORY.getDefaultValue();
     private Boolean cacheUnderHome = ResolverFeature.CACHE_UNDER_HOME.getDefaultValue();
     private Boolean cacheEnabled = ResolverFeature.CACHE_ENABLED.getDefaultValue();
@@ -303,6 +309,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         preferPublic = current.preferPublic;
         preferPropertyFile = current.preferPropertyFile;
         allowCatalogPI = current.allowCatalogPI;
+        alwaysResolve = current.alwaysResolve;
         cacheDirectory = current.cacheDirectory;
         cacheUnderHome = current.cacheUnderHome;
         cache = current.cache;
@@ -461,6 +468,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (property != null) {
             showConfigChange("Allow catalog PI: %s", property);
             allowCatalogPI = isTrue(property);
+        }
+
+        property = getConfigProperty("xml.catalog.alwaysResolve");
+        if (property != null) {
+            showConfigChange("Always resolve: %s", property);
+            alwaysResolve = isTrue(property);
         }
 
         property = getConfigProperty("xml.catalog.cache");
@@ -638,6 +651,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             allowCatalogPI = isTrue(property);
         }
 
+        property = properties.getProperty("always-resolve");
+        if (property != null) {
+            showConfigChange("Always resolve: %s", property);
+            alwaysResolve = isTrue(property);
+        }
+
         property = properties.getProperty("cache");
         if (property != null) {
             showConfigChange("Cache directory: %s", property);
@@ -749,6 +768,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         resolverLogger.log(AbstractLogger.CONFIG, "Prefer public: %s", preferPublic);
         resolverLogger.log(AbstractLogger.CONFIG, "Prefer property file: %s", preferPropertyFile);
         resolverLogger.log(AbstractLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
+        resolverLogger.log(AbstractLogger.CONFIG, "Always resolve: %s", alwaysResolve);
         resolverLogger.log(AbstractLogger.CONFIG, "Parse RDDL: %s", parseRddl);
         resolverLogger.log(AbstractLogger.CONFIG, "URI for system: %s", uriForSystem);
         resolverLogger.log(AbstractLogger.CONFIG, "Merge http/https: %s", mergeHttps);
@@ -908,6 +928,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.ALLOW_CATALOG_PI) {
             allowCatalogPI = (Boolean) value;
             showConfigChange("Allow catalog PI: %s", allowCatalogPI);
+        } else if (feature == ResolverFeature.ALWAYS_RESOLVE) {
+            alwaysResolve = (Boolean) value;
+            showConfigChange("Always resolve: %s", alwaysResolve);
         } else if (feature == ResolverFeature.CACHE_UNDER_HOME) {
             cacheUnderHome = (Boolean) value;
             showConfigChange("Cache under home: %s", cacheUnderHome);
@@ -1103,6 +1126,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) preferPropertyFile;
         } else if (feature == ResolverFeature.ALLOW_CATALOG_PI) {
             return (T) allowCatalogPI;
+        } else if (feature == ResolverFeature.ALWAYS_RESOLVE) {
+            return (T) alwaysResolve;
         } else if (feature == ResolverFeature.CACHE_DIRECTORY) {
             return (T) cacheDirectory;
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {

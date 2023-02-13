@@ -27,6 +27,7 @@ public class NotACatalogTest {
             XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));;
             Resolver resolver = new Resolver(config);
             config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
+            config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
 
             // Test for https://github.com/xmlresolver/xmlresolver/issues/59
             // It doesn't matter what we look up; the catalog isn't an XML catalog.

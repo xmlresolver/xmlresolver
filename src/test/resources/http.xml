@@ -1,0 +1,7 @@
+<!DOCTYPE html SYSTEM "http://xmlresolver.org/ns/sample/sample2.dtd">
+<book>
+<title>DTD/redirect test</title>
+<article>
+<p>DTD/redirect test</p>
+</article>
+</book>

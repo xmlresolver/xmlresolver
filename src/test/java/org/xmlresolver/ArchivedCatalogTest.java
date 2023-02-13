@@ -48,6 +48,7 @@ public class ArchivedCatalogTest {
             config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
             Resolver resolver = new Resolver(config);
 
+            resolver.getConfiguration().setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
             InputSource source = resolver.resolveEntity(null, "https://xmlresolver.org/ns/zipped/sample.dtd");
             assertNull(source);
         } catch (IOException | SAXException ex) {

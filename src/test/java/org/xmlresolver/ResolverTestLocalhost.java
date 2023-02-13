@@ -36,6 +36,7 @@ public class ResolverTestLocalhost extends CacheManager {
         config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
         config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         config.setFeature(ResolverFeature.CACHE_ENABLED, false);
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
 
         // Make sure the Docker container is running where we expect.
         ResourceConnection conn = new ResourceConnection(config, "http://localhost:8222/docs/sample/sample.dtd", true);

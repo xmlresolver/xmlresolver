@@ -1,7 +1,12 @@
 package org.xmlresolver;
 
+import org.xmlresolver.sources.ResolverResourceInfo;
+
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /** A resolved resource represents a successfully resolved resource.
  *
@@ -49,7 +54,7 @@ import java.net.URI;
  * can continue with all of the URIs resolved locally.</p>
  */
 
-public abstract class ResolvedResource {
+public abstract class ResolvedResource implements ResolverResourceInfo {
     /** The resolved URI.
      *
      * <p>This is the URI that should be reported as the resolved URI.</p>
@@ -84,4 +89,27 @@ public abstract class ResolvedResource {
      * @return The content type, possibly null.
      */
     public abstract String getContentType();
+
+    /** The status code.
+     *
+     * <p>This is the status code for this resource. For http: requests, it should be the
+     * code returned. For other resource types, it defaults to 200 for convenience.</p>
+     *
+     * @return The status code of the (final) request.
+     */
+    public int getStatusCode() {
+        return 200;
+    }
+
+    /** The headers.
+     *
+     * <p>This is the set of headers returned for the resolved resource. This may be empty, for example,
+     * if the URI was a file: URI. The headers are returned unchanged from the <code>URLConnection</code>,
+     * so accessing them has to consider the case-insensitive nature of header names.</p>
+     *
+     * @return The headers associated with a resource.
+     */
+    public Map<String, List<String>> getHeaders() {
+        return Collections.emptyMap();
+    }
 }
