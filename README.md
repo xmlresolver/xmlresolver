@@ -1,6 +1,6 @@
 # XMLResolver: An enhanced XML resolver with XML Catalog support
 
-[![Build Status](https://circleci.com/gh/xmlresolver/xmlresolver.svg?style=svg)](https://circleci.com/gh/xmlresolver/xmlresolver)
+![Build Status](https://github.com/xmlresolver/xmlresolver/actions/workflows/build-branch.yml/badge.svg)
 [![Java 8](https://img.shields.io/badge/java-8-blue.svg)](https://adoptopenjdk.net/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xmlresolver/xmlresolver/badge.svg)](https://search.maven.org/search?q=g:org.xmlresolver)
