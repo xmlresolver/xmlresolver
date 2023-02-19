@@ -196,7 +196,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             if (systemId == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 return null;
             }
-            rsrc = openConnection(systemId);
+            rsrc = openConnection(systemId, baseURI);
             if (rsrc == null) {
                 return null;
             }
@@ -215,7 +215,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             if (systemId == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 return null;
             }
-            rsrc = openConnection(systemId);
+            rsrc = openConnection(systemId, null);
             if (rsrc == null) {
                 return null;
             }
@@ -239,12 +239,19 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return source;
     }
 
-    protected ResolvedResource openConnection(String absuri) throws IOException {
+    protected ResolvedResource openConnection(String uri, String baseURI) throws IOException {
         try {
-            return openConnection(URIUtils.cwd().resolve(absuri));
+            URI absuri = baseURI == null ? URIUtils.cwd() : new URI(baseURI);
+            absuri = absuri.resolve(uri);
+            return openConnection(absuri);
         } catch (IllegalArgumentException ex) {
             if (config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
                 throw ex;
+            }
+            return null;
+        } catch (URISyntaxException ex) {
+            if (config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
+                throw new IOException(ex);
             }
             return null;
         }
