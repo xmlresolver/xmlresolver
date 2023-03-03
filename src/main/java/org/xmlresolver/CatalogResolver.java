@@ -659,7 +659,7 @@ public class CatalogResolver implements ResourceResolver {
             String location = conn.getHeaderField("location");
 
             if (location != null) {
-                HashSet<String> seenLocations = new HashSet();
+                HashSet<String> seenLocations = new HashSet<>();
                 while (location != null) {
                     if (seenLocations.contains(location)) {
                         return null;
