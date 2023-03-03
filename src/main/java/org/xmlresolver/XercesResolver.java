@@ -113,17 +113,17 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
         }
 
         if (rsrc == null) {
-            rsrc = safeOpenConnection(systemId, baseURI);
+            rsrc = safeOpenConnection(systemId, baseURI, true);
         }
 
         return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc));
     }
 
-    private ResolvedResource safeOpenConnection(String systemId, String baseURI) {
+    private ResolvedResource safeOpenConnection(String systemId, String baseURI, boolean asEntity) {
         // This is "safe" in the weird sense that it doesn't throw a checked exception
         if (systemId != null && config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
             try {
-                return openConnection(systemId, baseURI);
+                return openConnection(systemId, baseURI, asEntity);
             } catch (IOException err) {
                 // What am I supposed to do about this now?
             }
@@ -137,7 +137,7 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
             rsrc = resolver.resolveEntity(resId.getRootName(), resId.getPublicId(), resId.getExpandedSystemId(), resId.getBaseSystemId());
         }
         if (rsrc == null) {
-            rsrc = safeOpenConnection(resId.getLiteralSystemId(), resId.getBaseSystemId());
+            rsrc = safeOpenConnection(resId.getLiteralSystemId(), resId.getBaseSystemId(), true);
         }
         return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc));
     }
@@ -153,7 +153,7 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
             rsrc = resolver.resolveEntity(name, resId.getPublicId(), resId.getExpandedSystemId(), resId.getBaseSystemId());
         }
         if (rsrc == null) {
-            rsrc = safeOpenConnection(resId.getLiteralSystemId(), resId.getBaseSystemId());
+            rsrc = safeOpenConnection(resId.getLiteralSystemId(), resId.getBaseSystemId(), true);
         }
         return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc));
     }
@@ -173,7 +173,7 @@ public class XercesResolver extends Resolver implements org.apache.xerces.xni.pa
         }
 
         if (rsrc == null) {
-            rsrc = safeOpenConnection(resId.getLiteralSystemId(), resId.getBaseSystemId());
+            rsrc = safeOpenConnection(resId.getLiteralSystemId(), resId.getBaseSystemId(), false);
         }
 
         if (rsrc != null) {
