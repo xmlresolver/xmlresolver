@@ -239,6 +239,9 @@ publishing {
   publications {
     mavenJava(MavenPublication) {
       pom {
+        suppressPomMetadataWarningsFor('validatingApiElements')
+        suppressPomMetadataWarningsFor('validatingRuntimeElements')
+
         name = 'XML Resolver'
         packaging = 'jar'
         description = 'An XML entity/uri resolver'
