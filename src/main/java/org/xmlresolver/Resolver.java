@@ -125,7 +125,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             try {
                 URI uri = base == null ? null : new URI(base);
                 uri = uri == null ? new URI(href) : uri.resolve(href);
-                rsrc = openConnection(uri);
+                rsrc = openConnection(uri, false);
             } catch (URISyntaxException | IOException ex) {
                 if (resolver.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
                     throw new TransformerException(ex);
@@ -196,7 +196,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             if (systemId == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 return null;
             }
-            rsrc = openConnection(systemId, baseURI);
+            rsrc = openConnection(systemId, baseURI, true);
             if (rsrc == null) {
                 return null;
             }
@@ -215,7 +215,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
             if (systemId == null || !config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 return null;
             }
-            rsrc = openConnection(systemId, null);
+            rsrc = openConnection(systemId, null, true);
             if (rsrc == null) {
                 return null;
             }
@@ -239,11 +239,11 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         return source;
     }
 
-    protected ResolvedResource openConnection(String uri, String baseURI) throws IOException {
+    protected ResolvedResource openConnection(String uri, String baseURI, boolean asEntity) throws IOException {
         try {
             URI absuri = baseURI == null ? URIUtils.cwd() : new URI(baseURI);
             absuri = absuri.resolve(uri);
-            return openConnection(absuri);
+            return openConnection(absuri, asEntity);
         } catch (IllegalArgumentException ex) {
             if (config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
                 throw ex;
@@ -257,7 +257,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         }
     }
 
-    protected ResolvedResource openConnection(URI originalURI) throws IOException {
+    protected ResolvedResource openConnection(URI originalURI, boolean asEntity) throws IOException {
         boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
 
         HashSet<URI> seen = new HashSet<>();
@@ -268,7 +268,24 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
         boolean done = false;
         int code = 200;
 
+        final boolean mergeHttps = config.getFeature(ResolverFeature.MERGE_HTTPS);
+        final String accessList;
+        if (asEntity) {
+            accessList = config.getFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY);
+        } else {
+            accessList = config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT);
+        }
+
         while (!done) {
+            if (URIUtils.forbidAccess(accessList, absoluteURI.toString(), mergeHttps)) {
+                if (asEntity) {
+                    logger.log(AbstractLogger.REQUEST, "resolveEntity, access denied: null");
+                } else {
+                    logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: null");
+                }
+                return null;
+            }
+
             if (seen.contains(absoluteURI)) {
                 if (throwExceptions) {
                     throw new IOException("Redirect loop on " + absoluteURI);

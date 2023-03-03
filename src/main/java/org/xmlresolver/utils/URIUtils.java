@@ -249,4 +249,48 @@ public abstract class URIUtils {
             return "%" + hex;
         }
     }
+
+    public static boolean forbidAccess(String allowed, String uri, boolean mergeHttps) {
+        if (allowed == null || "".equals(allowed.trim())) {
+            return true;
+        }
+
+        if ("all".equals(allowed.trim())) {
+            return false;
+        }
+
+        boolean sawHttp = false;
+        boolean sawHttps = false;
+
+        // Ok, that's the easy cases taken care of. Let's do the hard work.
+        uri = uri.toLowerCase();
+        for (String value : allowed.split(",")) {
+            String protocol = value.trim().toLowerCase();
+
+            if ("all".equals(protocol)) {
+                return false;
+            }
+
+            if (!protocol.endsWith(":")) {
+                protocol += ":";
+            }
+
+            sawHttp = sawHttp || "http:".equals(protocol);
+            sawHttps = sawHttps || "https:".equals(protocol);
+            if (uri.startsWith(protocol)) {
+                return false;
+            }
+        }
+
+        if (mergeHttps) {
+            if (sawHttp && !sawHttps && uri.startsWith("https:")) {
+                return false;
+            }
+            if (sawHttps && !sawHttp && uri.startsWith("http:")) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

@@ -506,47 +506,7 @@ public class CatalogResolver implements ResourceResolver {
     }
 
     private boolean forbidAccess(String allowed, String uri) {
-        if (allowed == null || "".equals(allowed.trim())) {
-            return true;
-        }
-
-        if ("all".equals(allowed.trim())) {
-            return false;
-        }
-
-        boolean sawHttp = false;
-        boolean sawHttps = false;
-
-        // Ok, that's the easy cases taken care of. Let's do the hard work.
-        uri = uri.toLowerCase();
-        for (String value : allowed.split(",")) {
-            String protocol = value.trim().toLowerCase();
-
-            if ("all".equals(protocol)) {
-                return false;
-            }
-
-            if (!protocol.endsWith(":")) {
-                protocol += ":";
-            }
-
-            sawHttp = sawHttp || "http:".equals(protocol);
-            sawHttps = sawHttps || "https:".equals(protocol);
-            if (uri.startsWith(protocol)) {
-                return false;
-            }
-        }
-
-        if (config.getFeature(ResolverFeature.MERGE_HTTPS)) {
-            if (sawHttp && !sawHttps && uri.startsWith("https:")) {
-                return false;
-            }
-            if (sawHttps && !sawHttp && uri.startsWith("http:")) {
-                return false;
-            }
-        }
-
-        return true;
+        return URIUtils.forbidAccess(allowed, uri, config.getFeature(ResolverFeature.MERGE_HTTPS));
     }
 
     protected ResolvedResourceImpl resource(String requestURI, URI responseURI, CacheEntry cached) {
