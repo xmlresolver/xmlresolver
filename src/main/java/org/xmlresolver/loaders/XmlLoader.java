@@ -107,7 +107,9 @@ public class XmlLoader implements CatalogLoader {
             Resource rsrc = new Resource(catalog);
             InputSource source = new InputSource(rsrc.body());
             source.setSystemId(catalog.toString());
-            return loadCatalog(catalog, source);
+            EntryCatalog entries = loadCatalog(catalog, source);
+            logger.log(AbstractLogger.CONFIG, "Loaded catalog: %s", catalog);
+            return entries;
         } catch (FileNotFoundException fex) {
             logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
             catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
