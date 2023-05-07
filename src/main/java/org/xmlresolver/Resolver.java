@@ -124,7 +124,12 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
 
             try {
                 URI uri = base == null ? null : new URI(base);
-                uri = uri == null ? new URI(href) : uri.resolve(href);
+                // Don't resolve a same-document reference, that will trim the end off the URI.
+                // The best we can say about a same-document reference is that it refers to whatever
+                // the current base URI is...
+                if (!"".equals(href)) {
+                    uri = uri == null ? new URI(href) : uri.resolve(href);
+                }
                 rsrc = openConnection(uri, false);
             } catch (URISyntaxException | IOException ex) {
                 if (resolver.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {

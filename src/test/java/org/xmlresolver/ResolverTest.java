@@ -17,6 +17,7 @@ import org.xmlresolver.sources.ResolverInputSource;
 import org.xmlresolver.tools.ResolvingXMLReader;
 import org.xmlresolver.utils.URIUtils;
 
+import javax.xml.transform.Source;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -252,4 +253,36 @@ public class ResolverTest {
             fail(ex.getMessage());
         }
     }
+
+    @Test
+    public void issue140_always_resolve_off() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList());
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
+        resolver = new Resolver(config);
+
+        try {
+            String baseURI = URIUtils.cwd().resolve("src/test/resources/xml/ch01.xml").toString();
+            Source result = resolver.resolve("", baseURI);
+            assertNull(result);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void issue140_always_resolve_on() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList());
+        config.setFeature(ResolverFeature.ALWAYS_RESOLVE, true);
+        resolver = new Resolver(config);
+
+        try {
+            String baseURI = URIUtils.cwd().resolve("src/test/resources/xml/ch01.xml").toString();
+            Source result = resolver.resolve("", baseURI);
+            assertTrue(result.getSystemId().endsWith(".xml"));
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
+
 }
