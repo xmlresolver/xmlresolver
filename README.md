@@ -209,8 +209,11 @@ $ git submodule sync
 $ git submodule update --init
 ```
 
-To compile the project and check its tests you must have Java 8, and you may either use your own installed Gradle tool, or the provided Gradle Wrapper (i.e. `./gradlew`).
-NOTE: If you are using your own Gradle tool, you must have Gradle version 7.x.x. Gradle version 8.x.x is not yet supported by this project.
+To compile the project and check its tests you must have Java 8. It is
+easiest to do with the provided Gradle Wrapper (i.e. `./gradlew`), but
+you can use your own installed version of Gradle if it’s compatible
+with Gradle 8.1.1 (the version of Gradle used by this project at the
+time of this writing).
 
 to build and test the project:
 ```bash
