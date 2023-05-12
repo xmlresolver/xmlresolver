@@ -188,7 +188,8 @@ public class ValidatingXmlLoader implements CatalogLoader {
                     throw new CatalogInvalidException("Failed to load catalog schema: " + errorHandler.getMessage());
                 }
             }
-            if (!driver.validate(producer)) {
+
+            if (!driver.validate(SaxProducer.adaptForJing(producer))) {
                 String msg = errorHandler.getMessage();
                 throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + msg);
             };

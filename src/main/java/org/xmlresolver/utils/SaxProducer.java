@@ -27,4 +27,31 @@ public interface SaxProducer {
      * @throws SAXException if a SAXException occurs when calling one of the handlers
      */
     void produce(ContentHandler contentHandler, DTDHandler dtdHandler, ErrorHandler errorHandler) throws IOException, SAXException;
+
+    /**
+     * Adapt the provided XMLResolver SaxProducer to a Jing SaxProducer.
+     *
+     * @param saxProducer the XMLResolver SaxProducer.
+     *
+     * @return the Jing SaxProducer.
+     */
+    static com.thaiopensource.validate.ValidationDriver.SaxProducer adaptForJing(final SaxProducer saxProducer) {
+        return new SaxProducerJingAdapter(saxProducer);
+    }
+
+    /**
+     * Simple adapter for XMLResolver SaxProducer to Jing SaxProducer.
+     */
+    static class SaxProducerJingAdapter implements com.thaiopensource.validate.ValidationDriver.SaxProducer {
+        private final SaxProducer saxProducer;
+
+        public SaxProducerJingAdapter(final SaxProducer saxProducer) {
+            this.saxProducer = saxProducer;
+        }
+
+        @Override
+        public void produce(final ContentHandler contentHandler, final DTDHandler dtdHandler, final ErrorHandler errorHandler) throws IOException, SAXException {
+            saxProducer.produce(contentHandler, dtdHandler, errorHandler);
+        }
+    }
 }
