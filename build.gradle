@@ -188,7 +188,7 @@ javadoc {
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
   archiveBaseName = "${basename}-${resolverVersion}"
-  classifier = 'javadoc'
+  archiveClassifier = 'javadoc'
   from javadoc.destinationDir
   manifest {
     attributes "Built-By": "Norman Walsh"
@@ -202,7 +202,7 @@ assemble.dependsOn javadocJar
 
 task sourcesJar(type: Jar, dependsOn: ["generateBuildConfig"]) {
   archiveBaseName = "${basename}-${resolverVersion}"
-  classifier = 'sources'
+  archiveClassifier = 'sources'
   from sourceSets.main.allSource
   manifest {
     attributes "Built-By": "Norman Walsh"
@@ -216,7 +216,7 @@ assemble.dependsOn sourcesJar
 
 task dataJar(type: Jar, dependsOn: ["copyData"]) {
   archiveBaseName = "${basename}-${resolverVersion}"
-  classifier = 'data'
+  archiveClassifier = 'data'
   from "${buildDir}/data"
   manifest {
     attributes "Built-By": "Norman Walsh"
