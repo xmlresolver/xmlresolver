@@ -43,7 +43,7 @@ dependencies {
   )
 
   validatingImplementation (
-    [group: 'org.relaxng', name: 'jing', version: '20181222' ]
+    [group: 'org.relaxng', name: 'jing', version: '20220510' ]
   )
 
   testImplementation (
