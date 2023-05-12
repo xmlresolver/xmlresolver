@@ -195,3 +195,24 @@ as they are loaded and validation errors will raise an exception.
 In order to use this feature, you must have
 [Jing](https://search.maven.org/artifact/org.relaxng/jing) version 20181222 on your classpath.
 
+## Building from Source Code
+
+First clone the Git Repository:
+```bash
+$ git clone https://github.com/xmlresolver/xmlresolver.git
+```
+
+then enter the project folder, and pull in the Git sub-module `data`:
+```bash
+$ cd xmlresolver
+$ git submodule sync
+$ git submodule update --init
+```
+
+To compile the project and check its tests you must have Java 8, and you may either use your own installed Gradle tool, or the provided Gradle Wrapper (i.e. `./gradlew`).
+NOTE: If you are using your own Gradle tool, you must have Gradle version 7.x.x. Gradle version 8.x.x is not yet supported by this project.
+
+to build and test the project:
+```bash
+$ ./gradlew build
+```
