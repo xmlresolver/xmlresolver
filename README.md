@@ -5,14 +5,6 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xmlresolver/xmlresolver/badge.svg)](https://search.maven.org/search?q=g:org.xmlresolver)
 
-*Attention: On 22 May 2021, I moved this repository from my personal
-account to a new `xmlresolver` organization. GitHub should provide redirects,
-but you may want to update your git remote if you forked it before the
-move.*
-
-*Attention: On 7 August 2020, I changed the default branch in this repository to `main`. 
-If you’ve got a clone of this repo, you may want to update it. Apologies for the inconvenience.*
-
 The xmlresolver project provides an advanced implementation of the SAX
 `EntityResolver`, the Transformer `URIResolver`, and a new
 `NamespaceResolver`. The implementation uses the OASIS XML Catalogs V1.1
@@ -47,7 +39,7 @@ https://github.com/xmlresolver/resolver-migration
 
 ### API Changes
 
-Version 2.0.x introduces some API changes. The most common user-level APIs (`new Catalog()`,
+Version 2.0.x introduced some API changes. The most common user-level APIs (`new Catalog()`,
 `new Resolver()`, etc. are unchanged), but if you’re
 extending or integrating with the resolver directly, you may have to change a few things.
 I’ve added a `ResolverFeature` type to track features in a more typesafe way.
@@ -57,6 +49,32 @@ and now implements the `ResolverConfiguration` interface.
 
 Several methods on the configuration object have been removed. Their
 values can be obtained by requesting the corresponding feature.
+
+In the releases since 2.0.x, a few additional APIs have been added,
+but the design has remained largely the same.
+
+#### A note about ALWAYS_RESOLVE
+
+The standard contract for the Java resolver APIs is that they return
+null if the resolver doesn’t find a match. But on the modern web, lots
+of URIs redirect (from `http:` to `https:` especially), and some
+parsers don’t follow redirects. That causes the parse to fail in ways
+that may not be easy for the user to fix.
+
+Starting in version 5.0.0, the resolver will always resolve resources,
+follow redirects, and return a stream. This deprives the parser of the
+option to try something else, but means that redirects don’t cause the
+parse to fail.
+
+This feature is *enabled* by default. If you set it to false, the
+resolver will return null if the resource isn’t found in the catalog.
+
+I don’t know of any parsers that try anything else after the resolver
+has failed except loading the resource, so I expect this to be an
+improvement for users. If your implementation wants to explicitly just
+check the catalog, at the Java API level, you can use the
+CatalogManager API. That’s the same API the resolver classes use to
+locate resources in the catalog.
 
 ### Behavior changes
 
@@ -194,6 +212,19 @@ as they are loaded and validation errors will raise an exception.
 
 In order to use this feature, you must have
 [Jing](https://search.maven.org/artifact/org.relaxng/jing) version 20181222 on your classpath.
+
+### Support for dynamically constructed catalog files
+
+Starting in version 5.2.0, it is possible to construct a catalog
+directly from a stream of SAX events, rather than by parsing an input
+stream. (Shout out to @adamretter for providing this patch.)
+
+This means that the catalog can be, for example, stored in a database
+where it may not be conveniently accessible as a character stream, or
+even stored in a completely novel format.
+
+See [the JavaDoc API](https://xmlresolver.org/javadoc/org/xmlresolver/loaders/CatalogLoader.html#loadCatalog(java.net.URI,org.xmlresolver.utils.SaxProducer))
+for more details.
 
 ## Building from Source Code
 
