@@ -191,10 +191,28 @@ public class XmlLoader implements CatalogLoader {
      * Load the specified catalog by sending events to the ContentHandler.
      *
      * <p>This method exists so that a catalog can be loaded even if it doesn't have a URI
-     * that can be dereferenced. It must still have a URI.</p>
+     * that can be dereferenced. It must still have a URI because relative URIs in the catalog
+     * will be resolved against it. (If all of the URIs in the catalog are absolute, the catalog
+     * URI is irrelevant.)</p>
      *
-     * <p>The manager maintains a set of the catalogs that it has loaded. If an attempt is
-     * made to load a catalog twice, the previously loaded catalog is returned.</p>
+     * <p>To use this approach, you must both add the catalog to the resolver and then
+     * explicitly load the catalog:</p>
+     *
+     * <p>For example:</p>
+     *
+     * <pre>   XMLResolverConfiguration config = new XMLResolverConfiguration();
+     *   CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+     *
+     *   URI caturi = URI.create("https://example.com/absolute/uri/catalog.xml");
+     *   config.addCatalog(caturi.toString());
+     *
+     *   SaxProducer producer = new CatalogProducer();
+     *   manager.loadCatalog(caturi, producer);</pre>
+     *
+     * <p>If you don't add the catalog to the resolver, it won't be used. If you don't explicitly load
+     * the catalog, the resolver will try to dereference the URI the first time it needs the catalog.
+     * The manager maintains a set of the catalogs that it has loaded so it won't attempt to
+     * load a catalog twice, the previously loaded catalog will be used.</p>
      *
      * @param catalog The catalog URI.
      * @param producer The producer that delivers SAX events to the handlers.
