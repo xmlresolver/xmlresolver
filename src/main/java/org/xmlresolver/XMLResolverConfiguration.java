@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.AccessControlException;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -339,15 +340,21 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     private String getConfigProperty(String name) {
-        String property = System.getProperty(name);
-        if (property == null) {
-            String env = name
-                    .replaceAll("\\.", "_")
-                    .replaceAll("([a-z])([A-Z])", "$1_$2")
-                    .toUpperCase();
-            property = System.getenv(env);
+        try {
+            String property = System.getProperty(name);
+            if (property == null) {
+                String env = name
+                        .replaceAll("\\.", "_")
+                        .replaceAll("([a-z])([A-Z])", "$1_$2")
+                        .toUpperCase();
+                property = System.getenv(env);
+            }
+            return property;
+        } catch (AccessControlException ex) {
+            // I guess you're not allowed to do this
+            resolverLogger.debug("Access forbidden to system property: " + name);
+            return null;
         }
-        return property;
     }
 
     private void loadConfiguration(List<URL> propertyFiles, List<String> catalogFiles) {
@@ -362,18 +369,28 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             // to avoid loading the XMLRESOLVER_PROPERTIES environment. This is
             // an edge case more-or-less exclusively for testing.
             if (propfn == null || "".equals(propfn)) {
-                URL propurl = XMLResolverConfiguration.class.getResource("/xmlresolver.properties");
-                if (propurl != null) {
-                    propertyFilesList.add(propurl);
+                try {
+                    URL propurl = XMLResolverConfiguration.class.getResource("/xmlresolver.properties");
+                    if (propurl != null) {
+                        propertyFilesList.add(propurl);
+                    }
+                } catch (AccessControlException ex) {
+                    // I guess you're not allowed to do this
+                    resolverLogger.debug("Access forbidden to class resource");
                 }
             } else {
-                URI baseURI = URIUtils.cwd();
-                for (String fn : propfn.split("\\s*;\\s*")) {
-                    try {
-                        propertyFilesList.add(baseURI.resolve(fn).toURL());
-                    } catch (MalformedURLException ex) {
-                        // nevermind
+                try {
+                    URI baseURI = URIUtils.cwd();
+                    for (String fn : propfn.split("\\s*;\\s*")) {
+                        try {
+                            propertyFilesList.add(baseURI.resolve(fn).toURL());
+                        } catch (MalformedURLException ex) {
+                            // nevermind
+                        }
                     }
+                } catch (AccessControlException ex) {
+                    // I guess you're not allowed to do this
+                    resolverLogger.debug("Access forbidden to cwd");
                 }
             }
         } else {
@@ -390,7 +407,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                     propurl = url;
                     break;
                 }
-            } catch (IOException ex) {
+            } catch (IOException|AccessControlException ex) {
                 // nevermind
             }
         }
@@ -409,7 +426,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else {
             catalogs.clear();
             for (String fn : catalogFiles) {
-                if ("".equals(fn.trim())) {
+                if (fn.trim().isEmpty()) {
                     continue;
                 }
                 catalogs.add(fn);
@@ -1060,11 +1077,16 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 resolverLogger.log(AbstractLogger.CONFIG, "Searching for catalogs on classpath:");
                 for (String loc : cpath.split(sep)) {
                     File dir = new File(loc);
-                    if (dir.exists() && dir.isDirectory()) {
-                        Path path = Paths.get(loc, "catalog.xml");
-                        if (path.toFile().exists()) {
-                            catalogs.add(path.toString());
+                    try {
+                        if (dir.exists() && dir.isDirectory()) {
+                            Path path = Paths.get(loc, "catalog.xml");
+                            if (path.toFile().exists()) {
+                                catalogs.add(path.toString());
+                            }
                         }
+                    } catch (AccessControlException ex) {
+                        // I guess you're not allowed to do this...
+                        resolverLogger.debug("Access forbidden to file: " + dir);
                     }
                 }
             }
@@ -1075,7 +1097,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                     URL catalog = resources.nextElement();
                     catalogs.add(catalog.toString());
                 }
-            } catch (IOException ex) {
+            } catch (IOException|AccessControlException ex) {
                 // nevermind
             }
 
@@ -1220,10 +1242,19 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
 
     private static class FallbackLogger extends AbstractLogger {
         private final ArrayList<Message> messages = new ArrayList<>();
-        private final String fallbackLogging
-                = System.getProperty("xml.catalog.FallbackLoggerLogLevel") != null
-                ? System.getProperty("xml.catalog.FallbackLoggerLogLevel")
-                : System.getenv("XML_CATALOG_FALLBACK_LOGGER_LOG_LEVEL");
+        private final String fallbackLogging;
+
+        public FallbackLogger() {
+            String logging = null;
+            try {
+                logging = System.getProperty("xml.catalog.FallbackLoggerLogLevel") != null
+                        ? System.getProperty("xml.catalog.FallbackLoggerLogLevel")
+                        : System.getenv("XML_CATALOG_FALLBACK_LOGGER_LOG_LEVEL");
+            } catch (AccessControlException ex) {
+                // I guess you're not allowed to do this
+            }
+            fallbackLogging = logging;
+        }
 
         @Override
         public void log(String cat, String message, Object... params) {
