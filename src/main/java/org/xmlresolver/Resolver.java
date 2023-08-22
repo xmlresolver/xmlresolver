@@ -131,7 +131,7 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
                     uri = uri == null ? new URI(href) : uri.resolve(href);
                 }
                 rsrc = openConnection(uri, false);
-            } catch (URISyntaxException | IOException ex) {
+            } catch (URISyntaxException | IOException | IllegalArgumentException ex) {
                 if (resolver.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
                     throw new TransformerException(ex);
                 }
