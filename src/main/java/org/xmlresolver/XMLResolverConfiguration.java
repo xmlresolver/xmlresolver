@@ -1071,16 +1071,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             // Starting in Java 9, the class loader is no longer a URLClassLoader, so the .getURLs()
             // trick doesn't work. Instead, we're just going to assume that the java.class.path
             // system property is correct. It seems to be.
-            String sep;
             String cpath;
-
-            try {
-                sep = System.getProperty("path.separator");
-            } catch (AccessControlException ex) {
-                // I guess you're not allowed to do this...
-                sep = null;
-                resolverLogger.debug("Access forbidden to environment variable: path.separator");
-            }
 
             try {
                 cpath = System.getProperty("java.class.path");
@@ -1090,9 +1081,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 resolverLogger.debug("Access forbidden to environment variable: java.class.path");
             }
 
-            if (sep != null && cpath != null) {
+            if (File.pathSeparator != null && cpath != null) {
                 resolverLogger.log(AbstractLogger.CONFIG, "Searching for catalogs on classpath:");
-                for (String loc : cpath.split(sep)) {
+                for (String loc : cpath.split(File.pathSeparator)) {
                     File dir = new File(loc);
                     try {
                         if (dir.exists() && dir.isDirectory()) {
@@ -1109,10 +1100,12 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
 
             try {
-                Enumeration<URL> resources = XMLResolverConfiguration.class.getClassLoader().getResources("org/xmlresolver/catalog.xml");
-                while (resources.hasMoreElements()) {
-                    URL catalog = resources.nextElement();
-                    catalogs.add(catalog.toString());
+                if (classLoader != null) {
+                    Enumeration<URL> resources = classLoader.getResources("org/xmlresolver/catalog.xml");
+                    while (resources.hasMoreElements()) {
+                        URL catalog = resources.nextElement();
+                        catalogs.add(catalog.toString());
+                    }
                 }
             } catch (IOException|AccessControlException ex) {
                 // nevermind
