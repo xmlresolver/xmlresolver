@@ -5,6 +5,9 @@ import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryDocument;
 
+/**
+ * Query for document catalog entries.
+ */
 public class QueryDocument extends QueryCatalog {
     @Override
     protected QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {

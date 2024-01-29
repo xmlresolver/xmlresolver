@@ -20,6 +20,10 @@ import java.nio.charset.StandardCharsets;
 public abstract class URIUtils {
     private static Boolean isWindows = null;
 
+    /**
+     * Is this a Windows system?
+     * @return True, if and only if this is running on Windows.
+     */
     public static boolean isWindows() {
         if (isWindows == null) {
             String os = System.getProperty("os.name", "unknown").toLowerCase();
@@ -28,7 +32,14 @@ public abstract class URIUtils {
         return isWindows;
     }
 
-    private static String windowsPathURI(String uri) {
+    /**
+     * Make a Windows path URI.
+     * <p>This method cleans up backslashes and other aspects of Windows filenames that are not
+     * valid in URIs. If called on a non-Windows system, the URI is returned unchanged.</p>
+     * @param uri The URI to clean up.
+     * @return The resulting URI.
+     */
+    public static String windowsPathURI(String uri) {
         if (!isWindows()) {
             return uri;
         }
@@ -251,7 +262,7 @@ public abstract class URIUtils {
     }
 
     public static boolean forbidAccess(String allowed, String uri, boolean mergeHttps) {
-        if (allowed == null || "".equals(allowed.trim())) {
+        if (allowed == null || allowed.trim().isEmpty()) {
             return true;
         }
 

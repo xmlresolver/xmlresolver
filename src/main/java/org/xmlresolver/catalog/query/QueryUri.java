@@ -7,11 +7,23 @@ import org.xmlresolver.utils.URIUtils;
 import java.net.URI;
 import java.util.ArrayList;
 
+/**
+ * Query for URI catalog entries.
+ */
 public class QueryUri extends QueryCatalog {
+    /** The URI. */
     public final String uri;
+    /** The RDDL nature. */
     public final String nature;
+    /** The RDDL purpose. */
     public final String purpose;
 
+    /**
+     * QueryURI constructor.
+     * @param uri The URI.
+     * @param nature The RDDL nature, may be null.
+     * @param purpose The RDDL purpose, may be null.
+     */
     public QueryUri(String uri, String nature, String purpose) {
         super();
         this.uri = uri;
@@ -19,6 +31,11 @@ public class QueryUri extends QueryCatalog {
         this.purpose = purpose;
     }
 
+    /**
+     * QueryURI constructor.
+     * <p>The nature and purpose are null if this constructor is used.</p>
+     * @param uri The URI.
+     */
     public QueryUri(String uri) {
         super();
         this.uri = uri;

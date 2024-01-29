@@ -19,7 +19,6 @@ public class UrnPublicTest {
     public static String urnNotPublicId = PublicId.encodeURN("-//Sample//DTD Not Sample 1.0//EN").toString();
 
     XMLResolverConfiguration config = null;
-    Resolver resolver = null;
     public static CatalogManager manager = null;
 
     @Before

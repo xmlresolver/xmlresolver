@@ -1,6 +1,5 @@
 package org.xmlresolver;
 
-import net.sf.saxon.s9api.SaxonApiException;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -17,12 +16,12 @@ public class ParserTest {
     public static final String catalog = "src/test/resources/empty.xml";
 
     XMLResolverConfiguration config = null;
-    Resolver resolver = null;
+    XMLResolver resolver = null;
 
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
-        resolver = new Resolver(config);
+        resolver = new XMLResolver(config);
     }
 
     @Test

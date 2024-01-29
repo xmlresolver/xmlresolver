@@ -1,3 +1,11 @@
+Redirect permanent /docs/foo /docs/bar
+Redirect permanent /docs/bar /docs/baz
+Redirect permanent /docs/baz /docs/redirected.txt
+
+Header add Extra-Unique "unique header"
+Header add Extra-Repeated "value 1"
+Header add Extra-Repeated "value 2"
+
 <Files ~ "\.txt">
  ForceType 'text/plain; charset=ISO-8859-1'
 </Files>

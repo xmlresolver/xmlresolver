@@ -1,8 +1,7 @@
 package org.xmlresolver.sources;
 
 import org.w3c.dom.ls.LSInput;
-import org.xmlresolver.ResolvedResource;
-import org.xmlresolver.Resource;
+import org.xmlresolver.ResourceResponse;
 import org.xmlresolver.utils.RsrcUtils;
 
 import java.io.InputStream;
@@ -28,36 +27,20 @@ public class ResolverLSInput implements LSInput, ResolverResourceInfo {
 
     /** Construct the {@link org.w3c.dom.ls.LSInput} while preserving the local URI.
      *
-     * @param rsrc The resolver resource.
-     * @param publicId The publicId.
-     * @param systemId The systemId.
-     * */
-    public ResolverLSInput(Resource rsrc, String publicId, String systemId) {
-        resolvedURI = rsrc.localUri();
-        this.body = rsrc.body();
-        this.publicId = publicId;
-        this.systemId = systemId;
-        this.uri = rsrc.uri();
-        this.statusCode = 200;
-        this.resolvedHeaders = Collections.emptyMap();
-    }
-
-    /** Construct the {@link org.w3c.dom.ls.LSInput} while preserving the local URI.
-     *
      * If the resolved resource is available, we can get everything except the
      * public identifier from that resolved resource.
      *
-     * @param rsrc The resolved resource.
+     * @param resp The resource response.
      * @param publicId The publicId.
      * */
-    public ResolverLSInput(ResolvedResource rsrc, String publicId) {
-        resolvedURI = rsrc.getLocalURI();
-        this.body = rsrc.getInputStream();
-        this.systemId = rsrc.getResolvedURI().toString();
+    public ResolverLSInput(ResourceResponse resp, String publicId) {
+        resolvedURI = resp.getResolvedURI();
+        this.body = resp.getInputStream();
+        this.systemId = resp.getURI().toString();
         this.publicId = publicId;
-        this.uri = rsrc.getResolvedURI();
-        this.statusCode = rsrc.getStatusCode();
-        this.resolvedHeaders = rsrc.getHeaders();
+        this.uri = resp.getURI();
+        this.statusCode = resp.getStatusCode();
+        this.resolvedHeaders = resp.getHeaders();
     }
 
     /** The LSInput API... */

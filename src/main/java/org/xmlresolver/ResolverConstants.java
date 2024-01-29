@@ -19,4 +19,21 @@ public final class ResolverConstants {
     public static final String XML_NS = "http://www.w3.org/XML/1998/namespace";
     /** The XML Namespace name of XML Resolver Catalog extensions, "http://xmlresolver.org/ns/catalog". */
     public static final String XMLRESOURCE_EXT_NS = "http://xmlresolver.org/ns/catalog";
+
+    public static final String PURPOSE_SCHEMA_VALIDATION = "http://www.rddl.org/purposes#schema-validation";
+    public static final String NATURE_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+    public static final String NATURE_XML_SCHEMA_1_1 = "http://www.w3.org/2001/XMLSchema/v1.1";
+    public static final String NATURE_RELAX_NG = "http://relaxng.org/ns/structure/1.0";
+
+    public static final String TEXT_NATURE = "https://www.iana.org/assignments/media-types/text/plain";
+    public static final String BINARY_NATURE = "https://www.iana.org/assignments/media-types/application/octet-stream";
+    public static final String XML_NATURE = "https://www.iana.org/assignments/media-types/application/xml";
+    public static final String DTD_NATURE = "https://www.iana.org/assignments/media-types/application/xml-dtd";
+    public static final String SCHEMA_NATURE = "http://www.w3.org/2001/XMLSchema";
+    public static final String RELAXNG_NATURE = "http://relaxng.org/ns/structure/1.0";
+    public static final String EXTERNAL_ENTITY_NATURE = "https://www.iana.org/assignments/media-types/application/xml-external-parsed-entity";
+    public static final String ANY_NATURE = null;
+
+    public static final String VALIDATION_PURPOSE = "http://www.rddl.org/purposes#validation";
+    public static final String ANY_PURPOSE = null;
 }

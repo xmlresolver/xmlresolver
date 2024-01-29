@@ -19,8 +19,6 @@ public class DataCheckTest {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList(catalog));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
-        config.setFeature(ResolverFeature.CACHE, null);
-        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
     }
 
@@ -40,8 +38,6 @@ public class DataCheckTest {
         localConfig.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         localConfig.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList(catalog));
         localConfig.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
-        localConfig.setFeature(ResolverFeature.CACHE, null);
-        localConfig.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         localManager = localConfig.getFeature(ResolverFeature.CATALOG_MANAGER);
 
         URI result = localManager.lookupURI("https://xmlresolver.org/data/resolver/succeeded/test/check.xml");

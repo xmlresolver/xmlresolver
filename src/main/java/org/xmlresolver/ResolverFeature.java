@@ -1,9 +1,7 @@
 package org.xmlresolver;
 
-import com.thaiopensource.resolver.xml.sax.SAX;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmlresolver.cache.ResourceCache;
 import org.xmlresolver.logging.ResolverLogger;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,7 +58,7 @@ public class ResolverFeature<T> {
     }
 
     /**
-     * Iterates over all of the known feature names.
+     * Iterates over the known feature names.
      *
      * @return An iterator over the feature names.
      */
@@ -81,7 +79,7 @@ public class ResolverFeature<T> {
             "http://xmlresolver.org/feature/catalog-additions", Collections.unmodifiableList(new ArrayList<>()));
 
     /**
-     * Determines whether or not public IDs are preferred..
+     * Determines whether public IDs are preferred.
      */
     public static final ResolverFeature<Boolean> PREFER_PUBLIC = new ResolverFeature<>(
             "http://xmlresolver.org/feature/prefer-public", true);
@@ -123,32 +121,6 @@ public class ResolverFeature<T> {
             "http://xmlresolver.org/feature/always-resolve", true);
 
     /**
-     * Sets the location of the cache directory.
-     *
-     * <p>If the value
-     * is <code>null</code>, and <code>CACHE_UNDER_HOME</code> is <code>false</code>, no cache will
-     * be used.</p>
-     */
-    public static final ResolverFeature<String> CACHE_DIRECTORY = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/cache-directory", (String) null);
-
-    /**
-     * Determines if a default cache location of <code>.xmlresolver.org/cache</code>
-     * under the users home directory should be used for the cache.
-     *
-     * <p>This only applies if <code>CATALOG_CACHE</code>
-     * is <code>null</code>.</p>
-     */
-    public static final ResolverFeature<Boolean> CACHE_UNDER_HOME = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/cache-under-home", true);
-
-    /**
-     * Provides access to the {@link ResourceCache} that the resolver is using.
-     */
-    public static final ResolverFeature<ResourceCache> CACHE = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/cache", (ResourceCache) null);
-
-    /**
      * Provides access to the {@link CatalogManager} that
      * the resolver is  using.
      */
@@ -156,7 +128,7 @@ public class ResolverFeature<T> {
             "http://xmlresolver.org/feature/catalog-manager", (CatalogManager) null);
 
     /**
-     * Determines whether or not <code>uri</code> catalog entries
+     * Determines whether <code>uri</code> catalog entries
      * can be used to resolve external identifiers.
      *
      * <p>This only applies if resolution fails through
@@ -368,14 +340,6 @@ public class ResolverFeature<T> {
             "http://xmlresolver.org/feature/access-external-document", "all");
 
     /**
-     * Is the cache enabled?
-     *
-     * <p>If the cache <em>is not</em> enabled, no attempt will be made to create or use a cache.</p>
-     */
-    public static final ResolverFeature<Boolean> CACHE_ENABLED = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/cache-enabled", false);
-
-    /**
      * Identify the SAXParserFactory class.
      *
      * <p>If unconfigured, parsers are created with {@link #XMLREADER_SUPPLIER}.</p>
@@ -433,7 +397,7 @@ public class ResolverFeature<T> {
      * Fix backslashes in system identifiers on Windows?
      * <p>System identifiers are URIs and URIs may not contain un-escaped backslashes. However, Windows
      * uses the backslash as the path separator and it's not uncommon for filenames to appear in system
-     * identifiers. If this flag is set, the resolver will coerce backslashes into forward slashes in
+     * identifiers. If this flag is set, the resolver will replace backslashes with forward slashes in
      * system identifiers.</p>
      */
     public static final ResolverFeature<Boolean> FIX_WINDOWS_SYSTEM_IDENTIFIERS = new ResolverFeature<>(

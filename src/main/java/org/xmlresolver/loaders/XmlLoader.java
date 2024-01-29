@@ -6,6 +6,7 @@ import org.xmlresolver.*;
 import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryNull;
+import org.xmlresolver.exceptions.CatalogUnavailableException;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.PublicId;
@@ -34,7 +35,7 @@ public class XmlLoader implements CatalogLoader {
     protected final ResolverLogger logger;
     protected final HashMap<URI, EntryCatalog> catalogMap;
 
-    private static Resolver loaderResolver = null;
+    private static XMLResolver loaderResolver = null;
     private boolean preferPublic = true;
     private boolean archivedCatalogs = true;
     private EntityResolver entityResolver = null;
@@ -84,16 +85,14 @@ public class XmlLoader implements CatalogLoader {
         return entityResolver;
     }
 
-    public static synchronized Resolver getLoaderResolver() {
+    public static synchronized XMLResolver getLoaderResolver() {
         if (loaderResolver == null) {
             XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
             config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
             config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/org/xmlresolver/catalog.xml"));
-            config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
-            config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
             config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
             config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
-            loaderResolver = new Resolver(config);
+            loaderResolver = new XMLResolver(config);
         }
 
         return loaderResolver;
@@ -105,20 +104,28 @@ public class XmlLoader implements CatalogLoader {
         }
 
         try {
-            Resource rsrc = new Resource(catalog);
-            InputSource source = new InputSource(rsrc.body());
+            ResourceRequest request = new ResourceRequest(config);
+            request.setURI(catalog);
+            request.setOpenStream(true);
+            ResourceResponse resp = ResourceAccess.getResource(request);
+            InputSource source = new InputSource(resp.getInputStream());
             source.setSystemId(catalog.toString());
             EntryCatalog entries = loadCatalog(catalog, source);
             logger.log(AbstractLogger.CONFIG, "Loaded catalog: %s", catalog);
             return entries;
-        } catch (FileNotFoundException fex) {
-            logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            return catalogMap.get(catalog);
-        } catch (IOException | URISyntaxException ex) {
+        } catch (CatalogUnavailableException ex) {
+            if (ex.getCause() instanceof FileNotFoundException) {
+                logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                return catalogMap.get(catalog);
+            }
             logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
             catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            return catalogMap.get(catalog);
+            throw ex;
+        } catch (URISyntaxException | IOException ex) {
+            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+            throw new CatalogUnavailableException(ex);
         }
     }
 
@@ -564,7 +571,7 @@ public class XmlLoader implements CatalogLoader {
         public InputSource resolveEntity (String publicId,
                                           String systemId)
                 throws SAXException, IOException {
-            return getLoaderResolver().resolveEntity(publicId, systemId);
+            return getLoaderResolver().getEntityResolver().resolveEntity(publicId, systemId);
         }
     }
 }

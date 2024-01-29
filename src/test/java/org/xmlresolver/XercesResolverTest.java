@@ -7,12 +7,12 @@
 
 package org.xmlresolver;
 
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.junit.Before;
 import org.junit.Test;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xmlresolver.sources.ResolverInputSource;
 import org.xmlresolver.utils.URIUtils;
@@ -21,9 +21,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
@@ -34,29 +32,27 @@ import static org.junit.Assert.*;
 public class XercesResolverTest {
     public static final String catalog1 = "src/test/resources/rescatxsd.xml";
     XMLResolverConfiguration config = null;
-    Resolver resolver = null;
+    XMLResolver resolver = null;
+    XMLEntityResolver xresolver = null;
 
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
-        config.setFeature(ResolverFeature.CACHE, null);
-        config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
-        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
-        config.setFeature(ResolverFeature.CACHE_ENABLED, false);
-        resolver = new XercesResolver(config);
+        resolver = new XMLResolver(config);
+        xresolver = resolver.getXMLEntityResolver();
     }
 
     @Test
     public void lookupSystem() {
         try {
             URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
-            InputSource source = resolver.resolveEntity(null, "https://example.com/sample/1.0/sample.dtd");
+            XMLResourceIdentifier resid = new ResourceIdentifier("https://example.com/sample/1.0/sample.dtd");
+
+            XMLInputSource source = xresolver.resolveEntity(resid);
             assertTrue(source.getSystemId().endsWith(result.getPath()));
             assertNotNull(source.getByteStream());
-            ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.resolvedURI, result);
-        } catch (IOException | SAXException ex) {
+        } catch (IOException ex) {
             fail();
         }
     }
@@ -65,12 +61,11 @@ public class XercesResolverTest {
     public void lookupSystemAsURI() {
         try {
             URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
-            InputSource source = resolver.resolveEntity(null, "https://example.com/sample/1.0/uri.dtd");
+            XMLResourceIdentifier resid = new ResourceIdentifier("https://example.com/sample/1.0/uri.dtd");
+            XMLInputSource source = xresolver.resolveEntity(resid);
             assertTrue(source.getSystemId().endsWith(result.getPath()));
             assertNotNull(source.getByteStream());
-            ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.resolvedURI, result);
-        } catch (IOException | SAXException ex) {
+        } catch (IOException ex) {
             fail();
         }
     }
@@ -86,8 +81,7 @@ public class XercesResolverTest {
             final XMLReader xmlReader = saxParser.getXMLReader();
 
             // setup resolver
-            final Resolver resolver = new XercesResolver(config);
-            xmlReader.setProperty("http://apache.org/xml/properties/internal/entity-resolver", resolver);
+            xmlReader.setProperty("http://apache.org/xml/properties/internal/entity-resolver", xresolver);
 
             // parse
             xmlReader.parse("src/test/resources/sample-xsd.xml");
@@ -108,8 +102,7 @@ public class XercesResolverTest {
             final XMLReader xmlReader = saxParser.getXMLReader();
 
             // setup resolver
-            final Resolver resolver = new XercesResolver(config);
-            xmlReader.setProperty("http://apache.org/xml/properties/internal/entity-resolver", resolver);
+            xmlReader.setProperty("http://apache.org/xml/properties/internal/entity-resolver", xresolver);
 
             // parse
             xmlReader.parse("src/test/resources/sample10/sample.xml");
@@ -118,4 +111,70 @@ public class XercesResolverTest {
             fail();
         }
     }
+
+    private static class ResourceIdentifier implements XMLResourceIdentifier {
+        private String publicId = null;
+        private String expandedSystemId = null;
+        private String literalSystemId = null;
+        private String baseSystemId = null;
+        private String namespace = null;
+
+        public ResourceIdentifier(String systemId) {
+            expandedSystemId = systemId;
+            literalSystemId = systemId;
+            baseSystemId = systemId;
+        }
+
+        @Override
+        public void setPublicId(String s) {
+            publicId = s;
+        }
+
+        @Override
+        public String getPublicId() {
+            return publicId;
+        }
+
+        @Override
+        public void setExpandedSystemId(String s) {
+            expandedSystemId = s;
+        }
+
+        @Override
+        public String getExpandedSystemId() {
+            return expandedSystemId;
+        }
+
+        @Override
+        public void setLiteralSystemId(String s) {
+            literalSystemId = s;
+        }
+
+        @Override
+        public String getLiteralSystemId() {
+            return literalSystemId;
+        }
+
+        @Override
+        public void setBaseSystemId(String s) {
+            baseSystemId = s;
+        }
+
+        @Override
+        public String getBaseSystemId() {
+            return baseSystemId;
+        }
+
+        @Override
+        public void setNamespace(String s) {
+            namespace = s;
+
+        }
+
+        @Override
+        public String getNamespace() {
+            return namespace;
+        }
+    }
+
 }

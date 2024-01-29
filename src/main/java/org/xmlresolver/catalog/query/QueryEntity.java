@@ -6,11 +6,23 @@ import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryEntity;
 import org.xmlresolver.utils.PublicId;
 
+/**
+ * Query for entity catalog entries.
+ */
 public class QueryEntity extends QueryCatalog {
+    /** The entity name. */
     public final String entityName;
+    /** The system identifier. */
     public final String systemId;
+    /** The public identifier. */
     public final String publicId;
 
+    /**
+     * QueryEntity constructor.
+     * @param entityName The entity name.
+     * @param systemId The system identifier.
+     * @param publicId The public identifier.
+     */
     public QueryEntity(String entityName, String systemId, String publicId) {
         super();
         this.entityName = entityName;

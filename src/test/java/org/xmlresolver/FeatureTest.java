@@ -2,7 +2,6 @@ package org.xmlresolver;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.xmlresolver.cache.ResourceCache;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -51,32 +50,6 @@ public class FeatureTest {
     @Test
     public void testFeatureArchivedCatalogs() {
         booleanFeature(ResolverFeature.ARCHIVED_CATALOGS);
-    }
-
-    @Test
-    public void testFeatureCache() {
-        ResolverConfiguration config = new XMLResolverConfiguration();
-        knownFeature(config, ResolverFeature.CACHE);
-        ResourceCache myCache = new ResourceCache(config);
-        ResourceCache orig = config.getFeature(ResolverFeature.CACHE);
-        config.setFeature(ResolverFeature.CACHE, myCache);
-        Assert.assertEquals(myCache, config.getFeature(ResolverFeature.CACHE));
-        config.setFeature(ResolverFeature.CACHE, orig);
-    }
-
-    @Test
-    public void testFeatureCacheDirectory() {
-        XMLResolverConfiguration config = new XMLResolverConfiguration();
-        knownFeature(config, ResolverFeature.CACHE_DIRECTORY);
-        String orig = config.getFeature(ResolverFeature.CACHE_DIRECTORY);
-        config.setFeature(ResolverFeature.CACHE_DIRECTORY, "/tmp/apple pie");
-        Assert.assertEquals("/tmp/apple pie", config.getFeature(ResolverFeature.CACHE_DIRECTORY));
-        config.setFeature(ResolverFeature.CACHE_DIRECTORY, orig);
-    }
-
-    @Test
-    public void testFeatureCacheUnderHome() {
-        booleanFeature(ResolverFeature.CACHE_UNDER_HOME);
     }
 
     @Test

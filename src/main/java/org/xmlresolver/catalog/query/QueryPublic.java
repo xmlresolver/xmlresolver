@@ -9,10 +9,20 @@ import org.xmlresolver.catalog.entry.EntryPublic;
 import java.net.URI;
 import java.util.ArrayList;
 
+/**
+ * Query for public entries in the catalog.
+ */
 public class QueryPublic extends QueryCatalog {
+    /** The system identifier. */
     public final String systemId;
+    /** The public identifier. */
     public final String publicId;
 
+    /**
+     * QueryPublic constructor.
+     * @param systemId The system identifier.
+     * @param publicId The public identifier.
+     */
     public QueryPublic(String systemId, String publicId) {
         super();
         this.systemId = systemId;
@@ -65,5 +75,4 @@ public class QueryPublic extends QueryCatalog {
 
         return QueryResult.EMPTY_RESULT;
     }
-
 }

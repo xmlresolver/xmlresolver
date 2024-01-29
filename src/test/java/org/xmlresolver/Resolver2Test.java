@@ -32,20 +32,20 @@ public class Resolver2Test {
         XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
         //Catalog c = new Catalog(config);
         //CatalogManager cx = new CatalogManager(config); // FIXME:
-        parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new Resolver(config)));
+        parser.parse("src/test/resources/documents/dtdtest.xml", new DevNullHandler(new XMLResolver(config)));
         // If we didn't get an exception, we passed!
     }
     
     private static class DevNullHandler extends DefaultHandler2 {
-        private Resolver resolver = null;
+        private XMLResolver resolver = null;
 
-        public DevNullHandler(Resolver resolver) {
+        public DevNullHandler(XMLResolver resolver) {
             this.resolver = resolver;
         }
         
         public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
             System.out.println("Called resolveEntity: " + name + ", " + publicId + ", " + baseURI + ", " + systemId);
-            return resolver.resolveEntity(name, publicId, baseURI, systemId);
+            return resolver.getEntityResolver2().resolveEntity(name, publicId, baseURI, systemId);
         }
     }
 }

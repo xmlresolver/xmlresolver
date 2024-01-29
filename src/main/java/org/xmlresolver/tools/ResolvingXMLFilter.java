@@ -13,10 +13,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.helpers.XMLFilterImpl;
-import org.xmlresolver.Resolver;
-import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.XMLResolverConfiguration;
+import org.xmlresolver.*;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.URIUtils;
@@ -43,9 +42,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
 
     /** Are we in the prolog? Is an oasis-xml-catalog PI valid now? */
     private boolean processXMLCatalogPI = false;
-    protected static Resolver staticResolver = null;
-    protected Resolver resolver = null;
-    
+    protected static XMLResolver staticResolver = null;
+    protected XMLResolver resolver = null;
+    private EntityResolver2 entityResolver = null;
+
     /** The base URI of the input document, if known. */
     private URI baseURI = null;
 
@@ -53,9 +53,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
     public ResolvingXMLFilter() {
         super();
         if (staticResolver == null) {
-            staticResolver = new Resolver();
+            staticResolver = new XMLResolver();
         }
         resolver = staticResolver;
+        entityResolver = resolver.getEntityResolver2();
         allowXMLCatalogPI = resolver.getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
         logger = resolver.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
@@ -64,9 +65,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      *
      * @param resolver The resolver
      */
-    public ResolvingXMLFilter(Resolver resolver) {
+    public ResolvingXMLFilter(XMLResolver resolver) {
         super();
         this.resolver = resolver;
+        entityResolver = resolver.getEntityResolver2();
         allowXMLCatalogPI = resolver.getConfiguration().getFeature(ResolverFeature.ALLOW_CATALOG_PI);
         logger = resolver.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
@@ -76,9 +78,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * @param parent The parent reader
      * @param resolver The resolver
      */
-    public ResolvingXMLFilter(XMLReader parent, Resolver resolver) {
+    public ResolvingXMLFilter(XMLReader parent, XMLResolver resolver) {
         super(parent);
         this.resolver = resolver;
+        entityResolver = resolver.getEntityResolver2();
         logger = resolver.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
@@ -87,7 +90,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      *
      * @return The underlying resolver
      */
-    public Resolver getResolver() {
+    public XMLResolver getResolver() {
         return resolver;
     }
 
@@ -98,19 +101,25 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * attempt to find the URI of the input in the catalog.</p>
      */
     public void parse(InputSource input) throws IOException, SAXException {
-        Resolver localResolver = resolver;
+        XMLResolver localResolver = resolver;
         try {
             if (allowXMLCatalogPI) {
                 // The parse may change the catalog list; isolate this configuration to this parse
-                XMLResolverConfiguration config = resolver.getConfiguration();
-                config = new XMLResolverConfiguration(config);
-                resolver = new Resolver(config);
+                ResolverConfiguration config = resolver.getConfiguration();
+                if (config instanceof XMLResolverConfiguration) {
+                    config = new XMLResolverConfiguration((XMLResolverConfiguration) config);
+                } else {
+                    logger.log(AbstractLogger.CONFIG, "Temporary configuration could not inherit from current configuration");
+                    config = new XMLResolverConfiguration();
+                }
+                resolver = new XMLResolver(config);
+                entityResolver = resolver.getEntityResolver2();
             }
             processXMLCatalogPI = allowXMLCatalogPI;
             setupBaseURI(input.getSystemId());
 
             if (input.getByteStream() == null && input.getCharacterStream() == null) {
-                InputSource src = resolver.resolveEntity(null, input.getSystemId());
+                InputSource src = entityResolver.resolveEntity(null, input.getSystemId());
                 if (src != null) {
                     input.setByteStream(src.getByteStream());
                 }
@@ -119,6 +128,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
             super.parse(input);
         } finally {
             resolver = localResolver;
+            entityResolver = resolver.getEntityResolver2();
         }
     }
 
@@ -136,7 +146,9 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * to do the real work.
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        return resolver.resolveEntity(publicId, systemId);
+        InputSource is;
+        is = entityResolver.resolveEntity(publicId, systemId);
+        return is;
     }
 
     /** Implements the {@link org.xml.sax.ext.EntityResolver2} interface.
@@ -150,7 +162,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
      * @throws IOException If an I/O error occurs
      */
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-        return resolver.resolveEntity(name, publicId, baseURI, systemId);
+        return entityResolver.resolveEntity(name, publicId, baseURI, systemId);
     }
     
     /** SAX DTDHandler API.
@@ -214,7 +226,10 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
                                 catalog = URIUtils.newURI(data);
                             }
 
-                            resolver.getConfiguration().addCatalog(catalog.toString());
+                            // I think this *must* be true at this point, but let's be defensive
+                            if (resolver.getConfiguration() instanceof XMLResolverConfiguration) {
+                                ((XMLResolverConfiguration) resolver.getConfiguration()).addCatalog(catalog.toString());
+                            }
                         } catch (URISyntaxException mue) {
                             logger.log(AbstractLogger.WARNING, "URI syntax exception resolving PI catalog: %s", data);
                         }

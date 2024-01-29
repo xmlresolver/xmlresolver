@@ -4,10 +4,7 @@ import com.thaiopensource.util.PropertyMapBuilder;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import org.xml.sax.*;
-import org.xmlresolver.Resolver;
-import org.xmlresolver.ResolverConfiguration;
-import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.Resource;
+import org.xmlresolver.*;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.exceptions.CatalogInvalidException;
 import org.xmlresolver.exceptions.CatalogUnavailableException;
@@ -30,7 +27,7 @@ public class ValidatingXmlLoader implements CatalogLoader {
     protected final ResolverConfiguration config;
     protected final ResolverLogger logger;
     protected final HashMap<URI, EntryCatalog> catalogMap;
-    private final Resolver resolver;
+    private final XMLResolver resolver;
     private final XmlLoader underlyingLoader;
 
     public ValidatingXmlLoader(ResolverConfiguration config) {
@@ -66,19 +63,26 @@ public class ValidatingXmlLoader implements CatalogLoader {
         }
 
         try {
-            Resource rsrc = new Resource(catalog);
-            InputSource source = new InputSource(rsrc.body());
+            ResourceRequest request = new ResourceRequest(config);
+            request.setURI(catalog);
+            request.setOpenStream(true);
+            ResourceResponse resp = ResourceAccess.getResource(request);
+            InputSource source = new InputSource(resp.getInputStream());
             source.setSystemId(catalog.toString());
             return loadCatalog(catalog, source);
-        } catch (FileNotFoundException fex) {
-            // Throwing an exception for a simple file not found error seems a little too aggressive
-            logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            return catalogMap.get(catalog);
-        } catch (IOException | URISyntaxException ex) {
+        } catch (CatalogUnavailableException ex) {
+            if (ex.getCause() instanceof FileNotFoundException) {
+                logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                return catalogMap.get(catalog);
+            }
             logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
             catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            throw new CatalogUnavailableException(ex.getMessage());
+            throw ex;
+        } catch (URISyntaxException | IOException ex) {
+            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+            throw new CatalogUnavailableException(ex);
         }
     }
 
@@ -123,8 +127,8 @@ public class ValidatingXmlLoader implements CatalogLoader {
             MyErrorHandler errorHandler = new MyErrorHandler(config);
             PropertyMapBuilder builder = new PropertyMapBuilder();
             builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
-            builder.put(ValidateProperty.ENTITY_RESOLVER, resolver);
-            builder.put(ValidateProperty.URI_RESOLVER, resolver);
+            builder.put(ValidateProperty.ENTITY_RESOLVER, resolver.getEntityResolver2());
+            builder.put(ValidateProperty.URI_RESOLVER, resolver.getURIResolver());
 
             ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
             URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");
@@ -152,8 +156,8 @@ public class ValidatingXmlLoader implements CatalogLoader {
             if (caw != null) {
                 source.setCharacterStream(new CharArrayReader(caw.toCharArray()));
             }
-        } catch (IOException| SAXException ex) {
-            throw new CatalogUnavailableException(ex.getMessage());
+        } catch (IOException | SAXException ex) {
+            throw new CatalogUnavailableException(ex);
         }
 
         return underlyingLoader.loadCatalog(catalog, source);
@@ -171,8 +175,8 @@ public class ValidatingXmlLoader implements CatalogLoader {
             MyErrorHandler errorHandler = new MyErrorHandler(config);
             PropertyMapBuilder builder = new PropertyMapBuilder();
             builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
-            builder.put(ValidateProperty.ENTITY_RESOLVER, resolver);
-            builder.put(ValidateProperty.URI_RESOLVER, resolver);
+            builder.put(ValidateProperty.ENTITY_RESOLVER, resolver.getEntityResolver2());
+            builder.put(ValidateProperty.URI_RESOLVER, resolver.getURIResolver());
 
             ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
             URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");

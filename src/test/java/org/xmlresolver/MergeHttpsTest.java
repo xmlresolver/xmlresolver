@@ -22,16 +22,12 @@ public class MergeHttpsTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList(catalog));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
-        config.setFeature(ResolverFeature.CACHE, null);
-        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         config.setFeature(ResolverFeature.MERGE_HTTPS, true);
         mergeManager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
 
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList(catalog));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
-        config.setFeature(ResolverFeature.CACHE, null);
-        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         config.setFeature(ResolverFeature.MERGE_HTTPS, false);
         noMergeManager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
     }

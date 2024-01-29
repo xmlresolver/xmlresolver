@@ -8,16 +8,24 @@ import org.xmlresolver.utils.URIUtils;
 import java.net.URI;
 import java.util.ArrayList;
 
+/**
+ * Query for system entries in the catalog.
+ */
 public class QuerySystem extends QueryCatalog {
+    /** The system identifier. */
     public final String systemId;
 
+    /**
+     * QuerySystem constructor.
+     * @param systemId The system identifier.
+     */
     public QuerySystem(String systemId) {
         super();
         this.systemId = systemId;
     }
 
     @Override
-    public QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
+    protected QueryResult lookup(CatalogManager manager, EntryCatalog catalog) {
         String compareSystem = manager.normalizedForComparison(systemId);
 
         String osname = System.getProperty("os.name").toLowerCase();

@@ -49,7 +49,7 @@ public class CatalogManager implements XMLCatalogResolver {
     protected CatalogManager(ResolverConfiguration config) {
         resolverConfiguration = config;
         String loaderClassName = config.getFeature(ResolverFeature.CATALOG_LOADER_CLASS);
-        if (loaderClassName == null || "".equals(loaderClassName)) {
+        if (loaderClassName == null || loaderClassName.isEmpty()) {
             loaderClassName = ResolverFeature.CATALOG_LOADER_CLASS.getDefaultValue();
         }
         try {
@@ -196,7 +196,7 @@ public class CatalogManager implements XMLCatalogResolver {
 
     private String fixWindowsSystemIdentifier(String systemId) {
         if (URIUtils.isWindows() && resolverConfiguration.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
-            systemId = systemId.replace("\\", "/");
+            return URIUtils.windowsPathURI(systemId);
         }
         return systemId;
     }

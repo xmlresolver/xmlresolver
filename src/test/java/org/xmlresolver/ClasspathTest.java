@@ -34,16 +34,14 @@ public class ClasspathTest {
     public static final List<String> catalogs = Arrays.asList("classpath:path/catalog.xml", "src/test/resources/cpcatalog.xml");
     public static XMLResolverConfiguration config = null;
     public static CatalogManager manager = null;
-    public static Resolver resolver = null;
-    private static CatalogResolver catresolver = null;
+    public static XMLResolver resolver = null;
 
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, catalogs);
         manager = new CatalogManager(config);
-        resolver = new Resolver(config);
-        catresolver = resolver.getCatalogResolver();
+        resolver = new XMLResolver(config);
     }
 
     @Test
@@ -66,7 +64,7 @@ public class ClasspathTest {
 
     @Test
     public void testResource() {
-        Resolver resolver = new Resolver(config);
+        XMLResolver resolver = new XMLResolver(config);
         ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
         try {
             reader.parse("src/test/resources/classpath.xml");
@@ -81,8 +79,9 @@ public class ClasspathTest {
 
         String line = null;
         try {
-            ResolvedResource result = catresolver.resolveURI(href, null);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
+            ResourceRequest request = resolver.getRequest(href, null);
+            ResourceResponse resp = resolver.resolve(request);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(resp.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -96,11 +95,12 @@ public class ClasspathTest {
         ClassLoader loader = ClassLoader.getSystemClassLoader();
         XMLResolverConfiguration localconfig = new XMLResolverConfiguration(config);
         localconfig.setFeature(ResolverFeature.CLASSLOADER, loader);
-        CatalogResolver localresolver = new CatalogResolver(localconfig);
+        XMLResolver localresolver = new XMLResolver(localconfig);
 
         String line = null;
         try {
-            ResolvedResource result = localresolver.resolveURI(href, null);
+            ResourceRequest request = localresolver.getRequest(href);
+            ResourceResponse result = localresolver.resolve(request);
             BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
@@ -116,8 +116,9 @@ public class ClasspathTest {
 
         String line = null;
         try {
-            ResolvedResource result = catresolver.resolveURI(href, null);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
+            ResourceRequest request = resolver.getRequest(href, null);
+            ResourceResponse resp = resolver.resolve(request);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(resp.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -132,8 +133,9 @@ public class ClasspathTest {
 
         String line = null;
         try {
-            ResolvedResource result = catresolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
+            ResourceRequest request = resolver.getRequest(href, base);
+            ResourceResponse resp = resolver.resolve(request);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(resp.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -148,8 +150,9 @@ public class ClasspathTest {
 
         String line = null;
         try {
-            ResolvedResource result = catresolver.resolveURI(href, base);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
+            ResourceRequest request = resolver.getRequest(href, base);
+            ResourceResponse resp = resolver.resolve(request);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(resp.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
             // ignore
@@ -160,15 +163,14 @@ public class ClasspathTest {
     @Test
     public void testClasspathCatalog() {
         XMLResolverConfiguration config = new XMLResolverConfiguration("classpath:org/xmlresolver/test/no-such-catalog.xml;classpath:path/catalog.xml");
-        //CatalogManager cx = new CatalogManager(config);
-        CatalogResolver cpres = new CatalogResolver(config);
 
         String href = "example.xml";
         String base = "http://example.com/";
 
         String line = null;
         try {
-            ResolvedResource result = cpres.resolveURI(href, base);
+            ResourceRequest request = resolver.getRequest(href, base);
+            ResourceResponse result = resolver.resolve(request);
             BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {

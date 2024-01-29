@@ -40,24 +40,24 @@ public class DOMResolverTest {
         DOMConfiguration config = parser.getDomConfig();
 
         XMLResolverConfiguration rconfig = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
-        Resolver resolver = new Resolver(rconfig);
+        XMLResolver resolver = new XMLResolver(rconfig);
 
         CatalogManager manager = rconfig.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI result = manager.lookupSystem("foo:ent.xml");
         assertEquals(URI.create("http://example.com/entity/ent.xml"), result);
 
         try {
-            config.setParameter("resource-resolver", new DOMLSResolver(resolver));
+            config.setParameter("resource-resolver", new DOMLSResolver(resolver.getLSResourceResolver()));
             parser.parseURI("src/test/resources/documents/dtdtest.xml");
         } catch (Exception ex) {
             fail();
         }
     }
     
-    private class DOMLSResolver implements LSResourceResolver {
-        private Resolver resolver = null;
+    private static class DOMLSResolver implements LSResourceResolver {
+        private LSResourceResolver resolver = null;
 
-        public DOMLSResolver(Resolver resolver) {
+        public DOMLSResolver(LSResourceResolver resolver) {
             this.resolver = resolver;
         }
 

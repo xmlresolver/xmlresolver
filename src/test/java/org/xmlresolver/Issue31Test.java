@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.EntityResolver2;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,8 +17,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class Issue31Test {
-    private Resolver maskingResolver;
-    private Resolver nonMaskingResolver;
+    private EntityResolver2 maskingResolver;
+    private EntityResolver2 nonMaskingResolver;
     private String exp;
 
     @Before
@@ -38,13 +39,13 @@ public class Issue31Test {
         configuration.setFeature(ResolverFeature.MASK_JAR_URIS, true);
         InputStream is = new ByteArrayInputStream(catalog.getBytes(StandardCharsets.UTF_8));
         configuration.addCatalog(URI.create("http://xmlresolver.org/test"), new InputSource(is));
-        maskingResolver = new Resolver(configuration);
+        maskingResolver = new XMLResolver(configuration).getEntityResolver2();
 
         final XMLResolverConfiguration nonMaskingConfiguration = new XMLResolverConfiguration();
         nonMaskingConfiguration.setFeature(ResolverFeature.MASK_JAR_URIS, false);
         is = new ByteArrayInputStream(catalog.getBytes(StandardCharsets.UTF_8));
         nonMaskingConfiguration.addCatalog(URI.create("http://xmlresolver.org/test"), new InputSource(is));
-        nonMaskingResolver = new Resolver(nonMaskingConfiguration);
+        nonMaskingResolver = new XMLResolver(nonMaskingConfiguration).getEntityResolver2();
     }
 
     @Test

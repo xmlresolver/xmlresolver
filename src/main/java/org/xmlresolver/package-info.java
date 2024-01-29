@@ -8,8 +8,9 @@
  *
  * <h1>TL;DR</h1>
  *
- * <p>Tell your processor to instantiate a {@link org.xmlresolver.Resolver} (it has a zero argument constructor
- * so that it can be instantiated just from its name) and use it as the entity and URI resolver.</p>
+ * <p>Instantiate an {@link org.xmlresolver.XMLResolver} (it has a zero argument constructor
+ * so that it can be instantiated just from its name). Use the methods provided on the {@code XMLResolver}
+ * to instantiate the resolver interfaces that you require.</p>
  *
  * <p>Tell your processor to instantiate a
  * {@link org.xmlresolver.tools.ResolvingXMLReader} for parsing.</p>
@@ -17,26 +18,18 @@
  * <h1>L;OS (long; only skimmed)</h1>
  *
  * <p>For most users, the principle entry points to this API will be the
- * {@link org.xmlresolver.Resolver} class and the {@link org.xmlresolver.tools.ResolvingXMLReader}. These instantiate
+ * {@link org.xmlresolver.XMLResolver} class and the {@link org.xmlresolver.tools.ResolvingXMLReader}. These instantiate
  * a resolver that can be configured with either system properties or
  * a properties file.</p>
  *
- * <p>The {@link org.xmlresolver.Resolver} class implements a wide variety of resolver APIs:</p>
+ * <p>The {@link org.xmlresolver.XMLResolver} has methods to construct a wide variety of resolver interfaces:</p>
  *
  * <ul>
- * <li><a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/transform/URIResolver.html"><code>javax.xml.transform.URIResolver</code></a>.</li>
- * <li><a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/ls/LSResourceResolver.html"><code>org.w3c.dom.ls.LSResourceResolver</code></a>.</li>
- * <li><a href="https://docs.oracle.com/javase/8/docs/api/org/xml/sax/EntityResolver.html"><code>org.xml.sax.EntityResolver</code></a>.</li>
- * <li><a href="https://docs.oracle.com/javase/8/docs/api/org/xml/sax/ext/EntityResolver2.html"><code>org.xml.sax.ext.EntityResolver2</code></a>.</li>
- * <li>{@link org.xmlresolver.NamespaceResolver}</li>
- * </ul>
- *
- * <p>The StAX <code>XMLResolver</code> interface
- * is incompatible with the <code>EntityResolver2</code>
- * interface, so it’s implemented in {@link org.xmlresolver.StAXResolver}:</p>
- *
- * <ul>
- * <li><a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/stream/XMLResolver.html"><code>javax.xml.stream.XMLResolver</code></a></li>
+ * <li><a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/transform/URIResolver.html"><code>javax.xml.transform.URIResolver</code></a> {@link org.xmlresolver.XMLResolver#getURIResolver}.</li>
+ * <li><a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/ls/LSResourceResolver.html"><code>org.w3c.dom.ls.LSResourceResolver</code></a> {@link org.xmlresolver.XMLResolver#getLSResourceResolver()}.</li>
+ * <li><a href="https://docs.oracle.com/javase/8/docs/api/org/xml/sax/EntityResolver.html"><code>org.xml.sax.EntityResolver</code></a> {@link org.xmlresolver.XMLResolver#getEntityResolver()}.</li>
+ * <li><a href="https://docs.oracle.com/javase/8/docs/api/org/xml/sax/ext/EntityResolver2.html"><code>org.xml.sax.ext.EntityResolver2</code></a> {@link org.xmlresolver.XMLResolver#getEntityResolver2()}.</li>
+ * <li>{@link javax.xml.stream.XMLResolver} {@link org.xmlresolver.XMLResolver#getXMLResolver()}</li>
  * </ul>
  *
  * <p>The <code>ResolvingXMLReader</code> class extends the SAX parser so that
