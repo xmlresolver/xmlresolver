@@ -13,6 +13,7 @@ targetCompatibility=1.8
 repositories {
   mavenLocal()
   mavenCentral()
+  maven { url "https://maven.saxonica.com/maven" }
 }
 
 java {
@@ -29,12 +30,13 @@ configurations.all {
 
 configurations {
   standaloneClasspath.extendsFrom(implementation)
+  docletConfiguration.extendsFrom(docletImplementation)
 }
 
 dependencies {
   implementation (
     [group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.1.3'],
-    [group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.1.3'],
+    [group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.1.3']
   )
 
   compileOnly (
@@ -43,6 +45,11 @@ dependencies {
 
   validatingImplementation (
     [group: 'org.relaxng', name: 'jing', version: '20220510' ]
+  )
+
+  docletImplementation (
+    [group: 'org.relaxng', name: 'jing', version: '20220510' ],
+    [group: 'com.saxonica', name: 'xmldoclet', version: '0.1.0']
   )
 
   testImplementation (
@@ -128,6 +135,15 @@ task copyData(dependsOn: ["buildData"]) {
 }
 
 // ============================================================
+
+tasks.register('xmljavadoc', Javadoc) {
+  classpath = configurations.docletConfiguration
+  source = sourceSets.main.allJava
+  destinationDir = file("${buildDir}/xmldoc")
+  options.doclet = 'com.saxonica.xmldoclet.XmlDoclet'
+  options.docletpath = configurations.docletConfiguration.files.asType(List)
+  options.addStringOption("sourcepath", "${projectDir}/src/main/java:${buildDir}/generated/source/buildConfig/main/main")
+}
 
 jar {
   archiveBaseName = "${basename}-${resolverVersion}"

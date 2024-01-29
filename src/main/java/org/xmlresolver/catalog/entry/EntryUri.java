@@ -1,16 +1,35 @@
 package org.xmlresolver.catalog.entry;
 
 import org.xmlresolver.ResolverConfiguration;
+import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
 
-public class EntryUri extends EntryResource {
+/**
+ * A URI catalog entry.
+ */
+public class EntryUri extends Entry {
+    /** The entry name, the URI of the resource to be matched. */
     public final String name;
+    /** The RDDL nature of the entry. */
     public final String nature;
+    /** The RDDL purpose of the entry. */
     public final String purpose;
+    /** The entry URI. */
+    public final URI uri;
 
+    /**
+     * EntryUri constructor.
+     * @param config The configuration.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param name The entry name.
+     * @param uri The entry URI.
+     * @param nature The RDDL nature of the resource, may be null.
+     * @param purpose The RDDL purpose of the resource, may be null.
+     */
     public EntryUri(ResolverConfiguration config, URI baseURI, String id, String name, String uri, String nature, String purpose) {
-        super(config, baseURI, id, uri);
+        super(config, baseURI, id);
 
         if (name.startsWith("classpath:/")) {
             // classpath:/path/to/thing is the same as classpath:path/to/thing
@@ -22,6 +41,7 @@ public class EntryUri extends EntryResource {
 
         this.nature = nature;
         this.purpose = purpose;
+        this.uri = URIUtils.resolve(baseURI, uri);
     }
 
     @Override

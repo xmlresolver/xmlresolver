@@ -2,8 +2,8 @@ package org.xmlresolver.logging;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverConfiguration;
+import org.xmlresolver.XMLResolver;
 
 /**
  * The system logger interfaces to a logging backend via a logging backend.
@@ -41,7 +41,7 @@ public class SystemLogger extends AbstractLogger {
      * @param config The resolver configuration.
      */
     public SystemLogger(ResolverConfiguration config) {
-        logger = LoggerFactory.getLogger(Resolver.class);
+        logger = LoggerFactory.getLogger(XMLResolver.class);
         jlogger = null;
     }
 

@@ -1,7 +1,7 @@
 package org.xmlresolver.sources;
 
 import org.xml.sax.InputSource;
-import org.xmlresolver.ResolvedResource;
+import org.xmlresolver.ResourceResponse;
 import org.xmlresolver.utils.RsrcUtils;
 
 import java.io.InputStream;
@@ -26,6 +26,7 @@ public class ResolverInputSource extends InputSource implements ResolverResource
      * */
     public ResolverInputSource(URI localURI, InputStream stream) {
         super(stream);
+        setSystemId(localURI.toString());
         this.resolvedURI = localURI;
         this.statusCode = 200;
         this.resolvedHeaders = Collections.emptyMap();
@@ -35,9 +36,11 @@ public class ResolverInputSource extends InputSource implements ResolverResource
      *
      * @param rsrc the resolved resource
      * */
-    public ResolverInputSource(ResolvedResource rsrc) {
+    public ResolverInputSource(ResourceResponse rsrc) {
         super(rsrc.getInputStream());
-        resolvedURI = rsrc.getLocalURI();
+        setSystemId(rsrc.getURI().toString());
+        setPublicId(rsrc.request.getPublicId());
+        resolvedURI = rsrc.getResolvedURI();
         statusCode = rsrc.getStatusCode();
         resolvedHeaders = rsrc.getHeaders();
     }

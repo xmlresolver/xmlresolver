@@ -1,7 +1,7 @@
 package org.xmlresolver.sources;
 
 import org.xml.sax.InputSource;
-import org.xmlresolver.ResolvedResource;
+import org.xmlresolver.ResourceResponse;
 import org.xmlresolver.utils.RsrcUtils;
 
 import javax.xml.transform.sax.SAXSource;
@@ -29,11 +29,11 @@ public class ResolverSAXSource extends SAXSource implements ResolverResourceInfo
         resolvedHeaders = Collections.emptyMap();
     }
 
-    public ResolverSAXSource(ResolvedResource rsrc) {
-        super(new InputSource(rsrc.getInputStream()));
-        resolvedURI = rsrc.getLocalURI();
-        statusCode = rsrc.getStatusCode();
-        resolvedHeaders = rsrc.getHeaders();
+    public ResolverSAXSource(ResourceResponse resp) {
+        super(new InputSource(resp.getInputStream()));
+        resolvedURI = resp.getResolvedURI();
+        statusCode = resp.getStatusCode();
+        resolvedHeaders = resp.getHeaders();
     }
 
     public URI getResolvedURI() {

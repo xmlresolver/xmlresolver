@@ -22,12 +22,12 @@ import static org.junit.Assert.assertEquals;
  * @author ndw
  */
 public class DataUriTest {
-    private static CatalogResolver resolver = null;
+    private static XMLResolver resolver = null;
 
     @Before
     public void setUp() throws Exception {
         XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/datauri.xml");
-        resolver = new CatalogResolver(config);
+        resolver = new XMLResolver(config);
     }
 
     @Test
@@ -37,7 +37,8 @@ public class DataUriTest {
 
         String line = null;
         try {
-            ResolvedResource result = resolver.resolveURI(href, base);
+            ResourceRequest request = resolver.getRequest(href, base);
+            ResourceResponse result = resolver.resolve(request);
             BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
@@ -53,7 +54,8 @@ public class DataUriTest {
 
         String line = null;
         try {
-            ResolvedResource result = resolver.resolveURI(href, base);
+            ResourceRequest request = resolver.getRequest(href, base);
+            ResourceResponse result = resolver.resolve(request);
             BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {
@@ -69,7 +71,8 @@ public class DataUriTest {
 
         String line = null;
         try {
-            ResolvedResource result = resolver.resolveURI(href, base);
+            ResourceRequest request = resolver.getRequest(href, base);
+            ResourceResponse result = resolver.resolve(request);
             BufferedReader reader = new BufferedReader(new InputStreamReader(result.getInputStream()));
             line = reader.readLine();
         } catch (IOException ex) {

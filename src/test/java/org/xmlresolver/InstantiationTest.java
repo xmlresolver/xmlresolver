@@ -23,7 +23,7 @@ import static org.junit.Assert.fail;
 public class InstantiationTest {
     @Test
     public void testInstantiate() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        String className = "org.xmlresolver.Resolver";
+        String className = "org.xmlresolver.XMLResolver";
         Class<?> rClass = Class.forName(className);
         try {
             Object resolver = rClass.getConstructor().newInstance();

@@ -11,14 +11,12 @@ package org.xmlresolver.tools;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverFeature;
+import org.xmlresolver.XMLResolver;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
 /** An implementation of {@link org.xml.sax.XMLReader} that performs catalog resolution.
@@ -56,7 +54,7 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
      *
      * @param resolver The resolver
      */
-    public ResolvingXMLReader(Resolver resolver) {
+    public ResolvingXMLReader(XMLResolver resolver) {
         super(resolver);
         initialize(null);
     }
@@ -66,7 +64,7 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
      * @param factory The factory
      * @param resolver The resolver
      */
-    public ResolvingXMLReader(SAXParserFactory factory, Resolver resolver) {
+    public ResolvingXMLReader(SAXParserFactory factory, XMLResolver resolver) {
         super(resolver);
         initialize(factory);
     }
@@ -86,7 +84,9 @@ public class ResolvingXMLReader extends ResolvingXMLFilter {
             }
         }
 
-        Supplier<XMLReader> readerSupplier = resolver.getConfiguration().getFeature(ResolverFeature.XMLREADER_SUPPLIER);
+        Supplier<XMLReader> readerSupplier;
+        readerSupplier = resolver.getConfiguration().getFeature(ResolverFeature.XMLREADER_SUPPLIER);
+
         if (readerSupplier != null) {
             setParent(readerSupplier.get());
             return;

@@ -35,64 +35,109 @@ For guidelines about how to migrate your application from the Apache Commons res
 this resolver, see documentation and examples in
 https://github.com/xmlresolver/resolver-migration
 
+## Version 6.x
+
+Version 6.x is a significant refactoring and is not backwards compatible with version 5.x.
+(The underlying functionality is the same, but the API is slightly different.)
+The version 5.x sources are now in the
+[legacy_v5](https://github.com/xmlresolver/xmlresolver/tree/legacy_v5) branch. Important
+bug fixes will be applied to the 5.x release for some time, but new development is
+focused on the 6.x release.
+
+Three main considerations drove the refactoring:
+
+1. Correcting design errors. For example, using a
+   `javax.xml.transform.Source` to return a non-XML resource.
+2. Simplification of the design (removing the caching feature, for
+example)
+3. Bringing the Java and and
+   [C#](https://github.com/xmlresolver/xmlresolvercs) implementations
+   into better alignment.
+
+### What’s changed?(tl;dr)
+
+Where previously you would have instantiated an
+`org.xmlresolver.Resolver` and used it as the entity resolver for SAX
+(and other) APIs, you should now instantiate an
+`org.xmlresolver.XMLResolver`. This new object has methods for
+performing catalog lookup and resource resolution. It also has methods that
+return resolver APIs. See [Using an XML Resolver](https://xmlresolver.org/ch04).
+
+Behind the scenes, the API has been reworked so that most operations
+consist of constructing a request for some resource, asking the `XMLResolver` to either
+(just) look it up in the catalog or resolve it, and returning a response.
+
+## A note about version numbers
+
+The XML Resolver API is often integrated into other projects and
+products. On the one hand, this means that it’s valuable to publish
+new releases early so that integrators can test them. On the other
+hand, integrators quite reasonably want to make production releases
+with only the most stable versions.
+
+In an effort to make this easier, starting with version 6.x, the XML
+Resolver releases will use an even/odd pattern version number strategy
+to identify development and stable branches.
+
+If the second number in the verion is even, that’s a work-in-progress,
+stabalization release. Please test it, and report bugs. If the second
+number is odd, that’s a stable release. (Test that and report bugs
+too, obviously!)
+
+In other words 6.0.x are stabalization releases. When the API is
+deemed stable, there will be a 6.1.0 release. If more features are
+developed or significant changes are undertaken, those will be
+published in a series of 6.2.x releases before stabalizing in a 6.3.0
+release. Etc.
+
 ## ChangeLog
 
 ### API Changes
 
-Version 2.0.x introduced some API changes. The most common user-level APIs (`new Catalog()`,
-`new Resolver()`, etc. are unchanged), but if you’re
-extending or integrating with the resolver directly, you may have to change a few things.
-I’ve added a `ResolverFeature` type to track features in a more typesafe way.
+Several classes and interfaces no longer exist:
 
-The `Configuration` object has been renamed `XMLResolverConfiguration`
-and now implements the `ResolverConfiguration` interface.
+* `CatalogResover`, `Resolver`, `ResourceResolver`, `StAXResolver`,
+   and `XercesResolver` are replaced by methods on `XMLResolver`.
+* `NamespaceResolver` is also replaced by methods on `XMLResolver`. I’m calling that
+   API a failed experiment.
+* `Resource`, `ResolvedResource` and `ResolvedResourceImpl` are replaced, effectively, by
+  `ResourceRequest` and `ResourceResponse`.
+* All the classes related to caching.
 
-Several methods on the configuration object have been removed. Their
-values can be obtained by requesting the corresponding feature.
+The two main classes for users are ~XMLResolverConfiguration~ (largely
+unchanged) and ~XMLResolver~.
 
-In the releases since 2.0.x, a few additional APIs have been added,
-but the design has remained largely the same.
+The new ~XMLResolver~ object has methods for querying the catalog and
+resolving resources. It also has methods that return resolvers for
+different APIs.
+
+* `getURIResolver()` returns a `javax.xml.transform.URIResolver`
+* `getLSResourceResolver()` returns a `org.w3c.dom.ls.LSResourceResolver`
+* `getEntityResolver()` returns a `org.xml.sax.EntityResolver`
+* `getEntityResolver2()` returns a `org.xml.sax.ext.EntityResolver2`
+* `getXMLResolver()` returns a `javax.xml.stream.XMLResolver`
 
 #### A note about ALWAYS_RESOLVE
 
 The standard contract for the Java resolver APIs is that they return
-null if the resolver doesn’t find a match. But on the modern web, lots
+`null` if the resolver doesn’t find a match. But on the modern web, lots
 of URIs redirect (from `http:` to `https:` especially), and some
 parsers don’t follow redirects. That causes the parse to fail in ways
 that may not be easy for the user to fix.
 
-Starting in version 5.0.0, the resolver will always resolve resources,
+By default, the XML Resolver will always resolve resources,
 follow redirects, and return a stream. This deprives the parser of the
 option to try something else, but means that redirects don’t cause the
 parse to fail.
 
-This feature is *enabled* by default. If you set it to false, the
-resolver will return null if the resource isn’t found in the catalog.
-
-I don’t know of any parsers that try anything else after the resolver
-has failed except loading the resource, so I expect this to be an
-improvement for users. If your implementation wants to explicitly just
-check the catalog, at the Java API level, you can use the
-CatalogManager API. That’s the same API the resolver classes use to
-locate resources in the catalog.
+If your implementation wants to explicitly just check the catalog, at
+the Java API level, you can use the `lookup` methods on `XMLResolver`.
 
 ### Behavior changes
 
 The resolver class can be configured with either system properties or
-a properties file. In version 1.x, if a property file is used, the
-values specified in that file always take precedence. 
-
-This means that you can’t, for example, selectively override the
-catalog file list for a single application by specifying a system
-property.
-
-On reflection, that seems backwards. In 2.x, if a property is
-specified in both places, the system property wins.
-
-To keep the existing behavior, set the boolean property
-`prefer-property-file` to `true` in the property file. That
-will preserve the former behavior. (The system property equivalent is
-`xml.catalog.preferPropertyFile`.)
+a properties file. If a property is specified in both places, the
+system property wins.
 
 ### Support for `data:` URIs
 
@@ -181,11 +226,10 @@ the current value, construct a new value incorporating both that
 default and your new catalog(s), and specify that new value in the
 `xml.catalog.files` system property.
 
-To make this easier, the 2.0 release adds a new system property,
-`xml.catalog.additions`, and a new property file key,
-`catalog-additions`. Both properties take a list of catalog files.
-Those files will be added to the list defined by the normal catalog
-settings.
+To make this easier, see the `xml.catalog.additions` system property,
+and the `catalog-additions` property file key. Both properties take
+a list of catalog files. Those files will be added to the list defined
+by the normal catalog settings.
 
 ### Support for validating catalog files
 

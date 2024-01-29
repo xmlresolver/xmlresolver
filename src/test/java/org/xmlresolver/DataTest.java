@@ -18,8 +18,6 @@ public class DataTest {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList(catalog));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
-        config.setFeature(ResolverFeature.CACHE, null);
-        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
         manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
     }
 

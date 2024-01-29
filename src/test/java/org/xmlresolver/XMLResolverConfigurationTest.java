@@ -42,8 +42,6 @@ public class XMLResolverConfigurationTest {
         assertEquals("./catalog.xml", config.getFeature(ResolverFeature.CATALOG_FILES).get(0));
         assertEquals(ResolverFeature.PREFER_PUBLIC.getDefaultValue(), config.getFeature(ResolverFeature.PREFER_PUBLIC));
         assertEquals(ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue(), config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
-        assertEquals(ResolverFeature.CACHE_DIRECTORY.getDefaultValue(), config.getFeature(ResolverFeature.CACHE_DIRECTORY));
-        assertEquals(ResolverFeature.CACHE_UNDER_HOME.getDefaultValue(), config.getFeature(ResolverFeature.CACHE_UNDER_HOME));
         System.setProperties(copyProperties(savedProperties));
     }
 
@@ -84,8 +82,6 @@ public class XMLResolverConfigurationTest {
 
         assertEquals(true, config.getFeature(ResolverFeature.PREFER_PUBLIC));
         assertEquals(true, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
-        assertEquals("/dev/null", config.getFeature(ResolverFeature.CACHE_DIRECTORY));
-        assertEquals(true, config.getFeature(ResolverFeature.CACHE_UNDER_HOME));
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -109,8 +105,6 @@ public class XMLResolverConfigurationTest {
 
         assertEquals(false, config.getFeature(ResolverFeature.PREFER_PUBLIC));
         assertEquals(false, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
-        assertEquals("/dev/null", config.getFeature(ResolverFeature.CACHE_DIRECTORY));
-        assertEquals(false, config.getFeature(ResolverFeature.CACHE_UNDER_HOME));
 
         System.setProperties(copyProperties(savedProperties));
         System.setProperty("xmlresolver.properties", "");
@@ -121,15 +115,13 @@ public class XMLResolverConfigurationTest {
         assertEquals("./catalog.xml", config.getFeature(ResolverFeature.CATALOG_FILES).get(0));
         assertEquals(ResolverFeature.PREFER_PUBLIC.getDefaultValue(), config.getFeature(ResolverFeature.PREFER_PUBLIC));
         assertEquals(ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue(), config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
-        assertEquals(ResolverFeature.CACHE_DIRECTORY.getDefaultValue(), config.getFeature(ResolverFeature.CACHE_DIRECTORY));
-        assertEquals(ResolverFeature.CACHE_UNDER_HOME.getDefaultValue(), config.getFeature(ResolverFeature.CACHE_UNDER_HOME));
 
         System.setProperties(copyProperties(savedProperties));
     }
 
     @Test
     public void testPropertyConfiguration1() {
-        URL url = Resolver.class.getResource("/prop1.properties");
+        URL url = XMLResolver.class.getResource("/prop1.properties");
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.singletonList(url), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
@@ -141,13 +133,11 @@ public class XMLResolverConfigurationTest {
 
         assertEquals(true, config.getFeature(ResolverFeature.PREFER_PUBLIC));
         assertEquals(true, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
-        assertEquals("/dev/null", config.getFeature(ResolverFeature.CACHE_DIRECTORY));
-        assertEquals(true, config.getFeature(ResolverFeature.CACHE_UNDER_HOME));
     }
 
     @Test
     public void testPropertyConfiguration2() {
-        URL url = Resolver.class.getResource("/prop2.properties");
+        URL url = XMLResolver.class.getResource("/prop2.properties");
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.singletonList(url), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
@@ -166,8 +156,6 @@ public class XMLResolverConfigurationTest {
 
         assertEquals(false, config.getFeature(ResolverFeature.PREFER_PUBLIC));
         assertEquals(false, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
-        assertEquals("/dev/null", config.getFeature(ResolverFeature.CACHE_DIRECTORY));
-        assertEquals(false, config.getFeature(ResolverFeature.CACHE_UNDER_HOME));
     }
 
     @Test
@@ -177,7 +165,7 @@ public class XMLResolverConfigurationTest {
 
         System.setProperty("xmlresolver.properties", "");
         System.setProperty("xml.catalog.files", "d;e");
-        URL url = Resolver.class.getResource("/prop4.properties");
+        URL url = XMLResolver.class.getResource("/prop4.properties");
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.singletonList(url), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
@@ -191,7 +179,7 @@ public class XMLResolverConfigurationTest {
 
         System.setProperty("xmlresolver.properties", "");
         System.setProperty("xml.catalog.additions", "d;e");
-        url = Resolver.class.getResource("/prop4.properties");
+        url = XMLResolver.class.getResource("/prop4.properties");
         config = new XMLResolverConfiguration(Collections.singletonList(url), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
@@ -213,7 +201,7 @@ public class XMLResolverConfigurationTest {
         Properties savedProperties = copyProperties(System.getProperties());
         System.setProperty("xml.catalog.files", "x;y");
 
-        URL url = Resolver.class.getResource("/prop1.properties");
+        URL url = XMLResolver.class.getResource("/prop1.properties");
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.singletonList(url), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
@@ -229,7 +217,7 @@ public class XMLResolverConfigurationTest {
         savedProperties = copyProperties(System.getProperties());
         System.setProperty("xml.catalog.files", "x;y");
 
-        url = Resolver.class.getResource("/prop3.properties");
+        url = XMLResolver.class.getResource("/prop3.properties");
         config = new XMLResolverConfiguration(Collections.singletonList(url), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 

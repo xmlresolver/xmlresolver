@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xmlresolver.sources.ResolverInputSource;
 
+import java.net.URI;
+
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -16,25 +18,22 @@ public class CatalogSpacesTest {
     public static final String catalog = "src/test/resources/spaces-catalog.xml";
 
     XMLResolverConfiguration config = null;
-    Resolver resolver = null;
+    XMLResolver resolver = null;
 
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
-        config.setFeature(ResolverFeature.CACHE_DIRECTORY, null);
-        config.setFeature(ResolverFeature.CACHE_UNDER_HOME, false);
-        config.setFeature(ResolverFeature.CACHE_ENABLED, false);
-        resolver = new Resolver(config);
+        resolver = new XMLResolver(config);
 
         // Make sure the Docker container is running where we expect.
-        ResourceConnection conn = new ResourceConnection(config, "http://localhost:8222/docs/sample/sample.dtd", true);
+        ResourceConnection conn = new ResourceConnection(config, URI.create("http://localhost:8222/docs/sample/sample.dtd"), true);
         Assert.assertEquals(200, conn.getStatusCode());
     }
 
     @Test
     public void resolveSystem() {
         try {
-            InputSource is = resolver.resolveEntity(null, "https://xmlresolver.org/ns/sample/sample.dtd");
+            InputSource is = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/sample/sample.dtd");
             assertNotNull(is);
             ResolverInputSource ris = (ResolverInputSource) is;
             assertTrue(ris.resolvedURI.toString().contains("/Sample%2010/"));

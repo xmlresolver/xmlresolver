@@ -8,14 +8,8 @@
 package org.xmlresolver;
 
 import org.junit.Test;
-import org.xml.sax.SAXException;
-import org.xmlresolver.Resolver;
-import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.XMLResolverConfiguration;
 import org.xmlresolver.tools.ResolvingXMLReader;
 
-import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
 import java.util.Collections;
 
 import static junit.framework.TestCase.fail;
@@ -30,7 +24,7 @@ public class ResolvingXMLReaderTest {
     public void testReader(){
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, true);
-        Resolver resolver = new Resolver(config);
+        XMLResolver resolver = new XMLResolver(config);
 
         try {
             ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
@@ -45,7 +39,7 @@ public class ResolvingXMLReaderTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("dummy.cat"));
-        Resolver resolver = new Resolver(config);
+        XMLResolver resolver = new XMLResolver(config);
 
         try {
             ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
@@ -61,7 +55,7 @@ public class ResolvingXMLReaderTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.ALLOW_CATALOG_PI, false);
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:org/xmlresolver/data/catalog.xml"));
-        Resolver resolver = new Resolver(config);
+        XMLResolver resolver = new XMLResolver(config);
 
         try {
             ResolvingXMLReader reader = new ResolvingXMLReader(resolver);

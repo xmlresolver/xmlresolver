@@ -5,18 +5,29 @@ import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.logging.AbstractLogger;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+
+/**
+ * A Catalog entry.
+ * <p>The catalog entry is usually the root of a catalog file.</p>
+ */
 
 public class EntryCatalog extends Entry {
+    /** Are public entries preferred over system ones? */
     public final boolean preferPublic;
+
     protected static final ArrayList<Entry> none = new ArrayList<>();
     protected final ArrayList<Entry> entries = new ArrayList<> ();
     protected final HashMap<Type, ArrayList<Entry>> typedEntries = new HashMap<>();
     protected Locator locator = null;
 
+    /**
+     * EntryCatalog constructor.
+     * @param config The configuration.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param prefer Are public identifiers preferred?
+     */
     public EntryCatalog(ResolverConfiguration config, URI baseURI, String id, boolean prefer) {
         super(config, baseURI, id);
         this.preferPublic = prefer;
@@ -27,12 +38,21 @@ public class EntryCatalog extends Entry {
         return Type.CATALOG;
     }
 
+    /**
+     * Get all the entries in this catalog.
+     * @return The entries.
+     */
     public synchronized List<Entry> entries() {
-        return entries;
+        return Collections.unmodifiableList(entries);
     }
 
+    /**
+     * Get all the entries of a particular type in this catalog.
+     * @param type The entry type.
+     * @return The entries.
+     */
     public synchronized List<Entry> entries(Type type) {
-        return typedEntries.getOrDefault(type, none);
+        return Collections.unmodifiableList(typedEntries.getOrDefault(type, none));
     }
 
     protected synchronized void add(Entry entry) {
@@ -51,6 +71,12 @@ public class EntryCatalog extends Entry {
         }
     }
 
+    /**
+     * Set the locator.
+     * <p>The locator is advanced while parsing catalog files to keep track of the position of entries.
+     * (This useful in error messages, it isn't relevant to catalog processing.)</p>
+     * @param locator The locator.
+     */
     public void setLocator(Locator locator) {
         this.locator = locator;
     }
@@ -72,12 +98,28 @@ public class EntryCatalog extends Entry {
         logger.log(AbstractLogger.ERROR, sb.toString());
     }
 
+    /**
+     * Add a group entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param prefer Are public identifiers preferred?
+     * @return the entry added.
+     */
     public EntryGroup addGroup(URI baseURI, String id, boolean prefer) {
         EntryGroup entry = new EntryGroup(config, baseURI, id, prefer);
         add(entry);
         return entry;
     }
 
+    /**
+     * Add a public entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param publicId The public identifier.
+     * @param uri The URI for this entry.
+     * @param prefer Are public identifiers preferred?
+     * @return the entry added.
+     */
     public EntryPublic addPublic(URI baseURI, String id, String publicId, String uri, boolean prefer) {
         EntryPublic entry = null;
         if (publicId != null && uri != null) {
@@ -89,6 +131,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a system entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param systemId The system identifier.
+     * @param uri The URI for this entry.
+     * @return the entry added.
+     */
     public EntrySystem addSystem(URI baseURI, String id, String systemId, String uri) {
         EntrySystem entry = null;
         if (systemId != null && uri != null) {
@@ -100,6 +150,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a system suffix entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param suffix The system identifier suffix.
+     * @param uri The URI for this entry.
+     * @return the entry added.
+     */
     public EntrySystemSuffix addSystemSuffix(URI baseURI, String id, String suffix, String uri) {
         EntrySystemSuffix entry = null;
         if (suffix != null && uri != null) {
@@ -111,6 +169,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a rewrite system entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param startString The system identifier prefix to match.
+     * @param prefix The rewrite prefix for this entry.
+     * @return the entry added.
+     */
     public EntryRewriteSystem addRewriteSystem(URI baseURI, String id, String startString, String prefix) {
         EntryRewriteSystem entry = null;
         if (startString != null && prefix != null) {
@@ -122,6 +188,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a delegate system entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param startString The system identifier prefix to match.
+     * @param catalog The delegated catalog.
+     * @return the entry added.
+     */
     public EntryDelegateSystem addDelegateSystem(URI baseURI, String id, String startString, String catalog) {
         EntryDelegateSystem entry = null;
         if (startString != null && catalog != null) {
@@ -133,6 +207,15 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a delegate public entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param startString The public identifier prefix to match.
+     * @param catalog The delegated catalog.
+     * @param prefer Are public identifiers preferred?
+     * @return the entry added.
+     */
     public EntryDelegatePublic addDelegatePublic(URI baseURI, String id, String startString, String catalog, boolean prefer) {
         EntryDelegatePublic entry = null;
         if (startString != null && catalog != null) {
@@ -144,6 +227,15 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a uri entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param name The resource name (the URI to be matched)
+     * @param nature The nature of the resource (may be null)
+     * @param purpose The purpose of the resource (may be null)
+     * @return the entry added.
+     */
     public EntryUri addUri(URI baseURI, String id, String name, String uri, String nature, String purpose) {
         EntryUri entry = null;
         if (name != null && uri != null) {
@@ -155,10 +247,18 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
-    public EntryRewriteUri addRewriteUri(URI baseURI, String id, String start, String prefix) {
+    /**
+     * Add a rewrite uri entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param startString The uri prefix to match.
+     * @param prefix The rewrite prefix for this entry.
+     * @return the entry added.
+     */
+    public EntryRewriteUri addRewriteUri(URI baseURI, String id, String startString, String prefix) {
         EntryRewriteUri entry = null;
-        if (start != null && prefix != null) {
-            entry = new EntryRewriteUri(config, baseURI, id, start, prefix);
+        if (startString != null && prefix != null) {
+            entry = new EntryRewriteUri(config, baseURI, id, startString, prefix);
             add(entry);
         } else {
             error("Invalid rewriteURI entry (missing uriStartString or prefix attribute)");
@@ -166,10 +266,18 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
-    public EntryUriSuffix addUriSuffix(URI baseURI, String id, String suffix, String uri) {
+    /**
+     * Add a rewrite uri entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param endString The uri suffix to match.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
+    public EntryUriSuffix addUriSuffix(URI baseURI, String id, String endString, String uri) {
         EntryUriSuffix entry = null;
-        if (suffix != null && uri != null) {
-            entry = new EntryUriSuffix(config, baseURI, id, suffix, uri);
+        if (endString != null && uri != null) {
+            entry = new EntryUriSuffix(config, baseURI, id, endString, uri);
             add(entry);
         } else {
             error("Invalid uriSuffix entry (missing uriStartString or uri attribute)");
@@ -177,6 +285,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a delegate uri entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param startString The uri prefix to match.
+     * @param catalog The delegated catalog.
+     * @return the entry added.
+     */
     public EntryDelegateUri addDelegateUri(URI baseURI, String id, String startString, String catalog) {
         EntryDelegateUri entry = null;
         if (startString != null && catalog != null) {
@@ -188,6 +304,13 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a next catalog entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param catalog The catalog to search next.
+     * @return the entry added.
+     */
     public EntryNextCatalog addNextCatalog(URI baseURI, String id, String catalog) {
         EntryNextCatalog entry = null;
         if (catalog != null) {
@@ -199,6 +322,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a doctype entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param name The doctype name.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
     public EntryDoctype addDoctype(URI baseURI, String id, String name, String uri) {
         EntryDoctype entry = null;
         if (name != null && uri != null) {
@@ -210,6 +341,13 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a document entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
     public EntryDocument addDocument(URI baseURI, String id, String uri) {
         EntryDocument entry = null;
         if (uri != null) {
@@ -221,10 +359,18 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
-    public EntryDtddecl addDtdDecl(URI baseURI, String id, String publicId, String uri) {
-        EntryDtddecl entry = null;
+    /**
+     * Add a DTD declaration entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param publicId The public identifier.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
+    public EntryDtdDecl addDtdDecl(URI baseURI, String id, String publicId, String uri) {
+        EntryDtdDecl entry = null;
         if (publicId != null && uri != null) {
-            entry = new EntryDtddecl(config, baseURI, id, publicId, uri);
+            entry = new EntryDtdDecl(config, baseURI, id, publicId, uri);
             add(entry);
         } else {
             error("Invalid dtddecl entry (missing publicId or uri attribute)");
@@ -232,6 +378,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add an entity declaration entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param name The entity name.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
     public EntryEntity addEntity(URI baseURI, String id, String name, String uri) {
         EntryEntity entry = null;
         if (name != null && uri != null) {
@@ -243,6 +397,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a link type declaration entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param name The entity name.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
     public EntryLinktype addLinktype(URI baseURI, String id, String name, String uri) {
         EntryLinktype entry = null;
         if (name != null && uri != null) {
@@ -254,6 +416,14 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add a notation entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param name The notation name.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
     public EntryNotation addNotation(URI baseURI, String id, String name, String uri) {
         EntryNotation entry = null;
         if (name != null && uri != null) {
@@ -265,6 +435,13 @@ public class EntryCatalog extends Entry {
         return entry;
     }
 
+    /**
+     * Add an SGML declaration entry to the catalog.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     * @param uri The uri for this entry.
+     * @return the entry added.
+     */
     public EntrySgmldecl addSgmlDecl(URI baseURI, String id, String uri) {
         EntrySgmldecl entry = null;
         if (uri != null) {

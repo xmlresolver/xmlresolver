@@ -1,6 +1,7 @@
 package org.xmlresolver.exceptions;
 
-/** An invalid catalog exception.
+/**
+ * An invalid catalog exception.
  *
  * <p>This exception is raised when a catalog is invalid: when it doesn't satisfy the
  * constraints of the grammar or is not well-formed.</p>

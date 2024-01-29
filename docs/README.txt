@@ -10,7 +10,7 @@ The goal of this project is to produce a clean, reasonably simple API
 and a robust, thread-safe implementation.
 
 Releases of the xmlresolver can be found on Maven Central or on GitHub
-at https://github.com/xmlresolver/xmlresolver/releases
+at https://github.com/ndw/xmlresolver/releases
 
 This is org.xmlresolver:xmlresolver:@@VERSION@@ 
 

@@ -10,10 +10,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * An (abstract) entry in an XML Catalog.
+ * <p>All entries have a base URI, may have an ID, and have a (possibly empty) set of extension attributes.</p>
+ */
 public abstract class Entry {
     protected final ResolverLogger logger;
     protected final ResolverConfiguration config;
 
+    /** Catalog entries have a type. */
     public enum Type {
         NULL, CATALOG, DELEGATE_PUBLIC, DELEGATE_SYSTEM, DELEGATE_URI,
         DOCTYPE, DOCUMENT, DTD_DECL,ENTITY, GROUP, LINKTYPE, NEXT_CATALOG,
@@ -23,13 +28,23 @@ public abstract class Entry {
     }
 
     // Cheap and cheerful NCNAME test
-    public static final Pattern NCNAME_RE = Pattern.compile("^[A-Za-z0-9_]+$");
-    public static String rarr = " → ";
+    private static final Pattern NCNAME_RE = Pattern.compile("^[A-Za-z0-9_]+$");
+    protected static String rarr = " → ";
 
+    /** The base URI of the catalog entry. */
     public final URI baseURI;
-    public final String id;
-    public final HashMap<String,String> extra = new HashMap<>();
 
+    /** The (XML) id of the catalog entry. */
+    public final String id;
+
+    private final HashMap<String,String> extra = new HashMap<>();
+
+    /**
+     * Entry constructor.
+     * @param config The configuration.
+     * @param baseURI The base URI.
+     * @param id The (XML) ID of this element in the XML catalog.
+     */
     public Entry(ResolverConfiguration config, URI baseURI, String id) {
         this.id = id;
         if (baseURI.isAbsolute()) {
@@ -41,26 +56,39 @@ public abstract class Entry {
         logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
+    /**
+     * Set an extension property.
+     * @param name The property name (must be an NCName).
+     * @param value The property value (will be the empty string if null is provided).
+     * @throws NullPointerException if the name is null.
+     */
     public void setProperty(String name, String value) {
+        if (name == null) {
+            throw new NullPointerException("Cannot set a property with a null name");
+        }
         if (NCNAME_RE.matcher(name).matches()) {
-            extra.put(name, value);
+            extra.put(name, value == null ? "" : value);
         } else {
             logger.log(AbstractLogger.ERROR, "Property name invalid: " + name);
         }
     }
 
-    public void setProperties(Map<String,String> props) {
-        for (String key : props.keySet()) {
-            setProperty(key, props.get(key));
-        }
-    }
+    /**
+     * Get the value of an extension property.
+     * @param name The property name
+     * @return The value of the property or null if no such property exists.
+     * @throws NullPointerException if the name is null.
+     */
     public String getProperty(String name) {
-        return extra.get(name);
+        if (name == null) {
+            throw new NullPointerException("Cannot get a property with a null name");
+        }
+        return extra.getOrDefault(name, null);
     }
 
-    public Map<String,String> getProperties() {
-        return extra;
-    }
-
+    /**
+     * The entry type.
+     * @return the entry {@link Type}.
+     */
     public abstract Type getType();
 }

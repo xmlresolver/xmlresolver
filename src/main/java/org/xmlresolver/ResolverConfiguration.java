@@ -5,7 +5,6 @@ import java.util.Iterator;
 /**
  * Interface for configuring the resolver.
  */
-
 public interface ResolverConfiguration {
     /**
      * Sets a feature value.

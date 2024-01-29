@@ -28,8 +28,8 @@ public class StAXResolverTest {
     public void testResolver() throws Exception {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
-        StAXResolver resolver = new StAXResolver(config);
-        factory.setXMLResolver(new SResolver(resolver));
+        org.xmlresolver.XMLResolver resolver = new org.xmlresolver.XMLResolver(config);
+        factory.setXMLResolver(new SResolver(resolver.getXMLResolver()));
         
         String xmlFile = "src/test/resources/documents/dtdtest.xml";
         XMLStreamReader reader = factory.createXMLStreamReader(xmlFile, new FileInputStream(xmlFile));
@@ -45,9 +45,9 @@ public class StAXResolverTest {
     }
     
     private static class SResolver implements XMLResolver {
-        private StAXResolver resolver = null;
+        private final javax.xml.stream.XMLResolver resolver;
 
-        public SResolver(StAXResolver resolver) {
+        public SResolver(javax.xml.stream.XMLResolver resolver) {
             this.resolver = resolver;
         }
 

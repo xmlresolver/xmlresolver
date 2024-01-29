@@ -6,11 +6,23 @@ import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryNotation;
 import org.xmlresolver.utils.PublicId;
 
+/**
+ * Query for notation catalog entries.
+ */
 public class QueryNotation extends QueryCatalog {
+    /** The notation name. */
     public final String notationName;
+    /** The system identifier. */
     public final String systemId;
+    /** The public identifier. */
     public final String publicId;
 
+    /**
+     * QueryNotation constructor.
+     * @param notationName The notation name.
+     * @param systemId The system identifier.
+     * @param publicId The public identifier.
+     */
     public QueryNotation(String notationName, String systemId, String publicId) {
         super();
         this.notationName = notationName;
