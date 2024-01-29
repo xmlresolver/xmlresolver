@@ -104,10 +104,10 @@ Several classes and interfaces no longer exist:
   `ResourceRequest` and `ResourceResponse`.
 * All the classes related to caching.
 
-The two main classes for users are ~XMLResolverConfiguration~ (largely
-unchanged) and ~XMLResolver~.
+The two main classes for users are `XMLResolverConfiguration` (largely
+unchanged) and `XMLResolver`.
 
-The new ~XMLResolver~ object has methods for querying the catalog and
+The new `XMLResolver` object has methods for querying the catalog and
 resolving resources. It also has methods that return resolvers for
 different APIs.
 
