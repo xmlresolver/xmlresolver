@@ -50,7 +50,7 @@ Three main considerations drove the refactoring:
    `javax.xml.transform.Source` to return a non-XML resource.
 2. Simplification of the design (removing the caching feature, for
 example)
-3. Bringing the Java and and
+3. Bringing the Java and
    [C#](https://github.com/xmlresolver/xmlresolvercs) implementations
    into better alignment.
 
