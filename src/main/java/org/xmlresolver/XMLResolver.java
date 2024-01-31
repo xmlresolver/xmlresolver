@@ -1,25 +1,15 @@
 package org.xmlresolver;
 
-import org.apache.xerces.impl.XMLEntityDescription;
-import org.apache.xerces.impl.xs.XSDDescription;
-import org.apache.xerces.util.SAXInputSource;
-import org.apache.xerces.xni.XMLResourceIdentifier;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.XMLDTDDescription;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.Attributes;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xmlresolver.adapters.SAXAdapter;
+import org.xmlresolver.adapters.LSResourceAdapter;
+import org.xmlresolver.adapters.XercesXniAdapter;
+import org.xmlresolver.adapters.XmlStreamAdapter;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
-import org.xmlresolver.sources.ResolverInputSource;
-import org.xmlresolver.sources.ResolverLSInput;
 import org.xmlresolver.sources.ResolverSAXSource;
 import org.xmlresolver.utils.URIUtils;
 
@@ -552,263 +542,43 @@ public class XMLResolver {
     }
 
     /**
-     * Get a {@link org.xml.sax.EntityResolver}.
+     * Get a {@link SAXAdapter}.
      * @return An entity resolver.
      */
-    public EntityResolver getEntityResolver() {
+    public SAXAdapter getEntityResolver() {
         return getEntityResolver2();
     }
 
     /**
-     * Get a {@link org.xml.sax.ext.EntityResolver2}.
+     * Get a {@link SAXAdapter}.
      * @return An entity resolver.
      */
-    public EntityResolver2 getEntityResolver2() {
-        return new EntityResolver2() {
-            @Override
-            public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-                ResourceRequest request = getRequest(null, baseURI, ResolverConstants.DTD_NATURE, ResolverConstants.ANY_PURPOSE);
-                request.setEntityName(name);
-                ResourceResponse resp = resolve(request);
-
-                ResolverInputSource source = null;
-                if (resp.isResolved()) {
-                    source = new ResolverInputSource(resp);
-                    source.setSystemId(resp.getURI().toString());
-                }
-
-                return source;
-            }
-
-            @Override
-            public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-                ResourceRequest request = getRequest(systemId, baseURI, ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.ANY_PURPOSE);
-                request.setEntityName(name);
-                request.setPublicId(publicId);
-                ResourceResponse resp = resolve(request);
-
-                ResolverInputSource source = null;
-                if (resp.isResolved()) {
-                    source = new ResolverInputSource(resp);
-                    source.setSystemId(resp.getURI().toString());
-                }
-
-                return source;
-            }
-
-            @Override
-            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                return resolveEntity(null, publicId, null, systemId);
-            }
-        };
+    public SAXAdapter getEntityResolver2() {
+        return new SAXAdapter(this);
     }
 
     /**
-     * Get a {@link org.w3c.dom.ls.LSResourceResolver}.
+     * Get a {@link LSResourceAdapter}.
      * @return a resource resolver.
      */
-    public LSResourceResolver getLSResourceResolver() {
-        return (type, namespaceURI, publicId, systemId, baseURI) -> {
-            if (systemId == null) {
-                return null;
-            }
-
-            final ResourceRequest request;
-            if (type == null || "http://www.w3.org/TR/REC-xml".equals(type)) {
-                logger.log(AbstractLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
-                        systemId, baseURI, publicId);
-                // This isn't DTD_NATURE because there's no name in this API
-                request = getRequest(systemId, baseURI, ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.VALIDATION_PURPOSE);
-                request.setPublicId(publicId);
-            } else {
-                logger.log(AbstractLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
-                        type, systemId, namespaceURI, baseURI, publicId);
-
-                String purpose = null;
-                // If it looks like it's going to be used for validation, ...
-                if (ResolverConstants.NATURE_XML_SCHEMA.equals(type)
-                        || ResolverConstants.NATURE_XML_SCHEMA_1_1.equals(type)
-                        || ResolverConstants.NATURE_RELAX_NG.equals(type)) {
-                    purpose = ResolverConstants.PURPOSE_SCHEMA_VALIDATION;
-                }
-
-                request = getRequest(systemId, baseURI, type, purpose);
-                request.setPublicId(publicId);
-            }
-
-            ResourceResponse resp = resolve(request);
-
-            LSInput input = null;
-            if (resp != null && resp.isResolved()) {
-                input = new ResolverLSInput(resp, publicId);
-            }
-
-            return input;
-        };
+    public LSResourceAdapter getLSResourceResolver() {
+        return new LSResourceAdapter(this);
     }
 
     /**
-     * Get an {@link javax.xml.stream.XMLResolver}.
+     * Get an {@link XmlStreamAdapter}.
      * @return an XML resolver.
      */
     public javax.xml.stream.XMLResolver getXMLResolver() {
-        return (publicID, systemID, baseURI, namespace) -> {
-            ResourceRequest request = getRequest(systemID, baseURI, ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.ANY_PURPOSE);
-            request.setPublicId(publicID);
-            ResourceResponse resp = resolve(request);
-            return resp.getInputStream();
-        };
+        return new XmlStreamAdapter(this);
     }
 
     /**
-     * Get an {org.apache.xerces.xni.parser.XMLEntityResolver}.
+     * Get an {@link XercesXniAdapter}.
      * @return an entity resolver.
      */
-    public XMLEntityResolver getXMLEntityResolver() {
-        return new XMLEntityResolver() {
-            @Override
-            public XMLInputSource resolveEntity(XMLResourceIdentifier resId) throws XNIException, IOException {
-                // Xerces seems to call this API for all resolution. Let's see if we can work out what they're
-                // looking for...
-                if (resId instanceof XMLDTDDescription) {
-                    return resolveDTD((XMLDTDDescription) resId);
-                } else if (resId instanceof XMLEntityDescription) {
-                    return resolveEntity((XMLEntityDescription) resId);
-                } else if (resId instanceof XSDDescription) {
-                    return resolveSchema((XSDDescription) resId);
-                }
-
-                // Well whadda we do now?
-
-                String publicId = resId.getPublicId();
-                String systemId = resId.getLiteralSystemId();
-                String baseURI = resId.getBaseSystemId();
-                String namespace = resId.getNamespace();
-
-                ResourceRequest request = null;
-                ResourceResponse rsrc = null;
-                // If the namespace isn't null, we've gone past the doctype declaration, so it's not an entity.
-                // Otherwise, if publicId or systemId aren't null, try resolving an entity.
-                if (namespace == null) {
-                    request = getRequest(systemId, baseURI, ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.ANY_PURPOSE);
-                    request.setPublicId(publicId);
-                    rsrc = resolve(request);
-                    if (!rsrc.isResolved()) {
-                        request = getRequest(resId.getExpandedSystemId(), baseURI, ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.ANY_PURPOSE);
-                        request.setPublicId(publicId);
-                        rsrc = resolve(request);
-                    }
-                }
-
-                if (rsrc == null || !rsrc.isResolved()) {
-                    request = getRequest(namespace, resId.getBaseSystemId(), ResolverConstants.NATURE_XML_SCHEMA, ResolverConstants.PURPOSE_SCHEMA_VALIDATION);
-                    rsrc = resolve(request);
-                }
-
-                if (rsrc == null || !rsrc.isResolved()) {
-                    request = getRequest(systemId, baseURI, ResolverConstants.ANY_NATURE, ResolverConstants.ANY_PURPOSE);
-                    request.setResolvingAsEntity(true);
-                    rsrc = safeOpenConnection(request);
-                }
-
-                SAXInputSource source = null;
-                if (rsrc != null && rsrc.isResolved()) {
-                    source = new SAXInputSource(new ResolverInputSource(rsrc));
-                }
-
-                return source;
-            }
-
-            private ResourceResponse safeOpenConnection(ResourceRequest request) {
-                // This is "safe" in the weird sense that it doesn't throw a checked exception
-                if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
-                    try {
-                        return ResourceAccess.getResource(request);
-                    } catch (URISyntaxException | IOException err) {
-                        // What am I supposed to do about this now?
-                    }
-                }
-                return null;
-            }
-
-            private XMLInputSource resolveDTD(XMLDTDDescription resId) {
-                ResourceRequest request = getRequest(resId.getLiteralSystemId(), resId.getBaseSystemId(),
-                        ResolverConstants.DTD_NATURE, ResolverConstants.VALIDATION_PURPOSE);
-                request.setEntityName(resId.getRootName());
-                request.setPublicId(resId.getPublicId());
-                ResourceResponse rsrc = resolve(request);
-                if (!rsrc.isResolved()) {
-                    ResourceRequest altRequest;
-                    altRequest = getRequest(resId.getExpandedSystemId(), resId.getBaseSystemId(),
-                            ResolverConstants.DTD_NATURE, ResolverConstants.VALIDATION_PURPOSE);
-                    altRequest.setEntityName(resId.getRootName());
-                    altRequest.setPublicId(resId.getPublicId());
-                    rsrc = resolve(altRequest);
-                }
-                if (!rsrc.isResolved()) {
-                    rsrc = safeOpenConnection(request);
-                }
-                XMLInputSource source = null;
-                if (rsrc != null && rsrc.isResolved()) {
-                    source = new SAXInputSource(new ResolverInputSource(rsrc));
-                }
-                return source;
-            }
-
-            private XMLInputSource resolveEntity(XMLEntityDescription resId) {
-                String name = resId.getEntityName();
-                if (name.startsWith("%") || name.startsWith("&")) {
-                    // Oh, please. The [expletive]?
-                    name = name.substring(1);
-                }
-                ResourceRequest request = getRequest(resId.getLiteralSystemId(), resId.getBaseSystemId(),
-                        ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.ANY_PURPOSE);
-                request.setEntityName(name);
-                request.setPublicId(resId.getPublicId());
-                ResourceResponse rsrc = resolve(request);
-                if (!rsrc.isResolved()) {
-                    ResourceRequest altRequest;
-                    altRequest = getRequest(resId.getExpandedSystemId(), resId.getBaseSystemId(),
-                            ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.ANY_PURPOSE);
-                    altRequest.setEntityName(name);
-                    altRequest.setPublicId(resId.getPublicId());
-                    rsrc = resolve(altRequest);
-                }
-                if (rsrc == null) {
-                    rsrc = safeOpenConnection(request);
-                }
-                return rsrc == null ? null : new SAXInputSource(new ResolverInputSource(rsrc));
-            }
-
-            private XMLInputSource resolveSchema(XSDDescription resId) {
-                ResourceRequest request = null;
-                ResourceResponse rsrc = null;
-
-                if (resId.getLiteralSystemId() != null) {
-                    // If there's a "system identifier" then there's either been a schema location
-                    // hint of some sort or this is an xsd:include. Try to resolve the URI.
-                    request = getRequest(resId.getLiteralSystemId(), resId.getBaseSystemId());
-                    rsrc = resolve(request);
-                    if (!rsrc.isResolved()) {
-                        rsrc = safeOpenConnection(request);
-                    }
-                } else {
-                    // We don't want to do namespace resolution if there was a hint because
-                    // that would take us "back to the top" if some xs:include or xs:import
-                    // was 404.
-                    request = getRequest(resId.getNamespace(), resId.getBaseSystemId(), ResolverConstants.NATURE_XML_SCHEMA, ResolverConstants.PURPOSE_SCHEMA_VALIDATION);
-                    rsrc = resolve(request);
-                }
-
-                if (rsrc != null && rsrc.isResolved()) {
-                    InputSource source = new ResolverInputSource(rsrc);
-                    source.setSystemId(rsrc.getResolvedURI().toString());
-                    return new SAXInputSource(source);
-                }
-
-                return null;
-            }
-        };
+    public XercesXniAdapter getXMLEntityResolver() {
+        return new XercesXniAdapter(this);
     }
 
     private URI makeUri(String uri) {
