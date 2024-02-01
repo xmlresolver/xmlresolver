@@ -464,7 +464,7 @@ public class XMLResolver {
     }
 
     private ResourceResponse rddlLookup(ResourceResponse lookup) {
-        return rddlLookup(lookup, lookup.getURI());
+        return rddlLookup(lookup, lookup.getResolvedURI());
     }
 
     private ResourceResponse rddlLookup(ResourceResponse lookup, URI resolved) {
