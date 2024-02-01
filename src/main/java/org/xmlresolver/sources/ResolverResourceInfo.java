@@ -1,5 +1,7 @@
 package org.xmlresolver.sources;
 
+import org.xmlresolver.ResourceResponse;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,12 @@ import java.util.Map;
  * and headers may also be available.</p>
  */
 public interface ResolverResourceInfo {
+    /** Returns the underlying resolver response.
+     *
+     * @return The response.
+     */
+    ResourceResponse getResponse();
+
     /** Returns the resolved URI associated with the request.
      *
      * @return the resolved URI.

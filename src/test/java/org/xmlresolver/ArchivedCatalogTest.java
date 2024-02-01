@@ -32,7 +32,7 @@ public class ArchivedCatalogTest {
             InputSource source = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/zipped/sample.dtd");
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertTrue(rsource.resolvedURI.toString().startsWith("jar:file:"));
+            assertTrue(rsource.getResolvedURI().toString().startsWith("jar:file:"));
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -66,7 +66,7 @@ public class ArchivedCatalogTest {
             InputSource source = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/zipped/sample.dtd");
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertTrue(rsource.resolvedURI.toString().startsWith("jar:file:"));
+            assertTrue(rsource.getResolvedURI().toString().startsWith("jar:file:"));
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -83,7 +83,7 @@ public class ArchivedCatalogTest {
             InputSource source = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/zipped/sample.dtd");
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertTrue(rsource.resolvedURI.toString().startsWith("jar:file:"));
+            assertTrue(rsource.getResponse().getUnmaskedURI().toString().startsWith("jar:file:"));
             assertEquals("https://xmlresolver.org/ns/zipped/sample.dtd", rsource.getSystemId());
         } catch (IOException | SAXException ex) {
             fail();
@@ -102,7 +102,7 @@ public class ArchivedCatalogTest {
             InputSource source = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/zipped/sample.dtd");
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertTrue(rsource.resolvedURI.toString().startsWith("jar:file:"));
+            assertTrue(rsource.getResolvedURI().toString().startsWith("jar:file:"));
             assertTrue(rsource.getSystemId().startsWith("jar:file:"));
         } catch (IOException | SAXException ex) {
             fail();

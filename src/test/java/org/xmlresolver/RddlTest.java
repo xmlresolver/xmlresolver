@@ -132,7 +132,7 @@ public class RddlTest {
                 "http://www.rddl.org/purposes#validation");
         ResourceResponse xsd = resolver.resolve(req);
         assertTrue(xsd.isResolved());
-        assertTrue(xsd.getResolvedURI().toString().endsWith("/xml.xsd"));
+        assertTrue(xsd.getUnmaskedURI().toString().endsWith("/xml.xsd"));
     }
 }
 

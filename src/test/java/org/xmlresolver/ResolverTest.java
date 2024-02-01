@@ -52,7 +52,7 @@ public class ResolverTest {
             assertTrue(source.getSystemId().endsWith(result.getPath()));
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.resolvedURI, result);
+            assertEquals(rsource.getResolvedURI(), result);
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -66,7 +66,7 @@ public class ResolverTest {
             assertTrue(source.getSystemId().endsWith(result.getPath()));
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.resolvedURI, result);
+            assertEquals(rsource.getResolvedURI(), result);
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -201,7 +201,7 @@ public class ResolverTest {
             assertTrue(source.getSystemId().endsWith(result.getPath()));
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.resolvedURI, result);
+            assertEquals(rsource.getResolvedURI(), result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -233,7 +233,7 @@ public class ResolverTest {
             assertTrue(source.getSystemId().endsWith(result.getPath()));
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.resolvedURI, result);
+            assertEquals(rsource.getResolvedURI(), result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -256,7 +256,7 @@ public class ResolverTest {
             assertTrue(source.getSystemId().endsWith(result.getPath()));
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.resolvedURI, result);
+            assertEquals(rsource.getResolvedURI(), result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }

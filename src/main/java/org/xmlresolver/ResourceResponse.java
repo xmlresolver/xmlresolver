@@ -176,9 +176,25 @@ public class ResourceResponse {
      * redirection at, for example, the HTTP layer, to {@code http://cdn.example.com/version2/some.dtd}, the
      * URI returned by {@link #getResolvedURI()} will be {@code http://cdn.example.com/version2/some.dtd}.
      * See {@link #getURI()}.</p>
+     * <p>If {@link ResolverFeature#MASK_JAR_URIS} is true and the resolved URI is a jar: URI, the
+     * {@link #getURI()} is returned instead.</p>
      * @return The resolved URI.
      */
     public URI getResolvedURI() {
+        if (resolvedURI.getScheme().equals("jar") && request.config.getFeature(ResolverFeature.MASK_JAR_URIS)) {
+            return uri;
+        }
+        return resolvedURI;
+    }
+
+    /**
+     * Get the resolved URI, irrespective of masking.
+     * <p>Where {@link #getResolvedURI()} will not return a {@code jar:} URI if the
+     * {@link ResolverFeature#MASK_JAR_URIS} is true, this method always returns the actual, unmasked URI.
+     * </p>
+     * @return The resolved URI, unmasked.
+     */
+    public URI getUnmaskedURI() {
         return resolvedURI;
     }
 

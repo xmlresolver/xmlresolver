@@ -66,7 +66,7 @@ public class ResourceAccess {
      * @throws IOException if the resource cannot be accessed.
      */
     public static ResourceResponse getResource(ResourceResponse response) throws URISyntaxException, IOException {
-        URI uri = response.getResolvedURI();
+        URI uri = response.getUnmaskedURI();
         if (uri == null && response.request != null) {
             uri = response.request.getAbsoluteURI();
             if (uri == null && response.request.getURI() != null) {

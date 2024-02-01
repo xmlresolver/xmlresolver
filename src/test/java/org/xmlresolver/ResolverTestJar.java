@@ -49,17 +49,18 @@ public class ResolverTestJar {
             assertEquals(systemId, source.getSystemId());
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals("jar", rsource.resolvedURI.getScheme());
-            assertTrue(rsource.resolvedURI.getSchemeSpecificPart().startsWith("file:"));
+
+            URI actualURI = rsource.getResponse().getUnmaskedURI();
+            assertEquals("jar",actualURI.getScheme());
+            assertTrue(actualURI.getSchemeSpecificPart().startsWith("file:"));
 
             config.setFeature(ResolverFeature.MASK_JAR_URIS, false);
-            result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
             source = resolver.getEntityResolver().resolveEntity(null, systemId);
             assertTrue(source.getSystemId().startsWith("jar:file:"));
             assertNotNull(source.getByteStream());
             rsource = ((ResolverInputSource) source);
-            assertEquals("jar", rsource.resolvedURI.getScheme());
-            assertTrue(rsource.resolvedURI.getSchemeSpecificPart().startsWith("file:"));
+            assertEquals("jar", rsource.getResolvedURI().getScheme());
+            assertTrue(rsource.getResolvedURI().getSchemeSpecificPart().startsWith("file:"));
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -72,8 +73,10 @@ public class ResolverTestJar {
             assertTrue(source.getSystemId().endsWith("/sample/uri.dtd"));
             assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertTrue(rsource.resolvedURI.toString().startsWith("jar:file:/"));
-            assertTrue(rsource.resolvedURI.toString().endsWith("data3.jar!/data/sample.dtd"));
+
+            String actualURI = rsource.getResponse().getUnmaskedURI().toString();
+            assertTrue(actualURI.startsWith("jar:file:/"));
+            assertTrue(actualURI.endsWith("data3.jar!/data/sample.dtd"));
         } catch (IOException | SAXException ex) {
             fail();
         }

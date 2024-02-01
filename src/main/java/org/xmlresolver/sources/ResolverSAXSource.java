@@ -12,42 +12,40 @@ import java.util.Map;
 
 /** A {@link javax.xml.transform.sax.SAXSource} with a <code>resolvedURI</code>. */
 public class ResolverSAXSource extends SAXSource implements ResolverResourceInfo {
-    /** The underlying, resolved URI. */
-    public final URI resolvedURI;
+    private final ResourceResponse response;
+    private final URI resolvedURI;
     private final int statusCode;
     private final Map<String, List<String>> resolvedHeaders;
 
-    /** Construct a {@link javax.xml.transform.sax.SAXSource} while preserving the local URI.
-     *
-     * @param localURI The local URI.
-     * @param source The input source to return for this source.
-     * */
-    public ResolverSAXSource(URI localURI, InputSource source) {
-        super(source);
-        resolvedURI = localURI;
-        statusCode = 200;
-        resolvedHeaders = Collections.emptyMap();
-    }
-
     public ResolverSAXSource(ResourceResponse resp) {
         super(new InputSource(resp.getInputStream()));
+        this.response = resp;
         resolvedURI = resp.getResolvedURI();
         statusCode = resp.getStatusCode();
         resolvedHeaders = resp.getHeaders();
     }
 
+    @Override
+    public ResourceResponse getResponse() {
+        return response;
+    }
+
+    @Override
     public URI getResolvedURI() {
         return resolvedURI;
     }
 
+    @Override
     public int getStatusCode() {
         return statusCode;
     }
 
+    @Override
     public Map<String, List<String>> getHeaders() {
         return resolvedHeaders;
     }
 
+    @Override
     public String getHeader(String headerName) {
         return RsrcUtils.getHeader(headerName, resolvedHeaders);
     }

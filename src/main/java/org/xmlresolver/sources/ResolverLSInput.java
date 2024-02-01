@@ -16,8 +16,8 @@ import java.util.Map;
  *
  */
 public class ResolverLSInput implements LSInput, ResolverResourceInfo {
-    /** The underlying, resolved URI. */
-    public final URI resolvedURI;
+    private final ResourceResponse response;
+    private final URI resolvedURI;
     final String publicId;
     final String systemId;
     final InputStream body;
@@ -35,8 +35,9 @@ public class ResolverLSInput implements LSInput, ResolverResourceInfo {
      * */
     public ResolverLSInput(ResourceResponse resp, String publicId) {
         resolvedURI = resp.getResolvedURI();
+        this.response = resp;
         this.body = resp.getInputStream();
-        this.systemId = resp.getURI().toString();
+        this.systemId = resp.getResolvedURI().toString();
         this.publicId = publicId;
         this.uri = resp.getURI();
         this.statusCode = resp.getStatusCode();
@@ -148,18 +149,27 @@ public class ResolverLSInput implements LSInput, ResolverResourceInfo {
         throw new UnsupportedOperationException("Can't set certified text on resolver LSInput");
     }
 
+    @Override
+    public ResourceResponse getResponse() {
+        return response;
+    }
+
+    @Override
     public URI getResolvedURI() {
         return resolvedURI;
     }
 
+    @Override
     public int getStatusCode() {
         return statusCode;
     }
 
+    @Override
     public Map<String, List<String>> getHeaders() {
         return resolvedHeaders;
     }
 
+    @Override
     public String getHeader(String headerName) {
         return RsrcUtils.getHeader(headerName, resolvedHeaders);
     }
