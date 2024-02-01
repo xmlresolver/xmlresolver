@@ -2,13 +2,15 @@ plugins {
   id "java"
   id "maven-publish"
   id "signing"
-  id 'com.github.gmazzo.buildconfig' version "3.0.3"
+  id 'com.github.gmazzo.buildconfig' version "5.3.5"
   id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.6'
   id 'com.nwalsh.gradle.docker.container' version '0.0.5'
 }
 
-sourceCompatibility=1.8
-targetCompatibility=1.8
+compileJava {
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+}
 
 repositories {
   mavenLocal()
