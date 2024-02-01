@@ -36,7 +36,7 @@ public class CatalogSpacesTest {
             InputSource is = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/sample/sample.dtd");
             assertNotNull(is);
             ResolverInputSource ris = (ResolverInputSource) is;
-            assertTrue(ris.resolvedURI.toString().contains("/Sample%2010/"));
+            assertTrue(ris.getResolvedURI().toString().contains("/Sample%2010/"));
         } catch (Exception ex) {
             fail();
         }
