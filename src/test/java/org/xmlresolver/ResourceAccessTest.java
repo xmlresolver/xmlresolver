@@ -25,6 +25,7 @@ public class ResourceAccessTest {
             ResourceResponse resp = ResourceAccess.getResource(request);
             Assert.assertNotNull(resp);
             Assert.assertTrue(resp.isResolved());
+            Assert.assertNotNull(resp.getInputStream());
             Assert.assertEquals(URIUtils.cwd().resolve(relativeURI), resp.getURI());
             Assert.assertEquals(URIUtils.cwd().resolve(relativeURI), resp.getResolvedURI());
             Assert.assertNotNull(resp.getURI());
@@ -47,6 +48,7 @@ public class ResourceAccessTest {
             ResourceResponse resp = ResourceAccess.getResource(request);
             Assert.assertNotNull(resp);
             Assert.assertTrue(resp.isResolved());
+            Assert.assertNotNull(resp.getInputStream());
             Assert.assertEquals(absURI, resp.getURI());
             Assert.assertEquals(absURI, resp.getResolvedURI());
             Assert.assertNotNull(resp.getURI());
@@ -68,6 +70,7 @@ public class ResourceAccessTest {
             ResourceResponse resp = ResourceAccess.getResource(request);
             Assert.assertNotNull(resp);
             Assert.assertTrue(resp.isResolved());
+            Assert.assertNotNull(resp.getInputStream());
             Assert.assertEquals(URI.create("classpath:org/xmlresolver/schemas/catalog.xml"), resp.getURI());
         } catch (IOException | URISyntaxException ex) {
             fail();
@@ -88,6 +91,7 @@ public class ResourceAccessTest {
             ResourceResponse resp = ResourceAccess.getResource(request);
             Assert.assertNotNull(resp);
             Assert.assertTrue(resp.isResolved());
+            Assert.assertNotNull(resp.getInputStream());
             Assert.assertEquals(URI.create(uri), resp.getURI());
             Assert.assertEquals(URI.create(uri), resp.getResolvedURI());
         } catch (IOException | URISyntaxException ex) {
@@ -106,6 +110,7 @@ public class ResourceAccessTest {
             ResourceResponse resp = ResourceAccess.getResource(request);
             Assert.assertNotNull(resp);
             Assert.assertTrue(resp.isResolved());
+            Assert.assertNotNull(resp.getInputStream());
             Assert.assertEquals(200, resp.getStatusCode());
             Assert.assertEquals(URI.create(uri), resp.getURI());
             Assert.assertEquals("iso-8859-1", resp.getEncoding());
@@ -127,6 +132,7 @@ public class ResourceAccessTest {
             ResourceResponse resp = ResourceAccess.getResource(request);
             Assert.assertNotNull(resp);
             Assert.assertTrue(resp.isResolved());
+            Assert.assertNotNull(resp.getInputStream());
             Assert.assertEquals(200, resp.getStatusCode());
             Assert.assertEquals(URI.create("http://localhost:8222/docs/redirected.txt"), resp.getURI());
             Assert.assertFalse(resp.getHeaders().isEmpty());

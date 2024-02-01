@@ -47,6 +47,8 @@ public class ResourceAccess {
                 return getDataResource(request, uri);
             case "classpath":
                 return getClasspathResource(request, uri);
+            case "jar":
+                return getJarResource(request, uri);
             default:
                 // If it's not data: or classpath:, let's hope Java's URLConnection class will read it...
                 return getNetResource(request, uri);
@@ -85,6 +87,8 @@ public class ResourceAccess {
                 return getDataResource(response.request, uri);
             case "classpath":
                 return getClasspathResource(response.request, uri);
+            case "jar":
+                return getJarResource(response.request, uri);
             default:
                 // If it's not data: or classpath:, let's hope Java's URLConnection class will read it...
                 return getNetResource(response.request, uri);
@@ -175,6 +179,27 @@ public class ResourceAccess {
         }
     }
 
+    private static ResourceResponse getJarResource(ResourceRequest request, URI resourceURI) {
+        try {
+            ResourceResponse resp = new ResourceResponse(request, resourceURI);
+            JarURLConnection conn = (JarURLConnection) resourceURI.toURL().openConnection();
+            resp.setUri(request.getAbsoluteURI());
+            resp.setInputStream(conn.getInputStream());
+            resp.setEncoding(conn.getContentEncoding());
+            resp.setContentType(conn.getContentType());
+            return resp;
+        } catch (MalformedURLException|URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        } catch (IOException ex) {
+            boolean throwExceptions = request.config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+            ResolverLogger logger = request.config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+            logger.log(AbstractLogger.REQUEST, "I/O error reading %s", resourceURI.toString());
+            if (throwExceptions) {
+                throw new IllegalArgumentException("I/O error reading " + resourceURI);
+            }
+            return new ResourceResponse(request);
+        }
+    }
 
     private static ResourceResponse getNetResource(ResourceRequest request, URI resourceURI) {
         ResolverConfiguration config = request.config;
@@ -223,8 +248,10 @@ public class ResourceAccess {
         resp.setHeaders(connx.getHeaders());
         resp.setContentType(connx.getContentType());
         resp.setEncoding(connx.getEncoding());
-
         resp.setStatusCode(connx.getStatusCode());
+        if (connx.getStatusCode() >= 400) {
+            resp.setResolved(false);
+        }
         return resp;
     }
 }
