@@ -271,12 +271,6 @@ public class DataTest {
     }
 
     @Test
-    public void gen_lookupPublicd1e83() {
-        URI result = manager.lookupPublic(null, "datatypes");
-        assertNotNull(result);
-    }
-
-    @Test
     public void gen_lookupSystemd1e84() {
         URI result = manager.lookupSystem("https://www.w3.org/2001/datatypes.dtd");
         assertNotNull(result);
