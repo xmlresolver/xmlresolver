@@ -61,6 +61,9 @@ public class ResourceAccessTest {
     public void testClasspathAccess() {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
+            // If jar (and classpath) URIs are masked, I get back the original classpath URI
+            // that's not what's being tested here.
+            config.setFeature(ResolverFeature.MASK_JAR_URIS, false);
             ResourceRequest request = new ResourceRequest(config);
 
             // n.b., leading "/" is not how classpath: URIs should be constructed

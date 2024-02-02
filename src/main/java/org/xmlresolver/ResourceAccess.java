@@ -90,7 +90,7 @@ public class ResourceAccess {
             case "jar":
                 return getJarResource(response.request, uri);
             default:
-                // If it's not data: or classpath:, let's hope Java's URLConnection class will read it...
+                // If it's not data:, classpath:, or jar:, let's hope Java's URLConnection class will read it...
                 return getNetResource(response.request, uri);
         }
     }
