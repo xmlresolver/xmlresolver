@@ -65,7 +65,8 @@ public class ResourceResponse {
         this.resolved = false;
 
         if (uri != null) {
-            if ("jar".equals(uri.getScheme()) && request.config.getFeature(ResolverFeature.MASK_JAR_URIS)) {
+            if (("jar".equals(uri.getScheme()) || "classpath".equals(uri.getScheme()))
+                    && request.config.getFeature(ResolverFeature.MASK_JAR_URIS)) {
                 try {
                     this.uri = request.getAbsoluteURI();
                 } catch (URISyntaxException ex) {
@@ -181,7 +182,8 @@ public class ResourceResponse {
      * @return The resolved URI.
      */
     public URI getResolvedURI() {
-        if (resolvedURI.getScheme().equals("jar") && request.config.getFeature(ResolverFeature.MASK_JAR_URIS)) {
+        if ((resolvedURI.getScheme().equals("jar") || resolvedURI.getScheme().equals("classpath"))
+                && request.config.getFeature(ResolverFeature.MASK_JAR_URIS)) {
             return uri;
         }
         return resolvedURI;
