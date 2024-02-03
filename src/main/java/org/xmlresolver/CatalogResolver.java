@@ -26,10 +26,8 @@ public class CatalogResolver {
     }
 
     public ResolvedResource resolveURI(String href, String baseURI) {
-        System.err.println("CR resolveURI " + href);
         ResourceRequest req = resolver.getRequest(href, baseURI);
         ResourceResponse resp = resolver.resolve(req);
-        System.err.println("RR: " + resp.getURI());
 
         if (resp.isResolved()) {
             return new ResolvedResource(resp);

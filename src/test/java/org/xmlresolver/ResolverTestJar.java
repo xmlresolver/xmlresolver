@@ -44,9 +44,6 @@ public class ResolverTestJar {
         String systemId = "https://xmlresolver.org/ns/sample/sample.dtd";
 
         try {
-            System.err.println("WAT?");
-
-
             config.setFeature(ResolverFeature.MASK_JAR_URIS, true);
             URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
             InputSource source = resolver.getEntityResolver().resolveEntity(null, systemId);
@@ -60,8 +57,6 @@ public class ResolverTestJar {
 
             config.setFeature(ResolverFeature.MASK_JAR_URIS, false);
             source = resolver.getEntityResolver().resolveEntity(null, systemId);
-
-            System.err.println("S: " + source.getSystemId());
 
             assertTrue(source.getSystemId().startsWith("jar:file:"));
             assertNotNull(source.getByteStream());
