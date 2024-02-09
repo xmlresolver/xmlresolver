@@ -6,7 +6,7 @@
  * perform redirection through RDDL documents and automated caching of
  * resources retrieved from the web.</p>
  *
- * <h1>TL;DR</h1>
+ * <h2>TL;DR</h2>
  *
  * <p>Instantiate an {@link org.xmlresolver.XMLResolver} (it has a zero argument constructor
  * so that it can be instantiated just from its name). Use the methods provided on the {@code XMLResolver}
@@ -15,7 +15,7 @@
  * <p>Tell your processor to instantiate a
  * {@link org.xmlresolver.tools.ResolvingXMLReader} for parsing.</p>
  *
- * <h1>L;OS (long; only skimmed)</h1>
+ * <h2>L;OS (long; only skimmed)</h2>
  *
  * <p>For most users, the principle entry points to this API will be the
  * {@link org.xmlresolver.XMLResolver} class and the {@link org.xmlresolver.tools.ResolvingXMLReader}. These instantiate
@@ -35,7 +35,7 @@
  * <p>The <code>ResolvingXMLReader</code> class extends the SAX parser so that
  * it will automatically construct and use a resolver.
  *
- * <h1>Accessing the resolver</h1>
+ * <h2>Accessing the resolver</h2>
  *
  * <p>The resolver is configured with a {@link org.xmlresolver.ResolverConfiguration}, more specifically
  * in this release, an {@link org.xmlresolver.XMLResolverConfiguration}. This class allows you to configure
