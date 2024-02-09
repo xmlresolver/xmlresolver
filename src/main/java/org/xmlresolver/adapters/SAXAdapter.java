@@ -33,8 +33,12 @@ public class SAXAdapter implements EntityResolver, EntityResolver2 {
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
         ResourceRequest request = resolver.getRequest(null, baseURI, ResolverConstants.DTD_NATURE, ResolverConstants.ANY_PURPOSE);
         request.setEntityName(name);
-        ResourceResponse resp = resolver.resolve(request);
 
+        if (request.getURI() == null) {
+            return null;
+        }
+
+        ResourceResponse resp = resolver.resolve(request);
         ResolverInputSource source = null;
         if (resp.isResolved()) {
             source = new ResolverInputSource(resp);
