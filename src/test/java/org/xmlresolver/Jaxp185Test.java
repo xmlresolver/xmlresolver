@@ -222,6 +222,10 @@ public class Jaxp185Test {
         }
     }
 
+    @Test
+    public void lookupPublicId() throws IOException, SAXException {
+        InputSource source = unrestrictedResolver.getEntityResolver().resolveEntity("-//Sample//DTD Sample 1.0//EN", null);        assertNotNull(source);
+    }
 // yyy
 
     @Test
