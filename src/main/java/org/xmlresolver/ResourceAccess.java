@@ -216,25 +216,18 @@ public class ResourceAccess {
         // We want to test the request URI, and if it's relative to some base URI, we want
         // to make sure we're considering the absolute URI, not just the relative part.
         URI requestURI = null;
-        try {
-            requestURI = request.getAbsoluteURI();
-            if (requestURI == null) {
-                requestURI = new URI(request.getURI());
-            }
-            if (!requestURI.isAbsolute()) {
-                requestURI = URIUtils.cwd().resolve(requestURI.toString());
-            }
+        requestURI = resourceURI;
+        if (!requestURI.isAbsolute()) {
+            requestURI = URIUtils.cwd().resolve(resourceURI);
+        }
 
-            if (URIUtils.forbidAccess(accessList, requestURI.toString(), mergeHttps)) {
-                if (request.isResolvingAsEntity()) {
-                    logger.log(AbstractLogger.REQUEST, "resolveEntity, access denied: " + requestURI);
-                } else {
-                    logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: " + requestURI);
-                }
-                return new ResourceResponse(request, true);
+        if (URIUtils.forbidAccess(accessList.concat(",file"), requestURI.toString(), mergeHttps)) {
+            if (request.isResolvingAsEntity()) {
+                logger.log(AbstractLogger.REQUEST, "resolveEntity, access denied: " + requestURI);
+            } else {
+                logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: " + requestURI);
             }
-        } catch (URISyntaxException ex) {
-            // I don't think this can happen here, but...
+            return new ResourceResponse(request, true);
         }
 
         ResourceConnection connx = new ResourceConnection(request.config, resourceURI, !request.openStream());
