@@ -213,28 +213,17 @@ public class ResourceAccess {
             accessList = config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT);
         }
 
-        // We want to test the request URI, and if it's relative to some base URI, we want
-        // to make sure we're considering the absolute URI, not just the relative part.
-        URI requestURI = null;
-        try {
-            requestURI = request.getAbsoluteURI();
-            if (requestURI == null) {
-                requestURI = new URI(request.getURI());
+        // We come through this code path when a resource was successfully resolved,
+        // but it wasn't a data:, jar: or, classpath: URI. We still want to retrieve it,
+        // so we'll try http:, https:, or anything supported by Java's URLConnection.
+        // Note that the resourceURI will be absolute at this point.
+        if (URIUtils.forbidAccess(accessList.concat(",file"), resourceURI.toString(), mergeHttps)) {
+            if (request.isResolvingAsEntity()) {
+                logger.log(AbstractLogger.REQUEST, "resolveEntity, access denied: " + resourceURI);
+            } else {
+                logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: " + resourceURI);
             }
-            if (!requestURI.isAbsolute()) {
-                requestURI = URIUtils.cwd().resolve(requestURI.toString());
-            }
-
-            if (URIUtils.forbidAccess(accessList, requestURI.toString(), mergeHttps)) {
-                if (request.isResolvingAsEntity()) {
-                    logger.log(AbstractLogger.REQUEST, "resolveEntity, access denied: " + requestURI);
-                } else {
-                    logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: " + requestURI);
-                }
-                return new ResourceResponse(request, true);
-            }
-        } catch (URISyntaxException ex) {
-            // I don't think this can happen here, but...
+            return new ResourceResponse(request, true);
         }
 
         ResourceConnection connx = new ResourceConnection(request.config, resourceURI, !request.openStream());

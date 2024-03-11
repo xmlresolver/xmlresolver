@@ -222,7 +222,23 @@ public class Jaxp185Test {
         }
     }
 
-// yyy
+    @Test
+    public void lookupPublicId() throws IOException, SAXException {
+        InputSource source = unrestrictedResolver.getEntityResolver().resolveEntity("-//Sample//DTD Sample 1.0//EN", null);
+        assertNotNull(source);
+    }
+
+    @Test
+    public void lookupPublicIdBadURI() throws IOException, SAXException {
+        InputSource source = unrestrictedResolver.getEntityResolver().resolveEntity("-//Sample//DTD Sample 1.0//EN", "relativeLocation.dtd");
+        assertNotNull(source);
+    }
+
+    @Test
+    public void lookupPublicIdOkURI() throws IOException, SAXException {
+        InputSource source = unrestrictedResolver.getEntityResolver().resolveEntity("-//Sample//DTD Sample 1.0//EN", "http://localhost:8222/docs/sample/sample.dtd");
+        assertNotNull(source);
+    }
 
     @Test
     public void lookupUriMergedPassHttpsAbs() {
