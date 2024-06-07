@@ -18,6 +18,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
@@ -102,30 +103,37 @@ public class XmlLoader implements CatalogLoader {
         if (catalogMap.containsKey(catalog)) {
             return catalogMap.get(catalog);
         }
-
-        try {
-            ResourceRequest request = new ResourceRequest(config);
-            request.setURI(catalog);
-            request.setOpenStream(true);
-            ResourceResponse resp = ResourceAccess.getResource(request);
-            InputSource source = new InputSource(resp.getInputStream());
-            source.setSystemId(catalog.toString());
-            EntryCatalog entries = loadCatalog(catalog, source);
-            logger.log(AbstractLogger.CONFIG, "Loaded catalog: %s", catalog);
-            return entries;
-        } catch (CatalogUnavailableException ex) {
-            if (ex.getCause() instanceof FileNotFoundException) {
-                logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-                return catalogMap.get(catalog);
-            }
-            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            throw ex;
-        } catch (URISyntaxException | IOException ex) {
-            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            throw new CatalogUnavailableException(ex);
+        
+        synchronized (catalogMap) {
+          if (catalogMap.containsKey(catalog)) {
+            return catalogMap.get(catalog);
+          }
+          try {
+              ResourceRequest request = new ResourceRequest(config);
+              request.setURI(catalog);
+              request.setOpenStream(true);
+              ResourceResponse resp = ResourceAccess.getResource(request);
+              try(InputStream is = resp.getInputStream()) {
+                InputSource source = new InputSource(is);
+                source.setSystemId(catalog.toString());
+                EntryCatalog entries = loadCatalog(catalog, source);
+                logger.log(AbstractLogger.CONFIG, "Loaded catalog: %s", catalog);
+                return entries;
+              }
+          } catch (CatalogUnavailableException ex) {
+              if (ex.getCause() instanceof FileNotFoundException) {
+                  logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                  catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                  return catalogMap.get(catalog);
+              }
+              logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+              catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+              throw ex;
+          } catch (URISyntaxException | IOException ex) {
+              logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+              catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+              throw new CatalogUnavailableException(ex);
+          }
         }
     }
 
@@ -155,6 +163,9 @@ public class XmlLoader implements CatalogLoader {
 
         synchronized (catalogMap) {
             try {
+                if (catalogMap.containsKey(catalog)) {
+                  return catalogMap.get(catalog);
+                }
                 CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
 
                 Supplier<XMLReader> supplier = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER);
@@ -178,19 +189,19 @@ public class XmlLoader implements CatalogLoader {
                 catalogMap.put(catalog, entry);
             } catch (ParserConfigurationException | SAXException | IOException ex) {
                 logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
-                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-
                 if (archivedCatalogs) {
                     zipcatalog = archiveCatalog(catalog);
                 }
+                if (zipcatalog == null) {
+                  catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                }
+            }
+            if (zipcatalog != null) {
+              EntryCatalog entries = loadCatalog(zipcatalog);
+              //Now put the entries from the zip URL to the entries for the plain URL
+              catalogMap.put(catalog, entries);
             }
         }
-
-        if (zipcatalog != null) {
-            EntryCatalog zipcat = loadCatalog(zipcatalog);
-            catalogMap.put(catalog, zipcat);
-        }
-
         return catalogMap.get(catalog);
     }
 
@@ -237,6 +248,9 @@ public class XmlLoader implements CatalogLoader {
         URI zipcatalog = null;
 
         synchronized (catalogMap) {
+            if (catalogMap.containsKey(catalog)) {
+              return catalogMap.get(catalog);
+            }
             try {
                 CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
 
@@ -246,19 +260,20 @@ public class XmlLoader implements CatalogLoader {
                 catalogMap.put(catalog, entry);
             } catch (SAXException | IOException ex) {
                 logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
-                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
 
                 if (archivedCatalogs) {
                     zipcatalog = archiveCatalog(catalog);
                 }
+                if (zipcatalog == null) {
+                  catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                }
             }
+            if (zipcatalog != null) {
+                EntryCatalog entries = loadCatalog(zipcatalog);
+                //Now put the entries from the zip URL to the entries for the plain URL
+                catalogMap.put(catalog, entries);
+            } 
         }
-
-        if (zipcatalog != null) {
-            EntryCatalog zipcat = loadCatalog(zipcatalog);
-            catalogMap.put(catalog, zipcat);
-        }
-
         return catalogMap.get(catalog);
     }
 
@@ -289,53 +304,54 @@ public class XmlLoader implements CatalogLoader {
 
         try {
             URLConnection conn = catalog.toURL().openConnection();
-            ZipInputStream zip = new ZipInputStream(conn.getInputStream());
-            ZipEntry entry = zip.getNextEntry();
-            while (entry != null) {
-                if (firstEntry) {
-                    int pos = entry.getName().indexOf("/");
-                    if (pos >= 0) {
-                        leadingDir = entry.getName().substring(0, pos);
-                    }
-                    firstEntry = false;
-                } else {
-                    if (leadingDir != null) {
-                        int pos = entry.getName().indexOf("/");
-                        if (pos < 0  || !leadingDir.equals(entry.getName().substring(0, pos))) {
-                            leadingDir = null;
-                        }
-                    }
-                }
-
-                if (!entry.isDirectory() && entry.getName().endsWith("catalog.xml")) {
-                    catalogSet.add(entry.getName());
-                }
-
-                entry = zip.getNextEntry();
+            try(InputStream is = conn.getInputStream();  ZipInputStream zip = new ZipInputStream(is);) {
+             
+              ZipEntry entry = zip.getNextEntry();
+              while (entry != null) {
+                  if (firstEntry) {
+                      int pos = entry.getName().indexOf("/");
+                      if (pos >= 0) {
+                          leadingDir = entry.getName().substring(0, pos);
+                      }
+                      firstEntry = false;
+                  } else {
+                      if (leadingDir != null) {
+                          int pos = entry.getName().indexOf("/");
+                          if (pos < 0  || !leadingDir.equals(entry.getName().substring(0, pos))) {
+                              leadingDir = null;
+                          }
+                      }
+                  }
+  
+                  if (!entry.isDirectory() && entry.getName().endsWith("catalog.xml")) {
+                      catalogSet.add(entry.getName());
+                  }
+  
+                  entry = zip.getNextEntry();
+              }
+              zip.close();
+  
+              String catpath = null;
+              if (leadingDir != null) {
+                  if (catalogSet.contains(leadingDir + "/catalog.xml")) {
+                      catpath = "/" + leadingDir + "/catalog.xml";
+                  }
+                  if (catalogSet.contains(leadingDir + "/org/xmlresolver/catalog.xml")) {
+                      catpath = "/" + leadingDir + "/org/xmlresolver/catalog.xml";
+                  }
+              } else {
+                  if (catalogSet.contains("catalog.xml")) {
+                      catpath = "/catalog.xml";
+                  }
+                  if (catalogSet.contains("org/xmlresolver/catalog.xml")) {
+                      catpath = "/org/xmlresolver/catalog.xml";
+                  }
+              }
+  
+              if (catpath != null) {
+                  return new URI("jar:file://" +  catalog.getPath() + "!" + catpath);
+              }
             }
-            zip.close();
-
-            String catpath = null;
-            if (leadingDir != null) {
-                if (catalogSet.contains(leadingDir + "/catalog.xml")) {
-                    catpath = "/" + leadingDir + "/catalog.xml";
-                }
-                if (catalogSet.contains(leadingDir + "/org/xmlresolver/catalog.xml")) {
-                    catpath = "/" + leadingDir + "/org/xmlresolver/catalog.xml";
-                }
-            } else {
-                if (catalogSet.contains("catalog.xml")) {
-                    catpath = "/catalog.xml";
-                }
-                if (catalogSet.contains("org/xmlresolver/catalog.xml")) {
-                    catpath = "/org/xmlresolver/catalog.xml";
-                }
-            }
-
-            if (catpath != null) {
-                return new URI("jar:file://" +  catalog.getPath() + "!" + catpath);
-            }
-
             logger.log(AbstractLogger.ERROR, "Failed to find catalog in archived catalog: " + catalog);
         } catch (IOException|URISyntaxException ex) {
             logger.log(AbstractLogger.ERROR, "Failed to load archived catalog: " + catalog + ": " + ex.getMessage());
