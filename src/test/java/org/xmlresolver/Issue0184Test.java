@@ -22,12 +22,12 @@ public class Issue0184Test {
     public static final String catalog = "src/test/resources/empty.xml";
 
     XMLResolverConfiguration config = null;
-    Resolver resolver = null;
+    XMLResolver resolver = null;
 
     @Before
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
-        resolver = new Resolver(config);
+        resolver = new XMLResolver(config);
     }
 
     @Test
