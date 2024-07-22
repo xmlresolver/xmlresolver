@@ -21,6 +21,10 @@ java {
   }
 }
 
+jar {
+  enabled = true
+}
+
 configurations.all {
   resolutionStrategy {
     exclude group: 'xml-apis', module: 'xml-apis'

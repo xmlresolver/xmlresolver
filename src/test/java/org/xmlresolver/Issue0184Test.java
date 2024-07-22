@@ -34,6 +34,8 @@ public class Issue0184Test {
     public void parserTest() {
         try {
             ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
+            // This test requires this feature!
+            reader.getResolver().getConfiguration().setFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS, true);
             String filename = "src/test/iss0184/src/SBBVT0T-Deployment-Flat-mod.xml";
             InputSource source = new InputSource(filename);
             reader.parse(source);
