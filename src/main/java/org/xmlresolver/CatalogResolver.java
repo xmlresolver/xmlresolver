@@ -217,7 +217,7 @@ public class CatalogResolver implements ResourceResolver {
         }
 
         if (systemId != null) {
-            if (URIUtils.isWindows() && config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
+            if (config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
                 systemId = systemId.replace("\\", "/");
                 // The base URI may be wrong too...
                 if (baseURI != null) {

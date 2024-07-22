@@ -245,6 +245,14 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     }
 
     protected ResolvedResource openConnection(String uri, String baseURI, boolean asEntity) throws IOException {
+        if (config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
+            uri = uri.replace("\\", "/");
+            // The base URI may be wrong too...
+            if (baseURI != null) {
+                baseURI = baseURI.replace("\\", "/");
+            }
+        }
+
         try {
             URI absuri = baseURI == null ? URIUtils.cwd() : new URI(baseURI);
             absuri = absuri.resolve(uri);

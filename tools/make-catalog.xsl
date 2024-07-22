@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns:f="https://nwalsh.com/ns/functions"
                 xmlns:map="http://www.w3.org/2005/xpath-functions/map"
                 xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
-                exclude-result-prefixes="map xs"
+                exclude-result-prefixes="map xs f"
                 version="3.0">
 
 <xsl:output method="xml" encoding="utf-8" indent="yes"/>
@@ -238,10 +239,16 @@
 
 <!-- ============================================================ -->
 
+<xsl:function name="f:generate-id" as="xs:string">
+  <xsl:param name="element" as="element()"/>
+  <xsl:sequence select="'id_' || count($element/ancestor::entry/preceding-sibling::*)
+                              || '_' || count($element/preceding-sibling::*)"/>
+</xsl:function>
+
 <xsl:template match="public" mode="generate-tests">
   <xsl:text>    @Test&#10;</xsl:text>
   <xsl:text>    public void gen_lookupPublic</xsl:text>
-  <xsl:sequence select="generate-id(.)"/>
+  <xsl:sequence select="f:generate-id(.)"/>
   <xsl:text>() {&#10;</xsl:text>
   <xsl:text>        URI result = manager.lookupPublic(null, "</xsl:text>
   <xsl:value-of select="."/>
@@ -253,7 +260,7 @@
 <xsl:template match="system" mode="generate-tests">
   <xsl:text>    @Test&#10;</xsl:text>
   <xsl:text>    public void gen_lookupSystem</xsl:text>
-  <xsl:sequence select="generate-id(.)"/>
+  <xsl:sequence select="f:generate-id(.)"/>
   <xsl:text>() {&#10;</xsl:text>
   <xsl:text>        URI result = manager.lookupSystem("</xsl:text>
   <xsl:value-of select="."/>
@@ -265,7 +272,7 @@
 <xsl:template match="uri" mode="generate-tests">
   <xsl:text>    @Test&#10;</xsl:text>
   <xsl:text>    public void gen_lookupUri</xsl:text>
-  <xsl:sequence select="generate-id(.)"/>
+  <xsl:sequence select="f:generate-id(.)"/>
   <xsl:text>() {&#10;</xsl:text>
   <xsl:text>        URI result = manager.lookupURI("</xsl:text>
   <xsl:value-of select="."/>
