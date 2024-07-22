@@ -195,7 +195,7 @@ public class CatalogManager implements XMLCatalogResolver {
     }
 
     private String fixWindowsSystemIdentifier(String systemId) {
-        if (URIUtils.isWindows() && resolverConfiguration.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
+        if (systemId != null && resolverConfiguration.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
             systemId = systemId.replace("\\", "/");
         }
         return systemId;
