@@ -1,0 +1,3 @@
+<!ELEMENT book (title)>
+<!ELEMENT title (#PCDATA)*>
+<!ENTITY hello "Hello, world.">
