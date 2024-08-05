@@ -60,7 +60,7 @@ public class ResourceRequest {
      */
     public void setURI(String uri) {
         if (uri != null) {
-            if (URIUtils.isWindows() && config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
+            if (config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
                 this.uri = URIUtils.windowsPathURI(uri);
             } else {
                 this.uri = uri;
@@ -85,7 +85,7 @@ public class ResourceRequest {
      */
     public void setBaseURI(String baseURI) {
         if (baseURI != null) {
-            if (URIUtils.isWindows() && config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
+            if (config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS)) {
                 this.baseURI = URIUtils.windowsPathURI(baseURI);
             } else {
                 this.baseURI = baseURI;

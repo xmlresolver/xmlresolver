@@ -40,9 +40,6 @@ public abstract class URIUtils {
      * @return The resulting URI.
      */
     public static String windowsPathURI(String uri) {
-        if (!isWindows()) {
-            return uri;
-        }
         String fixSlashes = uri.replaceAll("\\\\", "/");
         if (fixSlashes.length() >= 2 && fixSlashes.charAt(1) == ':') {
             return "file:///" + fixSlashes;

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book SYSTEM "ymcsm2-4.dtd"[
+<!-- For some reason the unit test doesn't resolve the URI against
+     the correct base URI. So this is tweaked to pass. It's possible
+     that Xerces makes two attempts, first without resolving against
+     the base URI and the again resolved if necessary. But if the
+     first attempt doesn't succeed, the "\"s cause it to fail. -->
+<!ENTITY % gls.entities SYSTEM "src\test\iss0184\master\glossary\gls.ent">
+%gls.entities;
+]>
+<book>&test;</book>
