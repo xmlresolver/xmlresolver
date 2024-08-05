@@ -1,0 +1,4 @@
+<book xmlns="http://example.com/domresolver">
+  <title>Hello, world</title>
+  <invalid/>
+</book>
