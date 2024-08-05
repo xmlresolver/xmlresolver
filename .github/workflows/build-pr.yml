@@ -56,4 +56,5 @@ jobs:
         run: |
           git submodule sync
           git submodule update --init
+          java --version
           ./gradlew --info dist
