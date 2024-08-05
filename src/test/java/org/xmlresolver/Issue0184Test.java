@@ -34,11 +34,13 @@ public class Issue0184Test {
     public void parserTest() {
         try {
             ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
-                reader.getResolver().config.setFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS, true);
+            reader.getResolver().config.setFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS, true);
+            System.err.println("Set feature");
             String filename = "src/test/iss0184/src/SBBVT0T-Deployment-Flat-mod.xml";
             InputSource source = new InputSource(filename);
             reader.parse(source);
         } catch (IOException | SAXException ex) {
+            ex.printStackTrace();
             fail();
         }
     }
