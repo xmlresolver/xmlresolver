@@ -57,4 +57,4 @@ jobs:
           git submodule sync
           git submodule update --init
           java --version
-          ./gradlew --info dist
+          ./gradlew --debug dist
