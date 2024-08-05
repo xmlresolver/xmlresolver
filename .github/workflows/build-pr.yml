@@ -2,8 +2,6 @@ name: build-pr
 on:
   pull_request_target:
     types: [assigned, opened, edited, synchronize, reopened]
-    branches:
-      - main
 
 jobs:
   check_branch:
