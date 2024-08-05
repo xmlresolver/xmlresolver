@@ -66,6 +66,10 @@ dependencies {
   )
 }
 
+test {
+    testLogging.showStandardStreams = true
+}
+
 import org.gradle.internal.os.OperatingSystem;
 import com.nwalsh.gradle.saxon.SaxonXsltTask
 import com.nwalsh.gradle.docker.DockerContainer
