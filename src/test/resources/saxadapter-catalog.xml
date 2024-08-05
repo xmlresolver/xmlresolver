@@ -1,0 +1,6 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+<doctype name="book" uri="saxadapter.dtd"/>
+
+</catalog>
