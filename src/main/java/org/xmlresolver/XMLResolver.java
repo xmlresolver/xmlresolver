@@ -4,10 +4,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xmlresolver.adapters.SAXAdapter;
-import org.xmlresolver.adapters.LSResourceAdapter;
-import org.xmlresolver.adapters.XercesXniAdapter;
-import org.xmlresolver.adapters.XmlStreamAdapter;
+import org.xmlresolver.adapters.*;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.sources.ResolverSAXSource;
@@ -542,19 +539,19 @@ public class XMLResolver {
     }
 
     /**
-     * Get a {@link SAXAdapter}.
+     * Get a {@link SAX1Adapter}.
      * @return An entity resolver.
      */
-    public SAXAdapter getEntityResolver() {
-        return getEntityResolver2();
+    public SAX1Adapter getEntityResolver() {
+        return new SAX1Adapter(this);
     }
 
     /**
-     * Get a {@link SAXAdapter}.
+     * Get a {@link SAX2Adapter}.
      * @return An entity resolver.
      */
-    public SAXAdapter getEntityResolver2() {
-        return new SAXAdapter(this);
+    public SAX2Adapter getEntityResolver2() {
+        return new SAX2Adapter(this);
     }
 
     /**
