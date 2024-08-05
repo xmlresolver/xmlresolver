@@ -151,26 +151,42 @@ public class Resolver implements URIResolver, EntityResolver, EntityResolver2, N
     /** Implements the {@link org.w3c.dom.ls.LSResourceResolver} interface. */
     @Override
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-        ResolvedResource rsrc = null;
         if (type == null || "http://www.w3.org/TR/REC-xml".equals(type)) {
-            logger.log(AbstractLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
-                    systemId, baseURI, publicId);
-            rsrc = resolver.resolveEntity(null, publicId, systemId, baseURI);
-        } else {
-            logger.log(AbstractLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
-                    type, systemId, namespaceURI, baseURI, publicId);
+            return lsResolveDtd(type, namespaceURI, publicId, systemId, baseURI);
+        }
+        return lsResolveSchema(type, namespaceURI, publicId, systemId, baseURI);
+    }
 
-            String purpose = null;
-            // If it looks like it's going to be used for validation, ...
-            if (NATURE_XML_SCHEMA.equals(type)
-                    || NATURE_XML_SCHEMA_1_1.equals(type)
-                    || NATURE_RELAX_NG.equals(type)) {
-                purpose = PURPOSE_SCHEMA_VALIDATION;
-            }
+    public LSInput lsResolveDtd(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
+        ResolvedResource rsrc = null;
+        logger.log(AbstractLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
+                systemId, baseURI, publicId);
+        rsrc = resolver.resolveEntity(null, publicId, systemId, baseURI);
+        if (rsrc == null) {
+            return null;
+        }
+        return new ResolverLSInput(rsrc, publicId);
+    }
 
-            if(systemId != null ) {
-                rsrc = resolver.resolveNamespace(systemId, baseURI, type, purpose);
-            }
+    public LSInput lsResolveSchema(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
+        ResolvedResource rsrc = null;
+        logger.log(AbstractLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
+                type, systemId, namespaceURI, baseURI, publicId);
+
+        String purpose = null;
+        // If it looks like it's going to be used for validation, ...
+        if (NATURE_XML_SCHEMA.equals(type)
+                || NATURE_XML_SCHEMA_1_1.equals(type)
+                || NATURE_RELAX_NG.equals(type)) {
+            purpose = PURPOSE_SCHEMA_VALIDATION;
+        }
+
+        if (systemId != null ) {
+            rsrc = resolver.resolveNamespace(systemId, baseURI, type, purpose);
+        }
+
+        if (rsrc == null) {
+            rsrc = resolver.resolveNamespace(namespaceURI, baseURI, type, purpose);
         }
 
         if (rsrc == null) {

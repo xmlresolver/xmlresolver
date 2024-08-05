@@ -15,4 +15,6 @@
 
   <rewriteSystem systemIdStartString="foo:" rewritePrefix="http://example.com/entity/"/>
 
+  <uri name="http://example.com/domresolver" uri="domresolver/schema.xsd"/>
+
 </catalog>
