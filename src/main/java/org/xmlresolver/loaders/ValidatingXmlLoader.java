@@ -62,27 +62,32 @@ public class ValidatingXmlLoader implements CatalogLoader {
             return catalogMap.get(catalog);
         }
 
-        try {
-            ResourceRequest request = new ResourceRequest(config);
-            request.setURI(catalog);
-            request.setOpenStream(true);
-            ResourceResponse resp = ResourceAccess.getResource(request);
-            InputSource source = new InputSource(resp.getInputStream());
-            source.setSystemId(catalog.toString());
-            return loadCatalog(catalog, source);
-        } catch (CatalogUnavailableException ex) {
-            if (ex.getCause() instanceof FileNotFoundException) {
-                logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+        synchronized (catalogMap) {
+            if (catalogMap.containsKey(catalog)) {
                 return catalogMap.get(catalog);
             }
-            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            throw ex;
-        } catch (URISyntaxException | IOException ex) {
-            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            throw new CatalogUnavailableException(ex);
+            try {
+                ResourceRequest request = new ResourceRequest(config);
+                request.setURI(catalog);
+                request.setOpenStream(true);
+                ResourceResponse resp = ResourceAccess.getResource(request);
+                InputSource source = new InputSource(resp.getInputStream());
+                source.setSystemId(catalog.toString());
+                return loadCatalog(catalog, source);
+            } catch (CatalogUnavailableException ex) {
+                if (ex.getCause() instanceof FileNotFoundException) {
+                    logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                    catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                    return catalogMap.get(catalog);
+                }
+                logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                throw ex;
+            } catch (URISyntaxException | IOException ex) {
+                logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                throw new CatalogUnavailableException(ex);
+            }
         }
     }
 
@@ -95,69 +100,84 @@ public class ValidatingXmlLoader implements CatalogLoader {
      */
     @Override
     public EntryCatalog loadCatalog(URI catalog, InputSource source) {
-        try {
-            // This is a bit of a hack, but I don't expect catalogs to be huge and I have
-            // to make sure that the stream can be read twice.
-            ByteArrayOutputStream baos = null;
-            if (source.getByteStream() != null) {
-                baos = new ByteArrayOutputStream();
-                InputStream instream = source.getByteStream();
-                byte[] buf = new byte[4096];
-                int readLen = instream.read(buf, 0, buf.length);
-                while (readLen >= 0) {
-                    baos.write(buf, 0, readLen);
-                    readLen = instream.read(buf, 0, buf.length);
+        if (catalogMap.containsKey(catalog)) {
+            return catalogMap.get(catalog);
+        }
+
+        if (!catalog.isAbsolute()) {
+            throw new IllegalArgumentException("Catalog URIs must be absolute: " + catalog);
+        }
+
+        // FIXME: it doesn't appear that the validating loader handles archived catalogs
+        synchronized (catalogMap) {
+            if (catalogMap.containsKey(catalog)) {
+                return catalogMap.get(catalog);
+            }
+
+            try {
+                // This is a bit of a hack, but I don't expect catalogs to be huge and I have
+                // to make sure that the stream can be read twice.
+                ByteArrayOutputStream baos = null;
+                if (source.getByteStream() != null) {
+                    baos = new ByteArrayOutputStream();
+                    InputStream instream = source.getByteStream();
+                    byte[] buf = new byte[4096];
+                    int readLen = instream.read(buf, 0, buf.length);
+                    while (readLen >= 0) {
+                        baos.write(buf, 0, readLen);
+                        readLen = instream.read(buf, 0, buf.length);
+                    }
+                    source.setByteStream(new ByteArrayInputStream(baos.toByteArray()));
                 }
-                source.setByteStream(new ByteArrayInputStream(baos.toByteArray()));
-            }
 
-            CharArrayWriter caw = null;
-            if (source.getCharacterStream() != null) {
-                caw = new CharArrayWriter();
-                Reader instream = source.getCharacterStream();
-                char[] buf = new char[4096];
-                int readLen = instream.read(buf, 0, buf.length);
-                while (readLen >= 0) {
-                    caw.write(buf, 0, readLen);
-                    readLen = instream.read(buf, 0, buf.length);
+                CharArrayWriter caw = null;
+                if (source.getCharacterStream() != null) {
+                    caw = new CharArrayWriter();
+                    Reader instream = source.getCharacterStream();
+                    char[] buf = new char[4096];
+                    int readLen = instream.read(buf, 0, buf.length);
+                    while (readLen >= 0) {
+                        caw.write(buf, 0, readLen);
+                        readLen = instream.read(buf, 0, buf.length);
+                    }
+                    source.setCharacterStream(new CharArrayReader(caw.toCharArray()));
                 }
-                source.setCharacterStream(new CharArrayReader(caw.toCharArray()));
-            }
 
-            MyErrorHandler errorHandler = new MyErrorHandler(config);
-            PropertyMapBuilder builder = new PropertyMapBuilder();
-            builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
-            builder.put(ValidateProperty.ENTITY_RESOLVER, resolver.getEntityResolver2());
-            builder.put(ValidateProperty.URI_RESOLVER, resolver.getURIResolver());
+                MyErrorHandler errorHandler = new MyErrorHandler(config);
+                PropertyMapBuilder builder = new PropertyMapBuilder();
+                builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
+                builder.put(ValidateProperty.ENTITY_RESOLVER, resolver.getEntityResolver2());
+                builder.put(ValidateProperty.URI_RESOLVER, resolver.getURIResolver());
 
-            ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
-            URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");
-            if (schemaUrl == null) {
-                throw new CatalogInvalidException("Failed to read catalog schema resource");
-            }
-            InputStream schemaStream = schemaUrl.openStream();
-            InputSource schema = new InputSource(schemaStream);
-            if (!driver.loadSchema(schema)) {
-                if (errorHandler.getMessage() == null) {
-                    throw new CatalogInvalidException("Failed to load catalog schema");
-                } else {
-                    throw new CatalogInvalidException("Failed to load catalog schema: " + errorHandler.getMessage());
+                ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
+                URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");
+                if (schemaUrl == null) {
+                    throw new CatalogInvalidException("Failed to read catalog schema resource");
                 }
-            }
-            if (!driver.validate(source)) {
-                String msg = errorHandler.getMessage();
-                throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + msg);
-            };
+                InputStream schemaStream = schemaUrl.openStream();
+                InputSource schema = new InputSource(schemaStream);
+                if (!driver.loadSchema(schema)) {
+                    if (errorHandler.getMessage() == null) {
+                        throw new CatalogInvalidException("Failed to load catalog schema");
+                    } else {
+                        throw new CatalogInvalidException("Failed to load catalog schema: " + errorHandler.getMessage());
+                    }
+                }
+                if (!driver.validate(source)) {
+                    String msg = errorHandler.getMessage();
+                    throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + msg);
+                };
 
-            if (baos != null) {
-                source.setByteStream(new ByteArrayInputStream(baos.toByteArray()));
-            }
+                if (baos != null) {
+                    source.setByteStream(new ByteArrayInputStream(baos.toByteArray()));
+                }
 
-            if (caw != null) {
-                source.setCharacterStream(new CharArrayReader(caw.toCharArray()));
+                if (caw != null) {
+                    source.setCharacterStream(new CharArrayReader(caw.toCharArray()));
+                }
+            } catch (IOException | SAXException ex) {
+                throw new CatalogUnavailableException(ex);
             }
-        } catch (IOException | SAXException ex) {
-            throw new CatalogUnavailableException(ex);
         }
 
         return underlyingLoader.loadCatalog(catalog, source);
@@ -171,35 +191,48 @@ public class ValidatingXmlLoader implements CatalogLoader {
      */
     @Override
     public EntryCatalog loadCatalog(URI catalog, SaxProducer producer) {
-        try {
-            MyErrorHandler errorHandler = new MyErrorHandler(config);
-            PropertyMapBuilder builder = new PropertyMapBuilder();
-            builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
-            builder.put(ValidateProperty.ENTITY_RESOLVER, resolver.getEntityResolver2());
-            builder.put(ValidateProperty.URI_RESOLVER, resolver.getURIResolver());
+        if (catalogMap.containsKey(catalog)) {
+            return catalogMap.get(catalog);
+        }
 
-            ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
-            URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");
-            if (schemaUrl == null) {
-                throw new CatalogInvalidException("Failed to read catalog schema resource");
+        if (!catalog.isAbsolute()) {
+            throw new IllegalArgumentException("Catalog URIs must be absolute: " + catalog);
+        }
+
+        synchronized (catalogMap) {
+            if (catalogMap.containsKey(catalog)) {
+                return catalogMap.get(catalog);
             }
-            InputStream schemaStream = schemaUrl.openStream();
-            InputSource schema = new InputSource(schemaStream);
-            if (!driver.loadSchema(schema)) {
-                if (errorHandler.getMessage() == null) {
-                    throw new CatalogInvalidException("Failed to load catalog schema");
-                } else {
-                    throw new CatalogInvalidException("Failed to load catalog schema: " + errorHandler.getMessage());
+            try {
+                MyErrorHandler errorHandler = new MyErrorHandler(config);
+                PropertyMapBuilder builder = new PropertyMapBuilder();
+                builder.put(ValidateProperty.ERROR_HANDLER, errorHandler);
+                builder.put(ValidateProperty.ENTITY_RESOLVER, resolver.getEntityResolver2());
+                builder.put(ValidateProperty.URI_RESOLVER, resolver.getURIResolver());
+
+                ValidationDriver driver = new ValidationDriver(builder.toPropertyMap(), builder.toPropertyMap(), null);
+                URL schemaUrl = ValidatingXmlLoader.class.getResource("/org/xmlresolver/schemas/oasis-xml-catalog-1.1.rng");
+                if (schemaUrl == null) {
+                    throw new CatalogInvalidException("Failed to read catalog schema resource");
                 }
+                InputStream schemaStream = schemaUrl.openStream();
+                InputSource schema = new InputSource(schemaStream);
+                if (!driver.loadSchema(schema)) {
+                    if (errorHandler.getMessage() == null) {
+                        throw new CatalogInvalidException("Failed to load catalog schema");
+                    } else {
+                        throw new CatalogInvalidException("Failed to load catalog schema: " + errorHandler.getMessage());
+                    }
+                }
+
+                if (!driver.validate(SaxProducer.adaptForJing(producer))) {
+                    String msg = errorHandler.getMessage();
+                    throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + msg);
+                };
+
+            } catch (IOException| SAXException ex) {
+                throw new CatalogUnavailableException(ex.getMessage());
             }
-
-            if (!driver.validate(SaxProducer.adaptForJing(producer))) {
-                String msg = errorHandler.getMessage();
-                throw new CatalogInvalidException("Catalog '" + catalog.toString() + "' is invalid: " + msg);
-            };
-
-        } catch (IOException| SAXException ex) {
-            throw new CatalogUnavailableException(ex.getMessage());
         }
 
         return underlyingLoader.loadCatalog(catalog, producer);
