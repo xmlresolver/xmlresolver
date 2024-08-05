@@ -1,6 +1,5 @@
 package org.xmlresolver.adapters;
 
-import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -12,17 +11,20 @@ import org.xmlresolver.XMLResolver;
 import org.xmlresolver.sources.ResolverInputSource;
 
 import java.io.IOException;
+import java.net.URI;
 
 /**
- * This class implements the {@link EntityResolver} and {@link EntityResolver2} APIs.
+ * This class implements the {@link EntityResolver2} API.
  * <p>It's a separate class in order to avoid a compile-time dependency on the SAX
- * APIs for users of {@link XMLResolver} who don't use them.</p>
+ * APIs for users of {@link XMLResolver} who don't use them. It's separate from the
+ *  * implementation of {@link EntityResolver} so that the caller has control over
+ *  * the API used.</p>
  */
 
-public class SAXAdapter implements EntityResolver, EntityResolver2 {
+public class SAX2Adapter implements EntityResolver2 {
     private final XMLResolver resolver;
 
-    public SAXAdapter(XMLResolver resolver) {
+    public SAX2Adapter(XMLResolver resolver) {
         if (resolver == null) {
             throw new NullPointerException();
         }
@@ -34,6 +36,13 @@ public class SAXAdapter implements EntityResolver, EntityResolver2 {
         ResourceRequest request = resolver.getRequest(null, baseURI, ResolverConstants.DTD_NATURE, ResolverConstants.ANY_PURPOSE);
         request.setEntityName(name);
         ResourceResponse resp = resolver.resolve(request);
+
+        // If we didn't find any resource in the catalog, and if ResolverFeature.ALWAYS_RESOLVE is true,
+        // the default, then we'll be trying to return the baseURI as the external subset. That's
+        // incoherent, so don't.
+        if (resp != null && resp.isResolved() && baseURI != null && baseURI.equals(resp.getURI().toString())) {
+            return null;
+        }
 
         ResolverInputSource source = null;
         if (resp.isResolved()) {
