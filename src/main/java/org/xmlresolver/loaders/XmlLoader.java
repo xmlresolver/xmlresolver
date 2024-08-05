@@ -104,21 +104,27 @@ public class XmlLoader implements CatalogLoader {
             return catalogMap.get(catalog);
         }
 
-        try {
-            Resource rsrc = new Resource(catalog);
-            InputSource source = new InputSource(rsrc.body());
-            source.setSystemId(catalog.toString());
-            EntryCatalog entries = loadCatalog(catalog, source);
-            logger.log(AbstractLogger.CONFIG, "Loaded catalog: %s", catalog);
-            return entries;
-        } catch (FileNotFoundException fex) {
-            logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            return catalogMap.get(catalog);
-        } catch (IOException | URISyntaxException ex) {
-            logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
-            catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
-            return catalogMap.get(catalog);
+        synchronized (catalogMap) {
+            if (catalogMap.containsKey(catalog)) {
+                return catalogMap.get(catalog);
+            }
+
+            try {
+                Resource rsrc = new Resource(catalog);
+                InputSource source = new InputSource(rsrc.body());
+                source.setSystemId(catalog.toString());
+                EntryCatalog entries = loadCatalog(catalog, source);
+                logger.log(AbstractLogger.CONFIG, "Loaded catalog: %s", catalog);
+                return entries;
+            } catch (FileNotFoundException fex) {
+                logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, fex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                return catalogMap.get(catalog);
+            } catch (IOException | URISyntaxException ex) {
+                logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
+                return catalogMap.get(catalog);
+            }
         }
     }
 
@@ -147,6 +153,10 @@ public class XmlLoader implements CatalogLoader {
         URI zipcatalog = null;
 
         synchronized (catalogMap) {
+            if (catalogMap.containsKey(catalog)) {
+                return catalogMap.get(catalog);
+            }
+
             try {
                 CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
 
@@ -171,10 +181,13 @@ public class XmlLoader implements CatalogLoader {
                 catalogMap.put(catalog, entry);
             } catch (ParserConfigurationException | SAXException | IOException ex) {
                 logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
-                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
 
                 if (archivedCatalogs) {
                     zipcatalog = archiveCatalog(catalog);
+                }
+
+                if (zipcatalog == null) {
+                    catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                 }
             }
         }
@@ -230,6 +243,10 @@ public class XmlLoader implements CatalogLoader {
         URI zipcatalog = null;
 
         synchronized (catalogMap) {
+            if (catalogMap.containsKey(catalog)) {
+                return catalogMap.get(catalog);
+            }
+
             try {
                 CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
 
@@ -239,10 +256,13 @@ public class XmlLoader implements CatalogLoader {
                 catalogMap.put(catalog, entry);
             } catch (SAXException | IOException ex) {
                 logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
-                catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
 
                 if (archivedCatalogs) {
                     zipcatalog = archiveCatalog(catalog);
+                }
+
+                if (zipcatalog == null) {
+                    catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                 }
             }
         }
