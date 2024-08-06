@@ -563,6 +563,15 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             System.setProperty("xml.catalog.logging", property);
         }
 
+        URI propertiesURI = null;
+        if (propertiesURL != null) {
+            try {
+                propertiesURI = propertiesURL.toURI();
+            } catch (URISyntaxException ex) {
+                resolverLogger.log(AbstractLogger.ERROR, "Cannot make URI from URL: " + propertiesURL);
+            }
+        }
+
         boolean relative = true;
         String allow = properties.getProperty("relative-catalogs");
         if (allow != null) {
@@ -578,12 +587,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!token.trim().isEmpty()) {
-                    if (relative && propertiesURL != null) {
-                        try {
-                            token = new URL(propertiesURL, token).toString();
-                        } catch (MalformedURLException e) {
-                            resolverLogger.log(AbstractLogger.ERROR, "Cannot make absolute: " + token);
-                        }
+                    if (relative && propertiesURI != null) {
+                        token = propertiesURI.resolve(token).toString();
                     }
                     showConfigChange("Catalog: %s", token);
                     catalogs.add(token);
@@ -596,13 +601,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
-                if (!"".equals(token.trim())) {
-                    if (relative && propertiesURL != null) {
-                        try {
-                            token = new URL(propertiesURL, token).toURI().toString();
-                        } catch (URISyntaxException | MalformedURLException e) {
-                            resolverLogger.log(AbstractLogger.ERROR, "Cannot make absolute: " + token);
-                        }
+                if (!token.trim().isEmpty()) {
+                    if (relative && propertiesURI != null) {
+                        token = propertiesURI.resolve(token).toString();
                     }
                     showConfigChange("Catalog: %s", token);
                     catalogs.add(token);
