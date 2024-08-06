@@ -10,7 +10,7 @@ plugins {
 compileJava {
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
-  options.compilerArgs << "-Xlint:deprecation"
+  options.compilerArgs << "-Xlint:deprecation" << "-Xlint:-options"
 }
 
 repositories {
