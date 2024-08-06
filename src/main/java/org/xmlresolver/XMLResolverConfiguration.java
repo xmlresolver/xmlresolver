@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.AccessControlException;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -329,7 +328,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 property = System.getenv(env);
             }
             return property;
-        } catch (AccessControlException ex) {
+        } catch (SecurityException ex) {
             // I guess you're not allowed to do this
             resolverLogger.debug("Access forbidden to system property: " + name);
             return null;
@@ -353,7 +352,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                     if (propurl != null) {
                         propertyFilesList.add(propurl);
                     }
-                } catch (AccessControlException ex) {
+                } catch (SecurityException ex) {
                     // I guess you're not allowed to do this
                     resolverLogger.debug("Access forbidden to class resource");
                 }
@@ -367,7 +366,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                             // nevermind
                         }
                     }
-                } catch (AccessControlException ex) {
+                } catch (SecurityException ex) {
                     // I guess you're not allowed to do this
                     resolverLogger.debug("Access forbidden to cwd");
                 }
@@ -386,7 +385,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                     propurl = url;
                     break;
                 }
-            } catch (IOException|AccessControlException ex) {
+            } catch (IOException|SecurityException ex) {
                 // nevermind
             }
         }
@@ -564,6 +563,15 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             System.setProperty("xml.catalog.logging", property);
         }
 
+        URI propertiesURI = null;
+        if (propertiesURL != null) {
+            try {
+                propertiesURI = propertiesURL.toURI();
+            } catch (URISyntaxException ex) {
+                resolverLogger.log(AbstractLogger.ERROR, "Cannot make URI from URL: " + propertiesURL);
+            }
+        }
+
         boolean relative = true;
         String allow = properties.getProperty("relative-catalogs");
         if (allow != null) {
@@ -576,39 +584,13 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             catalogs.clear();
             showConfigChange("Catalog list cleared");
-            while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
-                if (!token.trim().isEmpty()) {
-                    if (relative && propertiesURL != null) {
-                        try {
-                            token = new URL(propertiesURL, token).toString();
-                        } catch (MalformedURLException e) {
-                            resolverLogger.log(AbstractLogger.ERROR, "Cannot make absolute: " + token);
-                        }
-                    }
-                    showConfigChange("Catalog: %s", token);
-                    catalogs.add(token);
-                }
-            }
+            addCatalogsFromTokens(propertiesURI, relative, tokens);
         }
 
         property = properties.getProperty("catalog-additions");
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
-            while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
-                if (!"".equals(token.trim())) {
-                    if (relative && propertiesURL != null) {
-                        try {
-                            token = new URL(propertiesURL, token).toURI().toString();
-                        } catch (URISyntaxException | MalformedURLException e) {
-                            resolverLogger.log(AbstractLogger.ERROR, "Cannot make absolute: " + token);
-                        }
-                    }
-                    showConfigChange("Catalog: %s", token);
-                    catalogs.add(token);
-                }
-            }
+            addCatalogsFromTokens(propertiesURI, relative, tokens);
         }
 
         property = properties.getProperty("prefer");
@@ -717,6 +699,19 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (property != null) {
             showConfigChange("Fix windows system identifiers: %s", property);
             fixWindowsSystemIdentifiers = isTrue(property);
+        }
+    }
+
+    private void addCatalogsFromTokens(URI propertiesURI, boolean relative, StringTokenizer tokens) {
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            if (!token.trim().isEmpty()) {
+                if (relative && propertiesURI != null) {
+                    token = propertiesURI.resolve(token).toString();
+                }
+                showConfigChange("Catalog: %s", token);
+                catalogs.add(token);
+            }
         }
     }
 
@@ -982,17 +977,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             String sep;
             String cpath;
 
-            try {
-                sep = System.getProperty("path.separator");
-            } catch (AccessControlException ex) {
-                // I guess you're not allowed to do this...
-                sep = null;
-                resolverLogger.debug("Access forbidden to environment variable: path.separator");
-            }
+            sep = File.pathSeparator;
 
             try {
                 cpath = System.getProperty("java.class.path");
-            } catch (AccessControlException ex) {
+            } catch (SecurityException ex) {
                 // I guess you're not allowed to do this...
                 cpath = null;
                 resolverLogger.debug("Access forbidden to environment variable: java.class.path");
@@ -1009,7 +998,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                                 catalogs.add(path.toString());
                             }
                         }
-                    } catch (AccessControlException ex) {
+                    } catch (SecurityException ex) {
                         // I guess you're not allowed to do this...
                         resolverLogger.debug("Access forbidden to file: " + dir);
                     }
@@ -1024,7 +1013,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                         catalogs.add(catalog.toString());
                     }
                 }
-            } catch (IOException|AccessControlException ex) {
+            } catch (IOException|SecurityException ex) {
                 // nevermind
             }
 
@@ -1166,7 +1155,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 logging = System.getProperty("xml.catalog.FallbackLoggerLogLevel") != null
                         ? System.getProperty("xml.catalog.FallbackLoggerLogLevel")
                         : System.getenv("XML_CATALOG_FALLBACK_LOGGER_LOG_LEVEL");
-            } catch (AccessControlException ex) {
+            } catch (SecurityException ex) {
                 // I guess you're not allowed to do this
             }
             fallbackLogging = logging;
