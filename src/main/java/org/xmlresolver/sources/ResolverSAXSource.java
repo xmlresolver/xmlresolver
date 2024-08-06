@@ -17,6 +17,10 @@ public class ResolverSAXSource extends SAXSource implements ResolverResourceInfo
     private final int statusCode;
     private final Map<String, List<String>> resolvedHeaders;
 
+    /**
+     * Create an extended {@code SAXSource}.
+     * @param resp the response.
+     */
     public ResolverSAXSource(ResourceResponse resp) {
         super(new InputSource(resp.getInputStream()));
         this.response = resp;

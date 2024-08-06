@@ -41,6 +41,10 @@ public class XmlLoader implements CatalogLoader {
     private boolean archivedCatalogs = true;
     private EntityResolver entityResolver = null;
 
+    /**
+     * Create an XML loader with the specified configuration.
+     * @param config the configuration.
+     */
     public XmlLoader(ResolverConfiguration config) {
         this.config = config;
         logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
@@ -86,6 +90,11 @@ public class XmlLoader implements CatalogLoader {
         return entityResolver;
     }
 
+    /**
+     * Get the resolver used by the loader.
+     * <p>If no resolver exists, a default one will be constructed.</p>
+     * @return the resolver.
+     */
     public static synchronized XMLResolver getLoaderResolver() {
         if (loaderResolver == null) {
             XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());

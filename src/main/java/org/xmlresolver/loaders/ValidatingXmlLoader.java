@@ -30,6 +30,10 @@ public class ValidatingXmlLoader implements CatalogLoader {
     private final XMLResolver resolver;
     private final XmlLoader underlyingLoader;
 
+    /**
+     * Create a validating loader with the specified configuration.
+     * @param config the configuration.
+     */
     public ValidatingXmlLoader(ResolverConfiguration config) {
         this.config = config;
         logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);

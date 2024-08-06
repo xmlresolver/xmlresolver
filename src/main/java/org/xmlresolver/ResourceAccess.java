@@ -19,6 +19,10 @@ import java.util.Base64;
  * All other schemes are delegated to {@link ResourceConnection}.
  */
 public class ResourceAccess {
+    private ResourceAccess() {
+        // No direct construction.
+    }
+
     /**
      * Attempt to get the requested resource.
      * <p>This method uses a {@link ResourceRequest} to formulate the request.</p>

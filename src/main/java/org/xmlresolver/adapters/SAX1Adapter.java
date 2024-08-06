@@ -23,6 +23,10 @@ import java.io.IOException;
 public class SAX1Adapter implements EntityResolver {
     private final XMLResolver resolver;
 
+    /**
+     * Create a SAX1 adapter with the specified resolver.
+     * @param resolver the resolver.
+     */
     public SAX1Adapter(XMLResolver resolver) {
         if (resolver == null) {
             throw new NullPointerException();

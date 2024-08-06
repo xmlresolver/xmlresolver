@@ -24,6 +24,10 @@ import java.net.URI;
 public class SAX2Adapter implements EntityResolver2 {
     private final XMLResolver resolver;
 
+    /**
+     * Create a SAX2 adapter with the specified resolver.
+     * @param resolver the resolver.
+     */
     public SAX2Adapter(XMLResolver resolver) {
         if (resolver == null) {
             throw new NullPointerException();

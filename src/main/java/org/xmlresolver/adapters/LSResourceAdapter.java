@@ -17,6 +17,10 @@ public class LSResourceAdapter implements LSResourceResolver {
     private final XMLResolver resolver;
     private final ResolverLogger logger;
 
+    /**
+     * Construct an adapter with the specified resolver.
+     * @param resolver the resolver.
+     */
     public LSResourceAdapter(XMLResolver resolver) {
         if (resolver == null) {
             throw new NullPointerException();
