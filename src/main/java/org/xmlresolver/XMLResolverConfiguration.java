@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.AccessControlException;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -329,7 +328,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 property = System.getenv(env);
             }
             return property;
-        } catch (AccessControlException ex) {
+        } catch (SecurityException ex) {
             // I guess you're not allowed to do this
             resolverLogger.debug("Access forbidden to system property: " + name);
             return null;
@@ -353,7 +352,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                     if (propurl != null) {
                         propertyFilesList.add(propurl);
                     }
-                } catch (AccessControlException ex) {
+                } catch (SecurityException ex) {
                     // I guess you're not allowed to do this
                     resolverLogger.debug("Access forbidden to class resource");
                 }
@@ -367,7 +366,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                             // nevermind
                         }
                     }
-                } catch (AccessControlException ex) {
+                } catch (SecurityException ex) {
                     // I guess you're not allowed to do this
                     resolverLogger.debug("Access forbidden to cwd");
                 }
@@ -386,7 +385,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                     propurl = url;
                     break;
                 }
-            } catch (IOException|AccessControlException ex) {
+            } catch (IOException|SecurityException ex) {
                 // nevermind
             }
         }
@@ -982,17 +981,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             String sep;
             String cpath;
 
-            try {
-                sep = System.getProperty("path.separator");
-            } catch (AccessControlException ex) {
-                // I guess you're not allowed to do this...
-                sep = null;
-                resolverLogger.debug("Access forbidden to environment variable: path.separator");
-            }
+            sep = File.pathSeparator;
 
             try {
                 cpath = System.getProperty("java.class.path");
-            } catch (AccessControlException ex) {
+            } catch (SecurityException ex) {
                 // I guess you're not allowed to do this...
                 cpath = null;
                 resolverLogger.debug("Access forbidden to environment variable: java.class.path");
@@ -1009,7 +1002,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                                 catalogs.add(path.toString());
                             }
                         }
-                    } catch (AccessControlException ex) {
+                    } catch (SecurityException ex) {
                         // I guess you're not allowed to do this...
                         resolverLogger.debug("Access forbidden to file: " + dir);
                     }
@@ -1024,7 +1017,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                         catalogs.add(catalog.toString());
                     }
                 }
-            } catch (IOException|AccessControlException ex) {
+            } catch (IOException|SecurityException ex) {
                 // nevermind
             }
 
@@ -1166,7 +1159,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 logging = System.getProperty("xml.catalog.FallbackLoggerLogLevel") != null
                         ? System.getProperty("xml.catalog.FallbackLoggerLogLevel")
                         : System.getenv("XML_CATALOG_FALLBACK_LOGGER_LOG_LEVEL");
-            } catch (AccessControlException ex) {
+            } catch (SecurityException ex) {
                 // I guess you're not allowed to do this
             }
             fallbackLogging = logging;
