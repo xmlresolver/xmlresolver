@@ -1,0 +1,7 @@
+<!DOCTYPE book SYSTEM "\\hostname\xmlresolver\test\sample.dtd">
+<book xmlns="http://xmlresolver.org/ns/sample">
+<title>A sample book</title>
+<article>
+<p>Hello, world</p>
+</article>
+</book>

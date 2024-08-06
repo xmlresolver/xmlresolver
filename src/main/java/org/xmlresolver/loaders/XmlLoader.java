@@ -371,6 +371,7 @@ public class XmlLoader implements CatalogLoader {
                 = new HashSet<>(Arrays.asList("doctype", "document", "dtddecl", "entity",
                 "linktype", "notation", "sgmldecl"));
 
+        private boolean fixWindows = false;
         private Locator locator = null;
         private final ResolverConfiguration config;
         private final Stack<Entry> parserStack = new Stack<>();
@@ -383,6 +384,7 @@ public class XmlLoader implements CatalogLoader {
             logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
             preferPublicStack.push(preferPublic);
             baseURIStack.push(uri);
+            fixWindows = config.getFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS);
         }
 
         public EntryCatalog catalog() {
@@ -496,16 +498,16 @@ public class XmlLoader implements CatalogLoader {
                     entry = catalog.addPublic(baseURI, id, publicId, uri, preferPublic);
                     break;
                 case "system":
-                    String systemId = attributes.getValue("", "systemId");
+                    String systemId = patchedSystemIdentifier(attributes.getValue("", "systemId"));
                     entry = catalog.addSystem(baseURI, id, systemId, uri);
                     break;
                 case "rewriteSystem":
-                    start = attributes.getValue("", "systemIdStartString");
+                    start = patchedSystemIdentifier(attributes.getValue("", "systemIdStartString"));
                     prefix = attributes.getValue("", "rewritePrefix");
                     entry = catalog.addRewriteSystem(baseURI, id, start, prefix);
                     break;
                 case "systemSuffix":
-                    suffix = attributes.getValue("", "systemIdSuffix");
+                    suffix = patchedSystemIdentifier(attributes.getValue("", "systemIdSuffix"));
                     entry = catalog.addSystemSuffix(baseURI, id, suffix, uri);
                     break;
                 case "delegatePublic":
@@ -513,7 +515,7 @@ public class XmlLoader implements CatalogLoader {
                     entry = catalog.addDelegatePublic(baseURI, id, start, caturi, preferPublic);
                     break;
                 case "delegateSystem":
-                    start = attributes.getValue("", "systemIdStartString");
+                    start = patchedSystemIdentifier(attributes.getValue("", "systemIdStartString"));
                     entry = catalog.addDelegateSystem(baseURI, id, start, caturi);
                     break;
                 case "uri":
@@ -573,6 +575,13 @@ public class XmlLoader implements CatalogLoader {
             parserStack.push(entry);
             baseURIStack.push(baseURI);
             preferPublicStack.push(preferPublic);
+        }
+
+        private String patchedSystemIdentifier(String systemId) {
+            if (systemId != null && fixWindows) {
+                systemId = systemId.replace("\\", "/");
+            }
+            return systemId;
         }
 
         @Override
