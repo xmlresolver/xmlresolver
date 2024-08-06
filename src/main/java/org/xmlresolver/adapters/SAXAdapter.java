@@ -29,6 +29,11 @@ import java.io.IOException;
 public class SAXAdapter implements EntityResolver, EntityResolver2 {
     private final XMLResolver resolver;
 
+    /**
+     * Create a SAX adapter with the specified resolver.
+     * <p>This resolver implments both the SAX1 and SAX2 entity resolvers.</p>
+     * @param resolver the resolver.
+     */
     public SAXAdapter(XMLResolver resolver) {
         if (resolver == null) {
             throw new NullPointerException();

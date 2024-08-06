@@ -28,6 +28,13 @@ public class CatalogLoaderResolver implements EntityResolver {
     // should have changed the public identifier. So I've base64 encoded them and stuck
     // them in as strings. ¯\_(ツ)_/¯
 
+    /**
+     * Construct the resolver.
+     */
+    public CatalogLoaderResolver() {
+        // nop
+    }
+
     private static final String catalog10dtd = "PCEtLSAkSWQ6IGNhdGFsb2cuZHRkLHYgMS4xMCAyMDAyLzEwLzE4IDIzOjU0OjU4IG5kdyBF" +
             "eHAgJCAtLT4KCjwhRU5USVRZICUgcHViSWRDaGFycyAiQ0RBVEEiPgo8IUVOVElUWSAlIHB1" +
             "YmxpY0lkZW50aWZpZXIgIiVwdWJJZENoYXJzOyI+CjwhRU5USVRZICUgcGFydGlhbFB1Ymxp" +

@@ -24,6 +24,10 @@ import java.net.URISyntaxException;
 public class XercesXniAdapter implements XMLEntityResolver {
     private final XMLResolver resolver;
 
+    /**
+     * Construct a XercesXniAdapter with the specified configuration.
+     * @param resolver the configuration.
+     */
     public XercesXniAdapter(XMLResolver resolver) {
         if (resolver == null) {
             throw new NullPointerException();

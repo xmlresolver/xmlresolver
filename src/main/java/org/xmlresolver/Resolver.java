@@ -25,40 +25,72 @@ import java.net.URISyntaxException;
  * @deprecated 6.0.0
  */
 public class Resolver implements URIResolver, LSResourceResolver, EntityResolver, EntityResolver2 {
-    public static final String PURPOSE_SCHEMA_VALIDATION = "http://www.rddl.org/purposes#schema-validation";
-    public static final String NATURE_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
-    public static final String NATURE_XML_SCHEMA_1_1 = "http://www.w3.org/2001/XMLSchema/v1.1";
-    public static final String NATURE_RELAX_NG = "http://relaxng.org/ns/structure/1.0";
+    // I'm keeping these here because they're part of the public API.
+
+    /** The schema validation purpose. */
+    public static final String PURPOSE_SCHEMA_VALIDATION = ResolverConstants.PURPOSE_SCHEMA_VALIDATION;
+    /** The XML Schema nature. */
+    public static final String NATURE_XML_SCHEMA = ResolverConstants.NATURE_XML_SCHEMA;
+    /** The XML Schema 1.1. nature. */
+    public static final String NATURE_XML_SCHEMA_1_1 = ResolverConstants.NATURE_XML_SCHEMA_1_1;
+    /** The RELAX NG nature. */
+    public static final String NATURE_RELAX_NG = ResolverConstants.NATURE_RELAX_NG;
 
     private final ResolverLogger logger;
+    /** The resolver configuration. */
     protected final XMLResolverConfiguration config;
+    /** The resolver. */
     protected final XMLResolver resolver;
+    /** The catalog resolver. */
     protected CatalogResolver catalogResolver = null;
 
+    /**
+     * Create a resolver with a default configuration.
+     */
     public Resolver() {
         this(new XMLResolverConfiguration());
     }
 
+    /**
+     * Create a resolver with the specified configuration.
+     * @param config the configuration.
+     */
     public Resolver(XMLResolverConfiguration config) {
         this.config = config;
         logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
         resolver = new XMLResolver(config);
     }
 
+    /**
+     * Create a resoluver using the specified underlying catalog resolver.
+     * @param resolver the catalog resolver.
+     */
     public Resolver(CatalogResolver resolver) {
         config = resolver.getConfiguration();
         logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
         this.resolver = new XMLResolver(config);
     }
 
+    /**
+     * Get the resolver version.
+     * @return the version.
+     */
     public static String version() {
         return BuildConfig.VERSION;
     }
 
+    /**
+     * Get the resolver configuration.
+     * @return the configuration.
+     */
     public XMLResolverConfiguration getConfiguration() {
         return config;
     }
 
+    /**
+     * Get the resolver's underlying catalog resolver.
+     * @return the catalog resolver.
+     */
     public CatalogResolver getCatalogResolver() {
         if (catalogResolver == null) {
             catalogResolver = new CatalogResolver(config);

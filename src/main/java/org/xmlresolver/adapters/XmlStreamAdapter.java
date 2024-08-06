@@ -17,6 +17,10 @@ import javax.xml.stream.XMLStreamException;
 public class XmlStreamAdapter implements javax.xml.stream.XMLResolver {
     private final org.xmlresolver.XMLResolver resolver;
 
+    /**
+     * Create a stream adapter with the specified configuration.
+     * @param resolver the configuration.
+     */
     public XmlStreamAdapter(org.xmlresolver.XMLResolver resolver) {
         if (resolver == null) {
             throw new NullPointerException();

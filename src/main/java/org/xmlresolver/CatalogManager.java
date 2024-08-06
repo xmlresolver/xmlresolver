@@ -109,6 +109,10 @@ public class CatalogManager implements XMLCatalogResolver {
         catalogLoader = loader;
     }
 
+    /**
+     * The catalogs used by this configuration.
+     * @return The catalog list.
+     */
     public List<URI> catalogs() {
         ArrayList<URI> catlist = new ArrayList<>();
         for (String cat : resolverConfiguration.getFeature(ResolverFeature.CATALOG_FILES)) {
@@ -353,6 +357,15 @@ public class CatalogManager implements XMLCatalogResolver {
         return new ExternalIdentifiers(systemId, publicId);
     }
 
+    /**
+     * Normalize a URI for comparison.
+     * <p>This method cleans up some possible inconsistencies in URIs. It assures that URIs with
+     * the {@code classpath:} scheme do not have a leading slash and if the
+     * {@link ResolverFeature#MERGE_HTTPS} feature is true, that all {@code http:} URIs are returned
+     * as {@code https:}.</p>
+     * @param uri the URI
+     * @return the URI normalized for comparison
+     */
     public String normalizedForComparison(String uri) {
         if (uri == null) {
             return null;
