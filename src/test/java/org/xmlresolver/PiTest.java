@@ -1,13 +1,13 @@
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import org.xmlresolver.tools.ResolvingXMLReader;
 
 import java.io.IOException;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class PiTest {
     public static final String catalog = "src/test/resources/empty.xml";
@@ -15,7 +15,7 @@ public class PiTest {
     XMLResolverConfiguration config = null;
     XMLResolver resolver = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
         resolver = new XMLResolver(config);

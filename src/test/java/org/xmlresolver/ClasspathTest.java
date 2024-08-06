@@ -8,9 +8,9 @@
 package org.xmlresolver;
 
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import org.xmlresolver.tools.ResolvingXMLReader;
 import org.xmlresolver.utils.URIUtils;
@@ -23,8 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -36,7 +35,7 @@ public class ClasspathTest {
     public static CatalogManager manager = null;
     public static XMLResolver resolver = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, catalogs);
@@ -49,7 +48,7 @@ public class ClasspathTest {
         try {
             URI baseURI = new URI("classpath:/my/class/path/");
             URI resolved = URIUtils.resolve(baseURI, "my-file.xml");
-            Assert.assertEquals("classpath:my/class/path/my-file.xml", resolved.toString());
+            Assertions.assertEquals("classpath:my/class/path/my-file.xml", resolved.toString());
         } catch (Exception ex) {
             fail();
         }
@@ -59,7 +58,7 @@ public class ClasspathTest {
     @Test
     public void testLookup() {
         URI res = manager.lookupURI("http://example.com/example.xml");
-        assertEquals(URI.create("classpath:path/example-doc.xml"), res);
+        Assertions.assertEquals(URI.create("classpath:path/example-doc.xml"), res);
     }
 
     @Test
@@ -86,7 +85,7 @@ public class ClasspathTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("<doc>test</doc>", line);
+        Assertions.assertEquals("<doc>test</doc>", line);
     }
 
     @Test
@@ -106,7 +105,7 @@ public class ClasspathTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("<doc>test</doc>", line);
+        Assertions.assertEquals("<doc>test</doc>", line);
     }
 
 
@@ -123,7 +122,7 @@ public class ClasspathTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("<doc>test</doc>", line);
+        Assertions.assertEquals("<doc>test</doc>", line);
     }
 
     @Test
@@ -140,7 +139,7 @@ public class ClasspathTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("This is a test.", line);
+        Assertions.assertEquals("This is a test.", line);
     }
 
     @Test
@@ -157,7 +156,7 @@ public class ClasspathTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("<doc>test</doc>", line);
+        Assertions.assertEquals("<doc>test</doc>", line);
     }
 
     @Test
@@ -176,7 +175,7 @@ public class ClasspathTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("<doc>test</doc>", line);
+        Assertions.assertEquals("<doc>test</doc>", line);
 
     }
 

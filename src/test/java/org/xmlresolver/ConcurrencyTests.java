@@ -14,8 +14,8 @@ import java.util.stream.IntStream;
 
 import javax.xml.parsers.SAXParserFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -100,10 +100,10 @@ public class ConcurrencyTests {
               OpResult result = x.get();
               if(result.failed()) {
                 result.getFailure().printStackTrace();
-                Assert.fail(result.getFailureMessage());
+               Assertions.fail(result.getFailureMessage());
               }
             } catch (InterruptedException | ExecutionException e) {
-              Assert.fail("Test failed: "+e.getMessage());
+             Assertions.fail("Test failed: "+e.getMessage());
             }
           });
           System.gc();

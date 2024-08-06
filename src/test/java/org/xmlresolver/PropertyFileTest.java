@@ -9,16 +9,13 @@
 
 package org.xmlresolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xmlresolver.utils.URIUtils;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -38,8 +35,8 @@ public class PropertyFileTest {
             f1 = f1 || cat.endsWith(s1);
             f2 = f2 || cat.endsWith(s2);
         }
-        assertTrue(f1);
-        assertTrue(f2);
+        Assertions.assertTrue(f1);
+        Assertions.assertTrue(f2);
     }
 
     @Test
@@ -56,7 +53,7 @@ public class PropertyFileTest {
             f1 = f1 || s1.equals(cat);
             f2 = f2 || s2.equals(cat);
         }
-        assertTrue(f1);
-        assertTrue(f2);
+        Assertions.assertTrue(f1);
+        Assertions.assertTrue(f2);
     }
 }

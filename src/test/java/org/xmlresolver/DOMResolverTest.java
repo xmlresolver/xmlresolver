@@ -9,8 +9,8 @@
 
 package org.xmlresolver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
@@ -24,8 +24,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -47,7 +46,7 @@ public class DOMResolverTest {
 
         CatalogManager manager = rconfig.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI result = manager.lookupSystem("foo:ent.xml");
-        assertEquals(URI.create("http://example.com/entity/ent.xml"), result);
+        Assertions.assertEquals(URI.create("http://example.com/entity/ent.xml"), result);
 
         try {
             config.setParameter("resource-resolver", new DOMLSResolver(resolver.getLSResourceResolver()));
@@ -76,7 +75,7 @@ public class DOMResolverTest {
             config.setParameter("resource-resolver", new DOMLSResolver(resolver.getLSResourceResolver()));
             parser.parseURI("src/test/resources/domresolver/document.xml");
 
-            Assert.assertTrue(errorHandler.sawError);
+            Assertions.assertTrue(errorHandler.sawError);
         } catch (Exception ex) {
             fail();
         }

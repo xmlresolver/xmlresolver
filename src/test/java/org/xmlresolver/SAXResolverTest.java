@@ -1,15 +1,13 @@
 package org.xmlresolver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.ArrayList;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SAXResolverTest {
     @Test

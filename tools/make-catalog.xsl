@@ -253,7 +253,7 @@
   <xsl:text>        URI result = manager.lookupPublic(null, "</xsl:text>
   <xsl:value-of select="."/>
   <xsl:text>");&#10;</xsl:text>
-  <xsl:text>        assertNotNull(result);&#10;</xsl:text>
+  <xsl:text>        Assertions.assertNotNull(result);&#10;</xsl:text>
   <xsl:text>    }&#10;&#10;</xsl:text>
 </xsl:template>
 
@@ -265,7 +265,7 @@
   <xsl:text>        URI result = manager.lookupSystem("</xsl:text>
   <xsl:value-of select="."/>
   <xsl:text>");&#10;</xsl:text>
-  <xsl:text>        assertNotNull(result);&#10;</xsl:text>
+  <xsl:text>        Assertions.assertNotNull(result);&#10;</xsl:text>
   <xsl:text>    }&#10;&#10;</xsl:text>
 </xsl:template>
 
@@ -277,7 +277,7 @@
   <xsl:text>        URI result = manager.lookupURI("</xsl:text>
   <xsl:value-of select="."/>
   <xsl:text>");&#10;</xsl:text>
-  <xsl:text>        assertNotNull(result);&#10;</xsl:text>
+  <xsl:text>        Assertions.assertNotNull(result);&#10;</xsl:text>
   <xsl:text>    }&#10;&#10;</xsl:text>
 </xsl:template>
 

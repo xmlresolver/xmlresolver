@@ -7,8 +7,9 @@
 
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -24,7 +25,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -36,7 +37,7 @@ public class ResolverTest {
     XMLResolver resolver = null;
     EntityResolver entityResolver = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
@@ -49,10 +50,10 @@ public class ResolverTest {
         try {
             URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
             InputSource source = entityResolver.resolveEntity(null, "https://example.com/sample/1.0/sample.dtd");
-            assertTrue(source.getSystemId().endsWith(result.getPath()));
-            assertNotNull(source.getByteStream());
+            Assertions.assertTrue(source.getSystemId().endsWith(result.getPath()));
+            Assertions.assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.getResolvedURI(), result);
+            Assertions.assertEquals(rsource.getResolvedURI(), result);
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -63,10 +64,10 @@ public class ResolverTest {
         try {
             URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
             InputSource source = entityResolver.resolveEntity(null, "https://example.com/sample/1.0/uri.dtd");
-            assertTrue(source.getSystemId().endsWith(result.getPath()));
-            assertNotNull(source.getByteStream());
+            Assertions.assertTrue(source.getSystemId().endsWith(result.getPath()));
+            Assertions.assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.getResolvedURI(), result);
+            Assertions.assertEquals(rsource.getResolvedURI(), result);
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -79,7 +80,7 @@ public class ResolverTest {
             config.setFeature(ResolverFeature.THROW_URI_EXCEPTIONS, false);
             URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
             InputSource source = entityResolver.resolveEntity(null, "blort%gg");
-            assertNull(source);
+            Assertions.assertNull(source);
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -105,7 +106,7 @@ public class ResolverTest {
             XMLResolver lresolver = new XMLResolver(lconfig);
             InputSource source = lresolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertNotNull(rsource.getByteStream());
+            Assertions.assertNotNull(rsource.getByteStream());
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -126,7 +127,7 @@ public class ResolverTest {
                     baseURI.toASCIIString()
             );
 
-            assertNull("null expected if schema resource is requested w/o systemId", result);
+            Assertions.assertNull(result, "null expected if schema resource is requested w/o systemId");
         } catch (Exception ex) {
             fail();
         }
@@ -165,7 +166,7 @@ public class ResolverTest {
         try {
             // Parsing the catalog fails because the system identifier can't be resolved.
             InputSource source = localresolver.getEntityResolver().resolveEntity(null, "urn:foo:bar");
-            assertNull(source);
+            Assertions.assertNull(source);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -198,10 +199,10 @@ public class ResolverTest {
         try {
             // The catalog loader resolver handles the DTD, so the catalog is parsed even w/o internet
             InputSource source = localresolver.getEntityResolver().resolveEntity(null, "urn:foo:bar");
-            assertTrue(source.getSystemId().endsWith(result.getPath()));
-            assertNotNull(source.getByteStream());
+            Assertions.assertTrue(source.getSystemId().endsWith(result.getPath()));
+            Assertions.assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.getResolvedURI(), result);
+            Assertions.assertEquals(rsource.getResolvedURI(), result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -230,10 +231,10 @@ public class ResolverTest {
             // watch the internet traffic with some sort of sniffer, you can see that the
             // DTD is resolved locally, but I can't think of a way to test that.
             InputSource source = localresolver.getEntityResolver().resolveEntity(null, "urn:foo:bar");
-            assertTrue(source.getSystemId().endsWith(result.getPath()));
-            assertNotNull(source.getByteStream());
+            Assertions.assertTrue(source.getSystemId().endsWith(result.getPath()));
+            Assertions.assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.getResolvedURI(), result);
+            Assertions.assertEquals(rsource.getResolvedURI(), result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -253,10 +254,10 @@ public class ResolverTest {
         URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
         try {
             InputSource source = localresolver.getEntityResolver().resolveEntity(null, "urn:foo:bar");
-            assertTrue(source.getSystemId().endsWith(result.getPath()));
-            assertNotNull(source.getByteStream());
+            Assertions.assertTrue(source.getSystemId().endsWith(result.getPath()));
+            Assertions.assertNotNull(source.getByteStream());
             ResolverInputSource rsource = ((ResolverInputSource) source);
-            assertEquals(rsource.getResolvedURI(), result);
+            Assertions.assertEquals(rsource.getResolvedURI(), result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -271,7 +272,7 @@ public class ResolverTest {
         try {
             String baseURI = URIUtils.cwd().resolve("src/test/resources/xml/ch01.xml").toString();
             Source result = localresolver.getURIResolver().resolve("", baseURI);
-            assertNull(result);
+            Assertions.assertNull(result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -286,7 +287,7 @@ public class ResolverTest {
         try {
             String baseURI = URIUtils.cwd().resolve("src/test/resources/xml/ch01.xml").toString();
             Source result = localresolver.getURIResolver().resolve("", baseURI);
-            assertTrue(result.getSystemId().endsWith(".xml"));
+            Assertions.assertTrue(result.getSystemId().endsWith(".xml"));
         } catch (Exception ex) {
             fail(ex.getMessage());
         }

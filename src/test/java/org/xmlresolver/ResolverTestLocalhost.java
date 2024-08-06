@@ -7,8 +7,10 @@
 
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -19,9 +21,7 @@ import javax.xml.transform.Source;
 import java.io.IOException;
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -31,14 +31,14 @@ public class ResolverTestLocalhost {
     /* Test of resolve method, of class org.xmlresolver.Resolver. */
     XMLResolverConfiguration config = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration("src/test/resources/domresolver.xml");
         config.setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
 
         // Make sure the Docker container is running where we expect.
         ResourceConnection conn = new ResourceConnection(config, URI.create("http://localhost:8222/docs/sample/sample.dtd"), true);
-        assertEquals(200, conn.getStatusCode());
+        Assertions.assertEquals(200, conn.getStatusCode());
     }
 
     @Test
@@ -60,9 +60,9 @@ public class ResolverTestLocalhost {
         // These aren't found in the catalog
 
         Source source = resolver.getURIResolver().resolve("http://localhost:8222/docs/sample/sample.xsl","file:/tmp/test.xsl");
-        assertNull(source);
+        Assertions.assertNull(source);
         source = resolver.getURIResolver().resolve("../helloworld.xml","http://localhost:8222/docs/sample/sample.xsl");
-        assertNull(source);
+        Assertions.assertNull(source);
     }
 
     private static class DevNullHandler extends DefaultHandler {

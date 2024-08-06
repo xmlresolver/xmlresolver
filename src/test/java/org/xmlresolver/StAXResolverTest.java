@@ -7,7 +7,7 @@
 
 package org.xmlresolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLResolver;
@@ -15,7 +15,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.FileInputStream;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *

@@ -7,15 +7,13 @@
 
 package org.xmlresolver;
 
-
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -24,8 +22,8 @@ import static org.junit.Assert.assertEquals;
 public class DataUriTest {
     private static XMLResolver resolver = null;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setup() throws Exception {
         XMLResolverConfiguration config = new XMLResolverConfiguration("src/test/resources/datauri.xml");
         resolver = new XMLResolver(config);
     }
@@ -44,7 +42,7 @@ public class DataUriTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("A short note.", line);
+        Assertions.assertEquals("A short note.", line);
     }
 
     @Test
@@ -61,7 +59,7 @@ public class DataUriTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("ΎχΎ", line);
+        Assertions.assertEquals("ΎχΎ", line);
     }
 
     @Test
@@ -78,6 +76,6 @@ public class DataUriTest {
         } catch (IOException ex) {
             // ignore
         }
-        assertEquals("<doc>I was a data URI</doc>", line);
+        Assertions.assertEquals("<doc>I was a data URI</doc>", line);
     }
 }

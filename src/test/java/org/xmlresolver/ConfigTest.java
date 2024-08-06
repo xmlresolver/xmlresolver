@@ -1,7 +1,7 @@
 package org.xmlresolver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ConfigTest {
 
@@ -14,21 +14,21 @@ public class ConfigTest {
 
     @Test
     public void testDot() {
-        Assert.assertEquals("XML_RESOLVER", renameProperty("xml.resolver"));
+       Assertions.assertEquals("XML_RESOLVER", renameProperty("xml.resolver"));
     }
 
     @Test
     public void testDots() {
-        Assert.assertEquals("XML_RESOLVER_TEST", renameProperty("xml.resolver.test"));
+       Assertions.assertEquals("XML_RESOLVER_TEST", renameProperty("xml.resolver.test"));
     }
 
     @Test
     public void testMixedCaseSingle() {
-        Assert.assertEquals("XML_RESOLVER_TEST", renameProperty("xml.resolverTest"));
+       Assertions.assertEquals("XML_RESOLVER_TEST", renameProperty("xml.resolverTest"));
     }
 
     @Test
     public void testMixedCaseMultiple() {
-        Assert.assertEquals("XML_CATALOG_PREFER_PROPERTY_FILE", renameProperty("xml.catalog.preferPropertyFile"));
+       Assertions.assertEquals("XML_CATALOG_PREFER_PROPERTY_FILE", renameProperty("xml.catalog.preferPropertyFile"));
     }
 }

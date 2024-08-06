@@ -1,7 +1,8 @@
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
@@ -13,18 +14,15 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 public class Issue31Test {
     private EntityResolver2 maskingResolver;
     private EntityResolver2 nonMaskingResolver;
     private String exp;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         URL rsrc = getClass().getClassLoader().getResource("path/catalog.xml");
-        assertNotNull(rsrc);
+        Assertions.assertNotNull(rsrc);
 
         exp = rsrc.toString();
 
@@ -51,24 +49,24 @@ public class Issue31Test {
     @Test
     public void urnUnMasked() throws IOException, SAXException {
         final InputSource act = nonMaskingResolver.resolveEntity(null, null, "/", "urn:oasis:names:tc:dita:rng:topic.rng");
-        assertEquals(exp, act.getSystemId());
+        Assertions.assertEquals(exp, act.getSystemId());
     }
 
     @Test
     public void urnMasked() throws IOException, SAXException {
         final InputSource act = maskingResolver.resolveEntity(null, null, "/", "urn:oasis:names:tc:dita:rng:topic.rng");
-        assertEquals("urn:oasis:names:tc:dita:rng:topic.rng", act.getSystemId());
+        Assertions.assertEquals("urn:oasis:names:tc:dita:rng:topic.rng", act.getSystemId());
     }
 
     @Test
     public void httpsUnMasked() throws IOException, SAXException {
         final InputSource act = nonMaskingResolver.resolveEntity(null, null, "/", "https://example.com/topic.rng");
-        assertEquals(exp, act.getSystemId());
+        Assertions.assertEquals(exp, act.getSystemId());
     }
 
     @Test
     public void httpsMasked() throws IOException, SAXException {
         final InputSource act = maskingResolver.resolveEntity(null, null, "/", "https://example.com/topic.rng");
-        assertEquals("https://example.com/topic.rng", act.getSystemId());
+        Assertions.assertEquals("https://example.com/topic.rng", act.getSystemId());
     }
 }
