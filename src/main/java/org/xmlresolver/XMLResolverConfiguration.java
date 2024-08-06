@@ -584,31 +584,13 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             StringTokenizer tokens = new StringTokenizer(property, ";");
             catalogs.clear();
             showConfigChange("Catalog list cleared");
-            while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
-                if (!token.trim().isEmpty()) {
-                    if (relative && propertiesURI != null) {
-                        token = propertiesURI.resolve(token).toString();
-                    }
-                    showConfigChange("Catalog: %s", token);
-                    catalogs.add(token);
-                }
-            }
+            addCatalogsFromTokens(propertiesURI, relative, tokens);
         }
 
         property = properties.getProperty("catalog-additions");
         if (property != null) {
             StringTokenizer tokens = new StringTokenizer(property, ";");
-            while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
-                if (!token.trim().isEmpty()) {
-                    if (relative && propertiesURI != null) {
-                        token = propertiesURI.resolve(token).toString();
-                    }
-                    showConfigChange("Catalog: %s", token);
-                    catalogs.add(token);
-                }
-            }
+            addCatalogsFromTokens(propertiesURI, relative, tokens);
         }
 
         property = properties.getProperty("prefer");
@@ -717,6 +699,19 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (property != null) {
             showConfigChange("Fix windows system identifiers: %s", property);
             fixWindowsSystemIdentifiers = isTrue(property);
+        }
+    }
+
+    private void addCatalogsFromTokens(URI propertiesURI, boolean relative, StringTokenizer tokens) {
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            if (!token.trim().isEmpty()) {
+                if (relative && propertiesURI != null) {
+                    token = propertiesURI.resolve(token).toString();
+                }
+                showConfigChange("Catalog: %s", token);
+                catalogs.add(token);
+            }
         }
     }
 
