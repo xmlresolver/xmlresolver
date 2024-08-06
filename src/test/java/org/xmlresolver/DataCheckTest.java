@@ -1,19 +1,17 @@
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Collections;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 public class DataCheckTest {
     public static XMLResolverConfiguration config = null;
     public static CatalogManager manager = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         String catalog = "classpath:org/xmlresolver/data/catalog.xml";
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
@@ -25,7 +23,7 @@ public class DataCheckTest {
     @Test
     public void lookupCheckUri() {
         URI result = manager.lookupURI("https://xmlresolver.org/data/resolver/succeeded/test/check.xml");
-        assertNotNull(result);
+        Assertions.assertNotNull(result);
     }
 
     @Test
@@ -41,7 +39,7 @@ public class DataCheckTest {
         localManager = localConfig.getFeature(ResolverFeature.CATALOG_MANAGER);
 
         URI result = localManager.lookupURI("https://xmlresolver.org/data/resolver/succeeded/test/check.xml");
-        assertNull(result);
+        Assertions.assertNull(result);
     }
 
 }

@@ -1,12 +1,11 @@
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-
-import static org.junit.Assert.*;
 
 public class RddlTest {
     public static final String catalog = "src/test/resources/docker.xml";
@@ -15,14 +14,14 @@ public class RddlTest {
     XMLResolverConfiguration config = null;
     XMLResolver resolver = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
         resolver = new XMLResolver(config);
 
         // Make sure the Docker container is running where we expect.
         ResourceConnection conn = new ResourceConnection(config, URI.create("http://localhost:8222/docs/sample/sample.dtd"), true);
-        assertEquals(200, conn.getStatusCode());
+        Assertions.assertEquals(200, conn.getStatusCode());
     }
 
     @Test
@@ -33,8 +32,8 @@ public class RddlTest {
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         ResourceResponse xsd = resolver.resolve(req);
-        assertTrue(xsd.isResolved());
-        assertEquals("application/xml", xsd.getContentType());
+        Assertions.assertTrue(xsd.isResolved());
+        Assertions.assertEquals("application/xml", xsd.getContentType());
     }
 
     @Test
@@ -45,8 +44,8 @@ public class RddlTest {
                 "http://www.w3.org/1999/XSL/Transform",
                 "http://www.rddl.org/purposes#transformation");
         ResourceResponse xsl = resolver.resolve(req);
-        assertTrue(xsl.isResolved());
-        assertEquals("application/xml", xsl.getContentType());
+        Assertions.assertTrue(xsl.isResolved());
+        Assertions.assertEquals("application/xml", xsl.getContentType());
     }
 
     @Test
@@ -57,8 +56,8 @@ public class RddlTest {
                 "http://www.w3.org/1999/XSL/Transform",
                 "http://www.rddl.org/purposes#transformation");
         ResourceResponse xsl = resolver.resolve(req);
-        assertTrue(xsl.isResolved());
-        assertEquals("application/xml", xsl.getContentType());
+        Assertions.assertTrue(xsl.isResolved());
+        Assertions.assertEquals("application/xml", xsl.getContentType());
     }
 
     @Test
@@ -70,9 +69,9 @@ public class RddlTest {
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         ResourceResponse xsd = resolver.resolve(req);
-        assertTrue(xsd.isResolved());
+        Assertions.assertTrue(xsd.isResolved());
         // Extra "/" because Apache redirects to the directory listing
-        assertEquals("http://localhost:8222/docs/sample/", xsd.getURI().toString());
+        Assertions.assertEquals("http://localhost:8222/docs/sample/", xsd.getURI().toString());
 
         resolver.getConfiguration().setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         req = resolver.getRequest("http://localhost:8222/docs/sample",
@@ -80,7 +79,7 @@ public class RddlTest {
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         xsd = resolver.resolve(req);
-        assertFalse(xsd.isResolved());
+        Assertions.assertFalse(xsd.isResolved());
     }
 
     @Test
@@ -92,9 +91,9 @@ public class RddlTest {
                 "http://www.w3.org/1999/XSL/Transform",
                 "http://www.rddl.org/purposes#transformation");
         ResourceResponse xsl = resolver.resolve(req);
-        assertTrue(xsl.isResolved());
+        Assertions.assertTrue(xsl.isResolved());
         // Extra "/" because Apache redirects to the directory listing
-        assertEquals("http://localhost:8222/docs/sample/", xsl.getURI().toString());
+        Assertions.assertEquals("http://localhost:8222/docs/sample/", xsl.getURI().toString());
 
         resolver.getConfiguration().setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
         req = resolver.getRequest("http://localhost:8222/docs/sample",
@@ -102,10 +101,10 @@ public class RddlTest {
                 "http://www.w3.org/1999/XSL/Transform",
                 "http://www.rddl.org/purposes#transformation");
         xsl = resolver.resolve(req);
-        assertFalse(xsl.isResolved());
+        Assertions.assertFalse(xsl.isResolved());
     }
 
-    @Ignore
+    @Disabled
     public void xmlTest() {
         // This test is ignored because getting the XSD file from the W3C server takes ten seconds
         // and the test doesn't really prove anything anyway.
@@ -115,7 +114,7 @@ public class RddlTest {
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#schema-validation");
         ResourceResponse xsd = resolver.resolve(req);
-        assertFalse(xsd.isResolved());
+        Assertions.assertFalse(xsd.isResolved());
     }
 
     @Test
@@ -131,8 +130,8 @@ public class RddlTest {
                 "http://www.w3.org/2001/XMLSchema",
                 "http://www.rddl.org/purposes#validation");
         ResourceResponse xsd = resolver.resolve(req);
-        assertTrue(xsd.isResolved());
-        assertTrue(xsd.getUnmaskedURI().toString().endsWith("/xml.xsd"));
+        Assertions.assertTrue(xsd.isResolved());
+        Assertions.assertTrue(xsd.getUnmaskedURI().toString().endsWith("/xml.xsd"));
     }
 }
 

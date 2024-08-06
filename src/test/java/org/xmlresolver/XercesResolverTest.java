@@ -10,11 +10,11 @@ package org.xmlresolver;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmlresolver.sources.ResolverInputSource;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author ndw
@@ -35,7 +35,7 @@ public class XercesResolverTest {
     XMLResolver resolver = null;
     XMLEntityResolver xresolver = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.singletonList(catalog1));
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
@@ -50,8 +50,8 @@ public class XercesResolverTest {
             XMLResourceIdentifier resid = new ResourceIdentifier("https://example.com/sample/1.0/sample.dtd");
 
             XMLInputSource source = xresolver.resolveEntity(resid);
-            assertTrue(source.getSystemId().endsWith(result.getPath()));
-            assertNotNull(source.getByteStream());
+            Assertions.assertTrue(source.getSystemId().endsWith(result.getPath()));
+            Assertions.assertNotNull(source.getByteStream());
         } catch (IOException ex) {
             fail();
         }
@@ -63,8 +63,8 @@ public class XercesResolverTest {
             URI result = URIUtils.cwd().resolve("src/test/resources/sample10/sample.dtd");
             XMLResourceIdentifier resid = new ResourceIdentifier("https://example.com/sample/1.0/uri.dtd");
             XMLInputSource source = xresolver.resolveEntity(resid);
-            assertTrue(source.getSystemId().endsWith(result.getPath()));
-            assertNotNull(source.getByteStream());
+            Assertions.assertTrue(source.getSystemId().endsWith(result.getPath()));
+            Assertions.assertNotNull(source.getByteStream());
         } catch (IOException ex) {
             fail();
         }

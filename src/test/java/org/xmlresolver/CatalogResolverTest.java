@@ -1,15 +1,13 @@
 package org.xmlresolver;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 
 import java.net.URI;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CatalogResolverTest {
     public static final String catalog = "src/test/resources/catalog.xml";
@@ -17,7 +15,7 @@ public class CatalogResolverTest {
     XMLResolverConfiguration config = null;
     XMLResolver resolver = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
         config.addCatalog("build/resources/test/manual-catalog.xml");
@@ -25,7 +23,7 @@ public class CatalogResolverTest {
 
         // Make sure the Docker container is running where we expect.
         ResourceConnection conn = new ResourceConnection(config, URI.create("http://localhost:8222/docs/sample/sample.dtd"), true);
-        Assert.assertEquals(200, conn.getStatusCode());
+        Assertions.assertEquals(200, conn.getStatusCode());
     }
 
     @Test
@@ -34,7 +32,7 @@ public class CatalogResolverTest {
         try {
             resolver.getConfiguration().setFeature(ResolverFeature.ALWAYS_RESOLVE, false);
             InputSource is = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
-            assertNull(is);
+            Assertions.assertNull(is);
         } catch (Exception ex) {
             fail();
         }
@@ -45,7 +43,7 @@ public class CatalogResolverTest {
         config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
         try {
             InputSource is = resolver.getEntityResolver().resolveEntity(null, "https://xmlresolver.org/ns/sample-as-uri/sample.dtd");
-            assertEquals("http://localhost:8222/docs/sample/sample.dtd", is.getSystemId());
+            Assertions.assertEquals("http://localhost:8222/docs/sample/sample.dtd", is.getSystemId());
         } catch (Exception ex) {
             ex.printStackTrace();
             fail();

@@ -1,22 +1,14 @@
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmlresolver.tools.ResolvingXMLReader;
-import org.xmlresolver.utils.PublicId;
-import org.xmlresolver.utils.URIUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Issue0184Test {
     public static final String catalog = "src/test/resources/empty.xml";
@@ -24,7 +16,7 @@ public class Issue0184Test {
     XMLResolverConfiguration config = null;
     XMLResolver resolver = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(catalog);
         resolver = new XMLResolver(config);
@@ -43,6 +35,5 @@ public class Issue0184Test {
             fail();
         }
     }
-
 
 }

@@ -1,20 +1,19 @@
 package org.xmlresolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.junit.Assert.*;
 
 public class CharsetTest {
     private void checkCharset(String ctype, String expected) {
         Pattern charset = Pattern.compile("^.*;\\s*charset=([^;]+).*$", Pattern.CASE_INSENSITIVE);
         Matcher matcher = charset.matcher(ctype);
         if (matcher.matches()) {
-            assertEquals(expected, matcher.group(1));
+            Assertions.assertEquals(expected, matcher.group(1));
         } else {
-            assertNull(expected);
+            Assertions.assertNull(expected);
         }
     }
 

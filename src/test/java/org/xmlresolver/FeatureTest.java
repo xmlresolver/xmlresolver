@@ -1,13 +1,13 @@
 package org.xmlresolver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class FeatureTest {
     private void knownFeature(ResolverConfiguration config, ResolverFeature<?> feature) {
@@ -27,9 +27,9 @@ public class FeatureTest {
         knownFeature(config, feature);
         boolean orig = config.getFeature(feature);
         config.setFeature(feature, false);
-        Assert.assertEquals(false, config.getFeature(feature));
+        Assertions.assertEquals(false, config.getFeature(feature));
         config.setFeature(feature, true);
-        Assert.assertEquals(true, config.getFeature(feature));
+        Assertions.assertEquals(true, config.getFeature(feature));
         config.setFeature(feature, orig);
     }
 
@@ -38,7 +38,7 @@ public class FeatureTest {
         knownFeature(config, feature);
         String orig = config.getFeature(feature);
         config.setFeature(feature, "apple pie");
-        Assert.assertEquals("apple pie", config.getFeature(feature));
+        Assertions.assertEquals("apple pie", config.getFeature(feature));
         config.setFeature(feature, orig);
     }
 
@@ -65,9 +65,9 @@ public class FeatureTest {
         List<String> myList = Arrays.asList("One", "Two", "Three");
         config.setFeature(ResolverFeature.CATALOG_ADDITIONS, myList);
         List<String> current = config.getFeature(ResolverFeature.CATALOG_ADDITIONS);
-        Assert.assertNotNull(current);
-        Assert.assertEquals(myList.size(), current.size());
-        Assert.assertArrayEquals(myList.toArray(), current.toArray());
+        Assertions.assertNotNull(current);
+        Assertions.assertEquals(myList.size(), current.size());
+        Assertions.assertArrayEquals(myList.toArray(), current.toArray());
 
         current = config.getFeature(ResolverFeature.CATALOG_FILES);
         // Kindof a hack, but make sure they're all present
@@ -82,13 +82,13 @@ public class FeatureTest {
                 found = found || mine.equals(catalog);
             }
         }
-        Assert.assertTrue(found);
+        Assertions.assertTrue(found);
 
         config.setFeature(ResolverFeature.CATALOG_FILES, origCatalogs);
         config.setFeature(ResolverFeature.CATALOG_ADDITIONS, null);
 
         current = config.getFeature(ResolverFeature.CATALOG_ADDITIONS);
-        Assert.assertEquals(0, current.size());
+        Assertions.assertEquals(0, current.size());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class FeatureTest {
             for (String catalog : current) {
                 found = found || mine.equals(catalog);
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
         }
 
         // Setting CATALOG_FILES replaces the catalogs!
@@ -121,7 +121,7 @@ public class FeatureTest {
             for (String catalog : current) {
                 found = found || mine.equals(catalog);
             }
-            Assert.assertFalse(found);
+            Assertions.assertFalse(found);
         }
 
         // Kindof a hack, but make sure they're all present
@@ -130,7 +130,7 @@ public class FeatureTest {
             for (String catalog : current) {
                 found = found || mine.equals(catalog);
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
         }
 
         config.setFeature(ResolverFeature.CATALOG_FILES, orig);
@@ -148,7 +148,7 @@ public class FeatureTest {
         CatalogManager manager = new CatalogManager(config);
         CatalogManager orig = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         config.setFeature(ResolverFeature.CATALOG_MANAGER, manager);
-        Assert.assertEquals(manager, config.getFeature(ResolverFeature.CATALOG_MANAGER));
+        Assertions.assertEquals(manager, config.getFeature(ResolverFeature.CATALOG_MANAGER));
         config.setFeature(ResolverFeature.CATALOG_MANAGER, orig);
     }
 
@@ -159,7 +159,7 @@ public class FeatureTest {
         knownFeature(config, ResolverFeature.CLASSLOADER);
         ClassLoader orig = config.getFeature(ResolverFeature.CLASSLOADER);
         config.setFeature(ResolverFeature.CLASSLOADER, myLoader);
-        Assert.assertEquals(myLoader, config.getFeature(ResolverFeature.CLASSLOADER));
+        Assertions.assertEquals(myLoader, config.getFeature(ResolverFeature.CLASSLOADER));
         config.setFeature(ResolverFeature.CLASSLOADER, orig);
     }
 

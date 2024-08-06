@@ -1,6 +1,7 @@
 package org.xmlresolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.*;
 import org.xmlresolver.exceptions.CatalogUnavailableException;
 import org.xmlresolver.utils.SaxProducer;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LoaderTest {
 
@@ -23,7 +24,7 @@ public class LoaderTest {
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.XmlLoader");
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-        assertNotNull(rsrc);
+        Assertions.assertNotNull(rsrc);
     }
 
     @Test
@@ -33,7 +34,7 @@ public class LoaderTest {
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.XmlLoader");
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-        assertNotNull(rsrc);
+        Assertions.assertNotNull(rsrc);
     }
 
     @Test
@@ -44,7 +45,7 @@ public class LoaderTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-        assertNotNull(rsrc);
+        Assertions.assertNotNull(rsrc);
     }
 
     @Test
@@ -55,7 +56,7 @@ public class LoaderTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-        assertNotNull(rsrc);
+        Assertions.assertNotNull(rsrc);
     }
 
     @Test
@@ -66,7 +67,7 @@ public class LoaderTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-        assertNotNull(rsrc);
+        Assertions.assertNotNull(rsrc);
     }
 
     @Test
@@ -78,7 +79,7 @@ public class LoaderTest {
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         try {
             URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-            assertNotNull(rsrc);
+            Assertions.assertNotNull(rsrc);
             fail();
         } catch (CatalogUnavailableException ex) {
             // pass
@@ -95,7 +96,7 @@ public class LoaderTest {
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
         try {
             URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-            assertNotNull(rsrc);
+            Assertions.assertNotNull(rsrc);
         } catch (CatalogUnavailableException ex) {
             fail();
         }
@@ -121,8 +122,8 @@ public class LoaderTest {
 
         try {
             URI rsrc = manager.lookupSystem("https://xmlresolver.org/ns/sample/sample.dtd");
-            assertNotNull(rsrc);
-            assertTrue(rsrc.getPath().endsWith("/generated-sample.dtd"));
+            Assertions.assertNotNull(rsrc);
+            Assertions.assertTrue(rsrc.getPath().endsWith("/generated-sample.dtd"));
         } catch (Exception ex) {
             fail();
         }

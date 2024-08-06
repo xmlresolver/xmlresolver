@@ -1,12 +1,13 @@
 package org.xmlresolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 
 import javax.xml.transform.Source;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class NotACatalogTest {
     public static final String catalog1 = "src/test/resources/notcatalog.xml";
@@ -24,7 +25,7 @@ public class NotACatalogTest {
             // It doesn't matter what we look up; the catalog isn't an XML catalog.
             // But it should return null, not throw an NPE.
             InputSource source = resolver.getEntityResolver().resolveEntity(null, "https://example.com/sample/1.0/sample.dtd");
-            assertNull(source);
+            Assertions.assertNull(source);
         } catch (Exception ex) {
             fail();
         }
@@ -38,7 +39,7 @@ public class NotACatalogTest {
             config.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
 
             Source source = resolver.getURIResolver().resolve("test.xml", null);
-            assertNull(source);
+            Assertions.assertNull(source);
         } catch (Exception ex) {
             fail();
         }

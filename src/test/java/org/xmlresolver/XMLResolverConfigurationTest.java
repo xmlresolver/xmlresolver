@@ -9,7 +9,8 @@
 
 package org.xmlresolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.XMLReader;
 
 import java.net.URI;
@@ -20,10 +21,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -38,10 +36,10 @@ public class XMLResolverConfigurationTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
-        assertEquals(1, config.getFeature(ResolverFeature.CATALOG_FILES).size());
-        assertEquals("./catalog.xml", config.getFeature(ResolverFeature.CATALOG_FILES).get(0));
-        assertEquals(ResolverFeature.PREFER_PUBLIC.getDefaultValue(), config.getFeature(ResolverFeature.PREFER_PUBLIC));
-        assertEquals(ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue(), config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
+        Assertions.assertEquals(1, config.getFeature(ResolverFeature.CATALOG_FILES).size());
+        Assertions.assertEquals("./catalog.xml", config.getFeature(ResolverFeature.CATALOG_FILES).get(0));
+        Assertions.assertEquals(ResolverFeature.PREFER_PUBLIC.getDefaultValue(), config.getFeature(ResolverFeature.PREFER_PUBLIC));
+        Assertions.assertEquals(ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue(), config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
         System.setProperties(copyProperties(savedProperties));
     }
 
@@ -75,13 +73,13 @@ public class XMLResolverConfigurationTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(3, s.size());
-        assertEquals("a", s.get(0));
-        assertEquals("b", s.get(1));
-        assertEquals("c", s.get(2));
+        Assertions.assertEquals(3, s.size());
+        Assertions.assertEquals("a", s.get(0));
+        Assertions.assertEquals("b", s.get(1));
+        Assertions.assertEquals("c", s.get(2));
 
-        assertEquals(true, config.getFeature(ResolverFeature.PREFER_PUBLIC));
-        assertEquals(true, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
+        Assertions.assertEquals(true, config.getFeature(ResolverFeature.PREFER_PUBLIC));
+        Assertions.assertEquals(true, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -98,23 +96,23 @@ public class XMLResolverConfigurationTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(3, s.size());
-        assertEquals("d", s.get(0));
-        assertEquals("e", s.get(1));
-        assertEquals("f", s.get(2));
+        Assertions.assertEquals(3, s.size());
+        Assertions.assertEquals("d", s.get(0));
+        Assertions.assertEquals("e", s.get(1));
+        Assertions.assertEquals("f", s.get(2));
 
-        assertEquals(false, config.getFeature(ResolverFeature.PREFER_PUBLIC));
-        assertEquals(false, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
+        Assertions.assertEquals(false, config.getFeature(ResolverFeature.PREFER_PUBLIC));
+        Assertions.assertEquals(false, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
 
         System.setProperties(copyProperties(savedProperties));
         System.setProperty("xmlresolver.properties", "");
         config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
-        assertEquals(1, config.getFeature(ResolverFeature.CATALOG_FILES).size());
-        assertEquals("./catalog.xml", config.getFeature(ResolverFeature.CATALOG_FILES).get(0));
-        assertEquals(ResolverFeature.PREFER_PUBLIC.getDefaultValue(), config.getFeature(ResolverFeature.PREFER_PUBLIC));
-        assertEquals(ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue(), config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
+        Assertions.assertEquals(1, config.getFeature(ResolverFeature.CATALOG_FILES).size());
+        Assertions.assertEquals("./catalog.xml", config.getFeature(ResolverFeature.CATALOG_FILES).get(0));
+        Assertions.assertEquals(ResolverFeature.PREFER_PUBLIC.getDefaultValue(), config.getFeature(ResolverFeature.PREFER_PUBLIC));
+        Assertions.assertEquals(ResolverFeature.ALLOW_CATALOG_PI.getDefaultValue(), config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
 
         System.setProperties(copyProperties(savedProperties));
     }
@@ -126,13 +124,13 @@ public class XMLResolverConfigurationTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(3, s.size());
-        assertEquals("a", s.get(0));
-        assertEquals("b", s.get(1));
-        assertEquals("c", s.get(2));
+        Assertions.assertEquals(3, s.size());
+        Assertions.assertEquals("a", s.get(0));
+        Assertions.assertEquals("b", s.get(1));
+        Assertions.assertEquals("c", s.get(2));
 
-        assertEquals(true, config.getFeature(ResolverFeature.PREFER_PUBLIC));
-        assertEquals(true, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
+        Assertions.assertEquals(true, config.getFeature(ResolverFeature.PREFER_PUBLIC));
+        Assertions.assertEquals(true, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
     }
 
     @Test
@@ -149,13 +147,13 @@ public class XMLResolverConfigurationTest {
         }
 
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(3, s.size());
-        assertEquals(uri.resolve("d").toString(), s.get(0));
-        assertEquals(uri.resolve("e").toString(), s.get(1));
-        assertEquals(uri.resolve("f").toString(), s.get(2));
+        Assertions.assertEquals(3, s.size());
+        Assertions.assertEquals(uri.resolve("d").toString(), s.get(0));
+        Assertions.assertEquals(uri.resolve("e").toString(), s.get(1));
+        Assertions.assertEquals(uri.resolve("f").toString(), s.get(2));
 
-        assertEquals(false, config.getFeature(ResolverFeature.PREFER_PUBLIC));
-        assertEquals(false, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
+        Assertions.assertEquals(false, config.getFeature(ResolverFeature.PREFER_PUBLIC));
+        Assertions.assertEquals(false, config.getFeature(ResolverFeature.ALLOW_CATALOG_PI));
     }
 
     @Test
@@ -170,9 +168,9 @@ public class XMLResolverConfigurationTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(2, s.size());
-        assertEquals("d", s.get(0));
-        assertEquals("e", s.get(1));
+        Assertions.assertEquals(2, s.size());
+        Assertions.assertEquals("d", s.get(0));
+        Assertions.assertEquals("e", s.get(1));
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -184,12 +182,12 @@ public class XMLResolverConfigurationTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(5, s.size());
-        assertEquals("a", s.get(0));
-        assertEquals("b", s.get(1));
-        assertEquals("c", s.get(2));
-        assertEquals("d", s.get(3));
-        assertEquals("e", s.get(4));
+        Assertions.assertEquals(5, s.size());
+        Assertions.assertEquals("a", s.get(0));
+        Assertions.assertEquals("b", s.get(1));
+        Assertions.assertEquals("c", s.get(2));
+        Assertions.assertEquals("d", s.get(3));
+        Assertions.assertEquals("e", s.get(4));
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -206,10 +204,10 @@ public class XMLResolverConfigurationTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(3, s.size());
-        assertEquals("a", s.get(0));
-        assertEquals("b", s.get(1));
-        assertEquals("c", s.get(2));
+        Assertions.assertEquals(3, s.size());
+        Assertions.assertEquals("a", s.get(0));
+        Assertions.assertEquals("b", s.get(1));
+        Assertions.assertEquals("c", s.get(2));
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -222,11 +220,11 @@ public class XMLResolverConfigurationTest {
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
 
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(4, s.size());
-        assertEquals("x", s.get(0));
-        assertEquals("y", s.get(1));
-        assertEquals("d", s.get(2));
-        assertEquals("e", s.get(3));
+        Assertions.assertEquals(4, s.size());
+        Assertions.assertEquals("x", s.get(0));
+        Assertions.assertEquals("y", s.get(1));
+        Assertions.assertEquals("d", s.get(2));
+        Assertions.assertEquals("e", s.get(3));
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -238,19 +236,19 @@ public class XMLResolverConfigurationTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(0, s.size());
+        Assertions.assertEquals(0, s.size());
 
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertTrue(s.size() >= 2); // in case there are more catalogs in jars
+        Assertions.assertTrue(s.size() >= 2); // in case there are more catalogs in jars
         boolean data1 = false;
         boolean data2 = false;
         for (String cat : s) {
             data1 = data1 || cat.contains("data1.jar!/org/xmlresolver/catalog.xml");
             data2 = data2 || cat.contains("data2.jar!/org/xmlresolver/catalog.xml");
         }
-        assertTrue(data1);
-        assertTrue(data2);
+        Assertions.assertTrue(data1);
+        Assertions.assertTrue(data2);
     }
 
     @Test
@@ -259,21 +257,21 @@ public class XMLResolverConfigurationTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(1, s.size());
-        assertEquals("./catalog.xml", s.get(0));
+        Assertions.assertEquals(1, s.size());
+        Assertions.assertEquals("./catalog.xml", s.get(0));
 
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertTrue(s.size() >= 3); // in case there are more catalogs in jars
-        assertEquals("./catalog.xml", s.get(0));
+        Assertions.assertTrue(s.size() >= 3); // in case there are more catalogs in jars
+        Assertions.assertEquals("./catalog.xml", s.get(0));
         boolean data1 = false;
         boolean data2 = false;
         for (String cat : s) {
             data1 = data1 || cat.contains("data1.jar!/org/xmlresolver/catalog.xml");
             data2 = data2 || cat.contains("data2.jar!/org/xmlresolver/catalog.xml");
         }
-        assertTrue(data1);
-        assertTrue(data2);
+        Assertions.assertTrue(data1);
+        Assertions.assertTrue(data2);
     }
 
     @Test
@@ -285,23 +283,23 @@ public class XMLResolverConfigurationTest {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(2, s.size());
-        assertEquals("x", s.get(0));
-        assertEquals("y", s.get(1));
+        Assertions.assertEquals(2, s.size());
+        Assertions.assertEquals("x", s.get(0));
+        Assertions.assertEquals("y", s.get(1));
 
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertTrue(s.size() >= 4); // in case there are more catalogs in jars
-        assertEquals("x", s.get(0));
-        assertEquals("y", s.get(1));
+        Assertions.assertTrue(s.size() >= 4); // in case there are more catalogs in jars
+        Assertions.assertEquals("x", s.get(0));
+        Assertions.assertEquals("y", s.get(1));
         boolean data1 = false;
         boolean data2 = false;
         for (String cat : s) {
             data1 = data1 || cat.contains("data1.jar!/org/xmlresolver/catalog.xml");
             data2 = data2 || cat.contains("data2.jar!/org/xmlresolver/catalog.xml");
         }
-        assertTrue(data1);
-        assertTrue(data2);
+        Assertions.assertTrue(data1);
+        Assertions.assertTrue(data2);
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -318,10 +316,10 @@ public class XMLResolverConfigurationTest {
         config.addCatalog("a");
 
         List<String> s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(3, s.size());
-        assertEquals("x", s.get(0));
-        assertEquals("y", s.get(1));
-        assertEquals("a", s.get(2));
+        Assertions.assertEquals(3, s.size());
+        Assertions.assertEquals("x", s.get(0));
+        Assertions.assertEquals("y", s.get(1));
+        Assertions.assertEquals("a", s.get(2));
 
         config = new XMLResolverConfiguration(Collections.emptyList(), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
@@ -329,20 +327,20 @@ public class XMLResolverConfigurationTest {
 
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertEquals(3, s.size());
-        assertEquals("x", s.get(0));
-        assertEquals("y", s.get(1));
-        assertEquals("a", s.get(2));
+        Assertions.assertEquals(3, s.size());
+        Assertions.assertEquals("x", s.get(0));
+        Assertions.assertEquals("y", s.get(1));
+        Assertions.assertEquals("a", s.get(2));
 
         config = new XMLResolverConfiguration(Collections.emptyList(), null);
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
         config.addCatalog("a");
 
         s = config.getFeature(ResolverFeature.CATALOG_FILES);
-        assertTrue(s.size() >= 5); // in case there are more catalogs in jars
-        assertEquals("x", s.get(0));
-        assertEquals("y", s.get(1));
-        assertEquals("a", s.get(2));
+        Assertions.assertTrue(s.size() >= 5); // in case there are more catalogs in jars
+        Assertions.assertEquals("x", s.get(0));
+        Assertions.assertEquals("y", s.get(1));
+        Assertions.assertEquals("a", s.get(2));
 
         boolean data1 = false;
         boolean data2 = false;
@@ -350,8 +348,8 @@ public class XMLResolverConfigurationTest {
             data1 = data1 || cat.contains("data1.jar!/org/xmlresolver/catalog.xml");
             data2 = data2 || cat.contains("data2.jar!/org/xmlresolver/catalog.xml");
         }
-        assertTrue(data1);
-        assertTrue(data2);
+        Assertions.assertTrue(data1);
+        Assertions.assertTrue(data2);
 
         // n.b. make a copy because System.setProperties does not!
         System.setProperties(copyProperties(savedProperties));
@@ -364,7 +362,7 @@ public class XMLResolverConfigurationTest {
         System.setProperty(name, "org.xmlresolver.MySAXParserFactory");
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         XMLReader reader = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER).get();
-        assertTrue(MySAXParserFactory.parserCount > 0);
+        Assertions.assertTrue(MySAXParserFactory.parserCount > 0);
         if (value == null) {
             System.clearProperty(name);
         } else {
@@ -382,10 +380,10 @@ public class XMLResolverConfigurationTest {
         Supplier<XMLReader> defaultSupplier = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER);
         config.setFeature(ResolverFeature.XMLREADER_SUPPLIER, MyXMLReaderSupplier.supplier());
 
-        assertNull(config.getFeature(ResolverFeature.SAXPARSERFACTORY_CLASS));
+        Assertions.assertNull(config.getFeature(ResolverFeature.SAXPARSERFACTORY_CLASS));
 
         XMLReader reader = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER).get();
-        assertTrue(MyXMLReaderSupplier.parserCount > 0);
+        Assertions.assertTrue(MyXMLReaderSupplier.parserCount > 0);
 
         if (value == null) {
             System.clearProperty(name);

@@ -7,12 +7,12 @@
 
 package org.xmlresolver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmlresolver.tools.ResolvingXMLReader;
 
 import java.util.Collections;
 
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *

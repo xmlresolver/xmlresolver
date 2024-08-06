@@ -1,14 +1,14 @@
 package org.xmlresolver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xmlresolver.utils.URIUtils;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ResourceAccessTest {
 
@@ -23,12 +23,12 @@ public class ResourceAccessTest {
             request.setBaseURI(URIUtils.cwd());
             request.setURI(relativeURI);
             ResourceResponse resp = ResourceAccess.getResource(request);
-            Assert.assertNotNull(resp);
-            Assert.assertTrue(resp.isResolved());
-            Assert.assertNotNull(resp.getInputStream());
-            Assert.assertEquals(URIUtils.cwd().resolve(relativeURI), resp.getURI());
-            Assert.assertEquals(URIUtils.cwd().resolve(relativeURI), resp.getResolvedURI());
-            Assert.assertNotNull(resp.getURI());
+            Assertions.assertNotNull(resp);
+            Assertions.assertTrue(resp.isResolved());
+            Assertions.assertNotNull(resp.getInputStream());
+            Assertions.assertEquals(URIUtils.cwd().resolve(relativeURI), resp.getURI());
+            Assertions.assertEquals(URIUtils.cwd().resolve(relativeURI), resp.getResolvedURI());
+            Assertions.assertNotNull(resp.getURI());
         } catch (IOException | URISyntaxException ex) {
             fail();
         }
@@ -46,12 +46,12 @@ public class ResourceAccessTest {
             request.setBaseURI("file:///tmp/");
             request.setURI(absURI);
             ResourceResponse resp = ResourceAccess.getResource(request);
-            Assert.assertNotNull(resp);
-            Assert.assertTrue(resp.isResolved());
-            Assert.assertNotNull(resp.getInputStream());
-            Assert.assertEquals(absURI, resp.getURI());
-            Assert.assertEquals(absURI, resp.getResolvedURI());
-            Assert.assertNotNull(resp.getURI());
+            Assertions.assertNotNull(resp);
+            Assertions.assertTrue(resp.isResolved());
+            Assertions.assertNotNull(resp.getInputStream());
+            Assertions.assertEquals(absURI, resp.getURI());
+            Assertions.assertEquals(absURI, resp.getResolvedURI());
+            Assertions.assertNotNull(resp.getURI());
         } catch (IOException | URISyntaxException ex) {
             fail();
         }
@@ -71,10 +71,10 @@ public class ResourceAccessTest {
 
             request.setURI(uri);
             ResourceResponse resp = ResourceAccess.getResource(request);
-            Assert.assertNotNull(resp);
-            Assert.assertTrue(resp.isResolved());
-            Assert.assertNotNull(resp.getInputStream());
-            Assert.assertEquals(URI.create("classpath:org/xmlresolver/schemas/catalog.xml"), resp.getURI());
+            Assertions.assertNotNull(resp);
+            Assertions.assertTrue(resp.isResolved());
+            Assertions.assertNotNull(resp.getInputStream());
+            Assertions.assertEquals(URI.create("classpath:org/xmlresolver/schemas/catalog.xml"), resp.getURI());
         } catch (IOException | URISyntaxException ex) {
             fail();
         }
@@ -92,11 +92,11 @@ public class ResourceAccessTest {
 
             request.setURI(uri);
             ResourceResponse resp = ResourceAccess.getResource(request);
-            Assert.assertNotNull(resp);
-            Assert.assertTrue(resp.isResolved());
-            Assert.assertNotNull(resp.getInputStream());
-            Assert.assertEquals(URI.create(uri), resp.getURI());
-            Assert.assertEquals(URI.create(uri), resp.getResolvedURI());
+            Assertions.assertNotNull(resp);
+            Assertions.assertTrue(resp.isResolved());
+            Assertions.assertNotNull(resp.getInputStream());
+            Assertions.assertEquals(URI.create(uri), resp.getURI());
+            Assertions.assertEquals(URI.create(uri), resp.getResolvedURI());
         } catch (IOException | URISyntaxException ex) {
             fail();
         }
@@ -111,14 +111,14 @@ public class ResourceAccessTest {
             String uri = "http://localhost:8222/docs/iso-8859-1.txt";
             request.setURI(uri);
             ResourceResponse resp = ResourceAccess.getResource(request);
-            Assert.assertNotNull(resp);
-            Assert.assertTrue(resp.isResolved());
-            Assert.assertNotNull(resp.getInputStream());
-            Assert.assertEquals(200, resp.getStatusCode());
-            Assert.assertEquals(URI.create(uri), resp.getURI());
-            Assert.assertEquals("iso-8859-1", resp.getEncoding());
-            Assert.assertFalse(resp.getHeaders().isEmpty());
-            Assert.assertEquals("74", resp.getHeader("content-length"));
+            Assertions.assertNotNull(resp);
+            Assertions.assertTrue(resp.isResolved());
+            Assertions.assertNotNull(resp.getInputStream());
+            Assertions.assertEquals(200, resp.getStatusCode());
+            Assertions.assertEquals(URI.create(uri), resp.getURI());
+            Assertions.assertEquals("iso-8859-1", resp.getEncoding());
+            Assertions.assertFalse(resp.getHeaders().isEmpty());
+            Assertions.assertEquals("74", resp.getHeader("content-length"));
         } catch (IOException | URISyntaxException ex) {
             fail();
         }
@@ -133,12 +133,12 @@ public class ResourceAccessTest {
             String uri = "http://localhost:8222/docs/foo";
             request.setURI(uri);
             ResourceResponse resp = ResourceAccess.getResource(request);
-            Assert.assertNotNull(resp);
-            Assert.assertTrue(resp.isResolved());
-            Assert.assertNotNull(resp.getInputStream());
-            Assert.assertEquals(200, resp.getStatusCode());
-            Assert.assertEquals(URI.create("http://localhost:8222/docs/redirected.txt"), resp.getURI());
-            Assert.assertFalse(resp.getHeaders().isEmpty());
+            Assertions.assertNotNull(resp);
+            Assertions.assertTrue(resp.isResolved());
+            Assertions.assertNotNull(resp.getInputStream());
+            Assertions.assertEquals(200, resp.getStatusCode());
+            Assertions.assertEquals(URI.create("http://localhost:8222/docs/redirected.txt"), resp.getURI());
+            Assertions.assertFalse(resp.getHeaders().isEmpty());
         } catch (IOException | URISyntaxException ex) {
             fail();
         }

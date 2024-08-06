@@ -284,13 +284,20 @@ $ git submodule sync
 $ git submodule update --init
 ```
 
-To compile the project and check its tests you must have Java 8. It is
+To compile the project and check its tests you must have Java 21. It is
 easiest to do with the provided Gradle Wrapper (i.e. `./gradlew`), but
 you can use your own installed version of Gradle if it’s compatible
-with Gradle 8.1.1 (the version of Gradle used by this project at the
+with Gradle 8.5 (the version of Gradle used by this project at the
 time of this writing).
 
-to build and test the project:
+to build the project:
 ```bash
 $ ./gradlew build
 ```
+
+## Testing
+
+In order to run the tests, you must have Docker installed and you will need to
+build the container that runs the web server.
+
+More details T.B.D.

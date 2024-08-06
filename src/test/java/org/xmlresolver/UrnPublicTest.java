@@ -1,15 +1,14 @@
 package org.xmlresolver;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmlresolver.utils.PublicId;
 import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
 
 public class UrnPublicTest {
     public static final String catalog1 = "src/test/resources/lookup1.xml";
@@ -21,7 +20,7 @@ public class UrnPublicTest {
     XMLResolverConfiguration config = null;
     public static CatalogManager manager = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
         config.setFeature(ResolverFeature.CATALOG_FILES, Arrays.asList(catalog1, catalog2));
@@ -33,21 +32,21 @@ public class UrnPublicTest {
     public void lookupPublic_prefer_public_nosystem_public1() {
         // Catalog contains a matching public entry, but not a matching system entry
         URI result = manager.lookupPublic(urnPublicId, null);
-        assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
+        Assertions.assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
     }
 
     @Test
     public void lookupPublic_prefer_public_system_public1() {
         // Catalog contains a matching public entry, but not a matching system entry
         URI result = manager.lookupPublic(urnPublicId, null);
-        assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
+        Assertions.assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
     }
 
     @Test
     public void lookupPublic_prefer_system_nosystem_public1() {
         // Catalog contains a matching public entry, but not a matching system entry
         URI result = manager.lookupPublic(urnPublicId, null);
-        assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
+        Assertions.assertEquals(catloc.resolve("sample10/sample-public.dtd"), result);
     }
 }
 

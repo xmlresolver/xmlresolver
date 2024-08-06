@@ -1,7 +1,7 @@
 package org.xmlresolver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -13,7 +13,7 @@ import javax.xml.parsers.SAXParserFactory;
 import java.sql.Array;
 import java.util.ArrayList;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class AdapterTests {
     @Test
@@ -38,7 +38,7 @@ public class AdapterTests {
 
             reader.parse(new InputSource("src/test/resources/saxadapter.xml"));
 
-            Assert.assertTrue(handler.success);
+            Assertions.assertTrue(handler.success);
         } catch (Exception ex) {
             ex.printStackTrace();
             fail();

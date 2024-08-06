@@ -24,7 +24,7 @@ java {
     languageVersion.set(JavaLanguageVersion.of(21))
   }
   registerFeature('validating') {
-    usingSourceSet(sourceSets.main)
+    usingSourceSet(sourceSets["main"])
   }
 }
 
@@ -59,7 +59,9 @@ dependencies {
   )
 
   testImplementation (
-    [group: 'junit', name: 'junit', version: '4.13.2'],
+    [group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.9.2'],
+    [group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.2'],
+    [group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.2'],
     [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36' ],
     // Because reasons: https://blog.adamretter.org.uk/xerces-xsd11-maven/
     [group: 'org.exist-db.thirdparty.xerces', name: 'xercesImpl', version: '2.12.2' ],
@@ -68,6 +70,21 @@ dependencies {
     files("src/test/resources/data3.jar"),
     files("${buildDir}/libs/xmlresolver-${resolverVersion}-data.jar")
   )
+
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+test {
+  useJUnitPlatform {
+  }
+}
+
+tasks.withType(Test) {
+  useJUnitPlatform() {
+  }
+  testLogging {
+    events "passed"
+  }
 }
 
 import org.gradle.internal.os.OperatingSystem;
