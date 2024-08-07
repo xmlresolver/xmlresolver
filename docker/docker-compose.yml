@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     restest_server:
       image: ghcr.io/ndw/3.0-test-suite/xproctest:0.9.0
