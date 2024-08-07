@@ -24,7 +24,7 @@ import java.net.URISyntaxException;
  * to call the zero-argument constructor. This class is an attempt to provide that API.</p>
  * @deprecated 6.0.0
  */
-public class Resolver implements URIResolver, LSResourceResolver, EntityResolver, EntityResolver2 {
+public class Resolver implements URIResolver, LSResourceResolver, EntityResolver, EntityResolver2, NamespaceResolver {
     // I'm keeping these here because they're part of the public API.
 
     /** The schema validation purpose. */
@@ -101,6 +101,16 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
     @Override
     public Source resolve(String href, String base) throws TransformerException {
         ResourceRequest req = resolver.getRequest(href, base);
+        return resolverAdapter(req);
+    }
+
+    @Override
+    public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
+        ResourceRequest req = resolver.getRequest(uri, nature, purpose);
+        return resolverAdapter(req);
+    }
+
+    private Source resolverAdapter(ResourceRequest req) throws TransformerException {
         ResourceResponse resp = resolver.resolve(req);
 
         if (!resp.isResolved()) {
