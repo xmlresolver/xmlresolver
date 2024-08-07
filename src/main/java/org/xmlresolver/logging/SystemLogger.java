@@ -1,21 +1,17 @@
 package org.xmlresolver.logging;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlresolver.ResolverConfiguration;
-import org.xmlresolver.XMLResolver;
+
+import java.util.logging.Logger;
 
 /**
  * The system logger interfaces to a logging backend via a logging backend.
  *
- * <p>This class supports either configuration with {@link org.slf4j.Logger org.slf4j.Logger} or
- * configuration directly with a {@link java.util.logging.Logger java.util.logging.Logger}.</p>
- *
- * <p>This logger makes it easy to configure the resolver to log through a standard
- * logging framework, as might be present on a Java application server. By default
- * the logger uses the {@link org.slf4j.LoggerFactory org.slf4j.LoggerFactory} to create a logger. This logger
- * can be supported at runtime by a wide variety of concrete backend classes. For details
- * on how SLF4J finds a logging backend, see their documentation.</p>
+ * <p>This class uses {@link java.util.logging.Logger java.util.logging.Logger}.
+ * In earlier releases, it supported SL4J directly, but that's been removed in
+ * the interest of reducing the number of dependencies.
+ * This logger makes it easy to configure the resolver to log through a standard
+ * logging framework, as might be present on a Java application server.</p>
  *
  * <p>Alternatively, if you instantiate the <code>SystemLogger</code> with a
  * {@link java.util.logging.Logger java.util.logging.Logger} directly, it will use that.</p>
@@ -26,14 +22,12 @@ import org.xmlresolver.XMLResolver;
  * {@link org.xmlresolver.ResolverFeature#RESOLVER_LOGGER} feature yourself.</p>
  */
 public class SystemLogger extends AbstractLogger {
-    private final Logger logger;
-    private final java.util.logging.Logger jlogger;
+    private final java.util.logging.Logger logger;
 
     /**
      * Initialize the logger using the default backend.
      *
-     * <p>The default backend in this case is the one that {@link org.slf4j.LoggerFactory org.slf4j.LoggerFactory}
-     * will find for the <code>org.xmlresolver.Resolver</code> class.</p>
+     * <p>The default backend in this case is {@code Logger.getLogger(config.getClass().getName())}.</p>
      *
      * <p>This class doesn't actually use the provided resolver configuration, but it's
      * necessary to support the way loggers are instantiated by the configuration.</p>
@@ -41,8 +35,7 @@ public class SystemLogger extends AbstractLogger {
      * @param config The resolver configuration.
      */
     public SystemLogger(ResolverConfiguration config) {
-        logger = LoggerFactory.getLogger(XMLResolver.class);
-        jlogger = null;
+        logger = Logger.getLogger(config.getClass().getName());
     }
 
     /**
@@ -51,8 +44,7 @@ public class SystemLogger extends AbstractLogger {
      * @param log The logger.
      */
     public SystemLogger(java.util.logging.Logger log) {
-        logger = null;
-        jlogger = log;
+        logger = log;
     }
 
     /**
@@ -61,11 +53,7 @@ public class SystemLogger extends AbstractLogger {
      */
     @Override
     public void warn(String message) {
-        if (jlogger != null) {
-            jlogger.warning(message);
-        } else {
-            logger.warn(message);
-        }
+        logger.warning(message);
     }
 
     /**
@@ -74,23 +62,16 @@ public class SystemLogger extends AbstractLogger {
      */
     @Override
     public void info(String message) {
-        if (jlogger != null) {
-            jlogger.info(message);
-        } else {
-            logger.info(message);
-        }
+        logger.info(message);
     }
 
     /**
      * Process a debug message with the underlying logging framework.
+     * <p>This uses the "fine" method on the Logger.</p>
      * @param message The message.
      */
     @Override
     public void debug(String message) {
-        if (jlogger != null) {
-            jlogger.fine(message);
-        } else {
-            logger.debug(message);
-        }
+        logger.fine(message);
     }
 }
