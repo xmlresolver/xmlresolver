@@ -382,6 +382,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 InputStream in = url.openStream();
                 if (in != null) {
                     properties.load(in);
+                    in.close();
                     propurl = url;
                     break;
                 }
