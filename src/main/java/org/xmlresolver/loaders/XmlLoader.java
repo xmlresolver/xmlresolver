@@ -121,7 +121,7 @@ public class XmlLoader implements CatalogLoader {
               ResourceRequest request = new ResourceRequest(config);
               request.setURI(catalog);
               request.setOpenStream(true);
-              ResourceResponse resp = ResourceAccess.getResource(request);
+              ResourceResponse resp = config.getResource(request);
               try(InputStream is = resp.getInputStream()) {
                 InputSource source = new InputSource(is);
                 source.setSystemId(catalog.toString());

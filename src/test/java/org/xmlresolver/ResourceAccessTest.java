@@ -22,7 +22,7 @@ public class ResourceAccessTest {
 
             request.setBaseURI(URIUtils.cwd());
             request.setURI(relativeURI);
-            ResourceResponse resp = ResourceAccess.getResource(request);
+            ResourceResponse resp = config.getResource(request);
             Assertions.assertNotNull(resp);
             Assertions.assertTrue(resp.isResolved());
             Assertions.assertNotNull(resp.getInputStream());
@@ -45,7 +45,7 @@ public class ResourceAccessTest {
 
             request.setBaseURI("file:///tmp/");
             request.setURI(absURI);
-            ResourceResponse resp = ResourceAccess.getResource(request);
+            ResourceResponse resp = config.getResource(request);
             Assertions.assertNotNull(resp);
             Assertions.assertTrue(resp.isResolved());
             Assertions.assertNotNull(resp.getInputStream());
@@ -70,7 +70,7 @@ public class ResourceAccessTest {
             String uri = "classpath:/org/xmlresolver/schemas/catalog.xml";
 
             request.setURI(uri);
-            ResourceResponse resp = ResourceAccess.getResource(request);
+            ResourceResponse resp = config.getResource(request);
             Assertions.assertNotNull(resp);
             Assertions.assertTrue(resp.isResolved());
             Assertions.assertNotNull(resp.getInputStream());
@@ -91,7 +91,7 @@ public class ResourceAccessTest {
             String uri = "jar:" + jarURI + "!/path/test.txt";
 
             request.setURI(uri);
-            ResourceResponse resp = ResourceAccess.getResource(request);
+            ResourceResponse resp = config.getResource(request);
             Assertions.assertNotNull(resp);
             Assertions.assertTrue(resp.isResolved());
             Assertions.assertNotNull(resp.getInputStream());
@@ -110,7 +110,7 @@ public class ResourceAccessTest {
 
             String uri = "http://localhost:8222/docs/iso-8859-1.txt";
             request.setURI(uri);
-            ResourceResponse resp = ResourceAccess.getResource(request);
+            ResourceResponse resp = config.getResource(request);
             Assertions.assertNotNull(resp);
             Assertions.assertTrue(resp.isResolved());
             Assertions.assertNotNull(resp.getInputStream());
@@ -132,7 +132,7 @@ public class ResourceAccessTest {
 
             String uri = "http://localhost:8222/docs/foo";
             request.setURI(uri);
-            ResourceResponse resp = ResourceAccess.getResource(request);
+            ResourceResponse resp = config.getResource(request);
             Assertions.assertNotNull(resp);
             Assertions.assertTrue(resp.isResolved());
             Assertions.assertNotNull(resp.getInputStream());

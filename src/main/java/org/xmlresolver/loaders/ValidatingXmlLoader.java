@@ -74,7 +74,7 @@ public class ValidatingXmlLoader implements CatalogLoader {
                 ResourceRequest request = new ResourceRequest(config);
                 request.setURI(catalog);
                 request.setOpenStream(true);
-                ResourceResponse resp = ResourceAccess.getResource(request);
+                ResourceResponse resp = config.getResource(request);
                 InputSource source = new InputSource(resp.getInputStream());
                 source.setSystemId(catalog.toString());
                 return loadCatalog(catalog, source);

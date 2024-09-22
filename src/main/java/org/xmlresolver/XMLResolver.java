@@ -443,13 +443,13 @@ public class XMLResolver {
 
             if (!lookup.isResolved()) {
                 if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
-                    return ResourceAccess.getResource(lookup);
+                    return config.getResource(lookup);
                 } else {
                     return lookup;
                 }
             }
 
-            return ResourceAccess.getResource(lookup);
+            return config.getResource(lookup);
         } catch (URISyntaxException | IOException ex) {
             boolean throwExceptions = config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
             if (throwExceptions) {
@@ -497,7 +497,7 @@ public class XMLResolver {
             ResourceRequest req = new ResourceRequest(config, nature, purpose);
             req.setURI(uri.toString());
 
-            ResourceResponse rsrc = ResourceAccess.getResource(req);
+            ResourceResponse rsrc = config.getResource(req);
             String contentType = rsrc.getContentType();
 
             if (contentType != null

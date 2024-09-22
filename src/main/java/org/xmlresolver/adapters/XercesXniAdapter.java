@@ -92,7 +92,7 @@ public class XercesXniAdapter implements XMLEntityResolver {
         // This is "safe" in the weird sense that it doesn't throw a checked exception
         if (resolver.getConfiguration().getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
             try {
-                return ResourceAccess.getResource(request);
+                return resolver.getConfiguration().getResource(request);
             } catch (URISyntaxException | IOException err) {
                 // What am I supposed to do about this now?
             }

@@ -2,6 +2,9 @@ package org.xmlresolver;
 
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
+import org.xmlresolver.spi.SchemeResolver;
+import org.xmlresolver.spi.SchemeResolverManager;
+import org.xmlresolver.spi.SchemeResolverProvider;
 import org.xmlresolver.utils.URIUtils;
 
 import java.io.ByteArrayInputStream;
@@ -10,7 +13,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.*;
 
 /**
  * Static methods for accessing resources.
@@ -19,8 +22,17 @@ import java.util.Base64;
  * All other schemes are delegated to {@link ResourceConnection}.
  */
 public class ResourceAccess {
-    private ResourceAccess() {
-        // No direct construction.
+    protected final ResolverLogger logger;
+    final Map<String, ArrayList<SchemeResolver>> schemeResolvers = new HashMap<>();
+    private boolean loadedSPI = false;
+
+    /**
+     * Make a new ResourceAccess object with the specified configuration.
+     * <p>The configuration is used to determine the appropriate {@link ResolverLogger}.</p>
+     * @param config The XML Resolver configuration to use.
+     */
+    public ResourceAccess(XMLResolverConfiguration config) {
+        logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
     }
 
     /**
@@ -32,7 +44,7 @@ public class ResourceAccess {
      * @throws URISyntaxException if the request URI is syntactically invalid.
      * @throws IOException if the resource cannot be accessed.
      */
-    public static ResourceResponse getResource(ResourceRequest request) throws URISyntaxException, IOException {
+    public ResourceResponse getResource(ResourceRequest request) throws URISyntaxException, IOException {
         URI uri = request.getAbsoluteURI();
         if (uri == null && request.getURI() != null) {
             uri = new URI(request.getURI());
@@ -46,17 +58,7 @@ public class ResourceAccess {
             uri = URIUtils.resolve(URIUtils.cwd(), uri.toString());
         }
 
-        switch (uri.getScheme()) {
-            case "data":
-                return getDataResource(request, uri);
-            case "classpath":
-                return getClasspathResource(request, uri);
-            case "jar":
-                return getJarResource(request, uri);
-            default:
-                // If it's not data: or classpath:, let's hope Java's URLConnection class will read it...
-                return getNetResource(request, uri);
-        }
+        return getResourceFromURI(request, uri);
     }
 
     /**
@@ -69,7 +71,7 @@ public class ResourceAccess {
      * @throws URISyntaxException if the request URI is syntactically invalid.
      * @throws IOException if the resource cannot be accessed.
      */
-    public static ResourceResponse getResource(ResourceResponse response) throws URISyntaxException, IOException {
+    public ResourceResponse getResource(ResourceResponse response) throws URISyntaxException, IOException {
         URI uri = response.getUnmaskedURI();
         if (uri == null && response.request != null) {
             uri = response.request.getAbsoluteURI();
@@ -86,17 +88,52 @@ public class ResourceAccess {
             uri = URIUtils.resolve(URIUtils.cwd(), uri.toString());
         }
 
+        return getResourceFromURI(response.request, uri);
+    }
+
+    private ResourceResponse getResourceFromURI(ResourceRequest request, URI uri) throws URISyntaxException, IOException {
         switch (uri.getScheme()) {
             case "data":
-                return getDataResource(response.request, uri);
+                return getDataResource(request, uri);
             case "classpath":
-                return getClasspathResource(response.request, uri);
+                return getClasspathResource(request, uri);
             case "jar":
-                return getJarResource(response.request, uri);
+                return getJarResource(request, uri);
             default:
-                // If it's not data:, classpath:, or jar:, let's hope Java's URLConnection class will read it...
-                return getNetResource(response.request, uri);
+                if (!loadedSPI) {
+                    // Only do this once. There's a tradeoff here. We're going to hit this code over and over
+                    // again. And many requests will be satisfied without asking providers. So to avoid
+                    // looping through the providers unnecessarily, we do it once and build a map from
+                    // scheme to provider so that subsequent requests can skip this work. The cost is that
+                    // we construct SchemeResolvers we may never use. But there aren't expected to be many of them.
+                    loadedSPI = true;
+                    ServiceLoader<SchemeResolverProvider> loader = ServiceLoader.load(SchemeResolverProvider.class);
+                    for (SchemeResolverProvider provider : loader) {
+                        SchemeResolverManager manager = provider.create();
+                        for (String scheme : manager.getKnownSchemes()) {
+                            if (!schemeResolvers.containsKey(scheme)) {
+                                schemeResolvers.put(scheme, new ArrayList<>());
+                            }
+                            try {
+                                schemeResolvers.get(scheme).add(manager.getSchemeResolver(scheme));
+                            } catch (Exception ex) {
+                                // just ignore it
+                            }
+                        }
+                    }
+                }
+                String scheme = uri.getScheme();
+                for (SchemeResolver schemeResolver : schemeResolvers.computeIfAbsent(scheme, k -> new ArrayList<>())) {
+                    ResourceResponse resp = schemeResolver.getResource(request, uri);
+                    if (resp != null) {
+                        return resp;
+                    }
+                }
+
+                // Fallback to the URL resolver
+                return getNetResource(request, uri);
         }
+
     }
 
     private static ResourceResponse getDataResource(ResourceRequest request, URI resourceURI) throws URISyntaxException {
@@ -230,7 +267,8 @@ public class ResourceAccess {
             return new ResourceResponse(request, true);
         }
 
-        ResourceConnection connx = new ResourceConnection(request.config, resourceURI, !request.openStream());
+        ResourceConnection connx = new ResourceConnection(resourceURI);
+        connx.get(request.config, !request.openStream());
         URI redirect = connx.getRedirect();
         URI uri = redirect == null ? resourceURI : redirect;
         ResourceResponse resp = new ResourceResponse(request, uri);

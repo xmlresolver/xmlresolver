@@ -7,6 +7,7 @@ import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.DefaultLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.logging.SystemLogger;
+import org.xmlresolver.spi.SchemeResolver;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -346,7 +347,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             // Hack: you can set the xmlresolver.properties to the empty string
             // to avoid loading the XMLRESOLVER_PROPERTIES environment. This is
             // an edge case more-or-less exclusively for testing.
-            if (propfn == null || "".equals(propfn)) {
+            if (propfn == null || propfn.isEmpty()) {
                 try {
                     URL propurl = XMLResolverConfiguration.class.getResource("/xmlresolver.properties");
                     if (propurl != null) {
@@ -745,6 +746,35 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         if (classpathCatalogs) {
             for (String catalog : findClasspathCatalogFiles()) {
                 resolverLogger.log(AbstractLogger.CONFIG, "Catalog: %s", catalog);
+            }
+        }
+    }
+
+    private final ResourceAccess accessor = new ResourceAccess(this);
+    @Override
+    public ResourceResponse getResource(ResourceRequest request) throws URISyntaxException, IOException {
+        return accessor.getResource(request);
+    }
+    @Override
+    public ResourceResponse getResource(ResourceResponse request) throws URISyntaxException, IOException {
+        return accessor.getResource(request);
+    }
+
+    /**
+     * Register a scheme resolver for the specified scheme.
+     * <p>The most convenient way to make a scheme resolver available is often through the service
+     * provider interface. But they can also be added programmatically with this method.</p>
+     * @param scheme The scheme.
+     * @param schemeResolver The resolver.
+     */
+    public void registerSchemeResolver(String scheme, SchemeResolver schemeResolver) {
+        synchronized (accessor) {
+            if (accessor.schemeResolvers.containsKey(scheme)) {
+                accessor.schemeResolvers.get(scheme).add(schemeResolver);
+            } else {
+                ArrayList<SchemeResolver> list = new ArrayList<>();
+                list.add(schemeResolver);
+                accessor.schemeResolvers.put(scheme, list);
             }
         }
     }
