@@ -27,6 +27,7 @@ public class ResolverSAXSource extends SAXSource implements ResolverResourceInfo
         resolvedURI = resp.getResolvedURI();
         statusCode = resp.getStatusCode();
         resolvedHeaders = resp.getHeaders();
+        setSystemId(resp.getResolvedURI().toString());
     }
 
     @Override
