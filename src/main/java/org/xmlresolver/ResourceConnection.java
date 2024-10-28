@@ -2,20 +2,28 @@ package org.xmlresolver;
 
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
+import org.xmlresolver.spi.SchemeResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This class handles attempts to access resources with <code>file:</code>,
- * <code>http</code>, and <code>https</code> URIs. It may support additional URI schemes,
- * if they're supported by Java's underlying {@link URLConnection} class.</p>
+ * Manage the connection to a resource.
+ *
+ * <p>The connection to a <code>file:</code>, <code>http:</code>, or <code>https:</code> can be
+ * managed by creating the connection and then calling the <code>get()</code> method. Any other
+ * schemes supported by Java's underlying {@link URLConnection} class will also work this way.</p>
+ *
+ * <p>It's also possible to construct an instance of this class and then set its properties directly.
+ * This is how a {@link SchemeResolver} can provide the connection to a resource.</p>
  */
 public class ResourceConnection {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
@@ -39,16 +47,34 @@ public class ResourceConnection {
      * <p>The {@code headOnly} parameter is a bit of a hack. It's used internally when the
      * existence of the URI is being tested, but a stream is not desired.</p>
      *
-     * @param config The XML Resolver configuration.
      * @param initialUri The URI to access.
+     */
+    public ResourceConnection(/* not null */ URI initialUri) {
+        uri = initialUri;
+    }
+
+    /**
+     * Attempt to resolve the URI with a URLConnection
+     *
+     * @param config The XML Resolver configuration.
+     */
+    public void get(ResolverConfiguration config) {
+        get(config, false);
+    }
+
+    /**
+     * Attempt to resolve the URI with a URLConnection
+     *
+     * <p>The {@code headOnly} parameter is a bit of a hack. It's used internally when the
+     * existence of the URI is being tested, but a stream is not desired.</p>
+     *
+     * @param config The XML Resolver configuration.
      * @param headOnly Do a "head only" request, returning headers and such but not a stream to read the resource.
      */
-
-    public ResourceConnection(ResolverConfiguration config, URI initialUri, boolean headOnly) {
+    public void get(ResolverConfiguration config, boolean headOnly) {
         try {
             HashSet<URI> visited = new HashSet<>();
-            uri = initialUri;
-            URI connUri = initialUri;
+            URI connUri = uri;
             URLConnection connection = null;
 
             // N.B. By design, HttpURLConnection won't follow redirects across different protocols. But we will.
@@ -136,12 +162,30 @@ public class ResourceConnection {
     }
 
     /**
+     * Set the stream.
+     * <p>If the stream is set, the resource is considered connected.</p>
+     * @param stream the stream to read from for this resource
+     */
+    public void setStream(InputStream stream) {
+        this.stream = stream;
+        this.connected = true;
+    }
+
+    /**
      * Get the headers.
      * @return A map of the headers.
-     * <p>Headers are only applicable to HTTP(S) resources.</p>
      */
     public Map<String,List<String>> getHeaders() {
         return headers;
+    }
+
+    /**
+     * Set the headers.
+     * @param headers The headers.
+     */
+    public void setHeaders(Map<String,List<String>> headers) {
+        this.headers.clear();
+        this.headers.putAll(headers);
     }
 
     /**
@@ -154,11 +198,27 @@ public class ResourceConnection {
     }
 
     /**
+     * Set the content type.
+     * @param type The content type.
+     */
+    public void setContentType(String type) {
+        contentType = type;
+    }
+
+    /**
      * Get the resource encoding.
      * @return The encoding, or null if the encoding is not specified.
      */
     public String getEncoding() {
         return encoding;
+    }
+
+    /**
+     * Set the encoding.
+     * @param encoding The encoding.
+     */
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
     }
 
     /**
@@ -168,6 +228,14 @@ public class ResourceConnection {
      */
     public String getEtag() {
         return etag;
+    }
+
+    /**
+     * Set the ETag.
+     * @param etag The ETag.
+     */
+    public void setEtag(String etag) {
+        this.etag = etag;
     }
 
     /**
@@ -189,6 +257,15 @@ public class ResourceConnection {
     }
 
     /**
+     * Set the URI that was ultimately retrieved.
+     * <p>In the case where the protocol supports redirects, the final URI may differ from the requested URI.</p>
+     * @param redirect The redirect.
+     */
+    public void setRedirect(URI redirect) {
+        this.redirect = redirect;
+    }
+
+    /**
      * Get the status code of the request.
      * <p>As a convenience to users, any successful request (even one from a filesystem or other scheme)
      * returns 200.</p>
@@ -196,6 +273,14 @@ public class ResourceConnection {
      */
     public int getStatusCode() {
         return statusCode;
+    }
+
+    /**
+     * Set the status code of the request.
+     * @param code The status code.
+     */
+    public void setStatusCode(int code) {
+        statusCode = code;
     }
 
     /**
@@ -207,6 +292,14 @@ public class ResourceConnection {
     }
 
     /**
+     * Set the last modified time.
+     * @param lastModified The last modified time.
+     */
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    /**
      * Get the resource date.
      * @return The date or -1 if no date is available.
      */
@@ -215,7 +308,16 @@ public class ResourceConnection {
     }
 
     /**
+     * Set the resource date.
+     * @param date The resource date.
+     */
+    public void setDate(long date) {
+        this.date = date;
+    }
+
+    /**
      * Get the connected status.
+     * <p>This status is true if a stream is provided.</p>
      * @return True if and only if a connection was successfully made to access the resource.
      */
     public boolean isConnected() {

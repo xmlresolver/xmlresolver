@@ -22,7 +22,8 @@ public class CatalogResolverTest {
         resolver = new XMLResolver(config);
 
         // Make sure the Docker container is running where we expect.
-        ResourceConnection conn = new ResourceConnection(config, URI.create("http://localhost:8222/docs/sample/sample.dtd"), true);
+        ResourceConnection conn = new ResourceConnection(URI.create("http://localhost:8222/docs/sample/sample.dtd"));
+        conn.get(config, true);
         Assertions.assertEquals(200, conn.getStatusCode());
     }
 

@@ -118,7 +118,7 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
                 return null;
             }
             try {
-                resp = ResourceAccess.getResource(req);
+                resp = config.getResource(req);
             } catch (URISyntaxException | IOException | IllegalArgumentException ex) {
                 if (resolver.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS)) {
                     throw new TransformerException(ex);

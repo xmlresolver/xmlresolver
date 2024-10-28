@@ -293,5 +293,4 @@ public class ResolverTest {
         }
     }
 
-
 }
