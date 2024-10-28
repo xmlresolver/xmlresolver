@@ -37,7 +37,7 @@ https://github.com/xmlresolver/resolver-migration
 
 ## Version 6.x
 
-Version 6.x is a significant refactoring and is not backwards compatible with version 5.x.
+Version 6.x is a significant refactoring and is not (wholly) backwards compatible with version 5.x.
 (The underlying functionality is the same, but the API is slightly different.)
 The version 5.x sources are now in the
 [legacy_v5](https://github.com/xmlresolver/xmlresolver/tree/legacy_v5) branch. Important
@@ -92,14 +92,20 @@ release. Etc.
 
 ## ChangeLog
 
+### 6.0.11
+
+This version introduces a new API for registering a scheme resolver. This will
+allow a resolver to be configured, for example, to handle custom URI schemes as
+are sometimes found in products.
+
 ### API Changes
 
-Several classes and interfaces no longer exist:
+Several classes and interfaces are marked as deprecated. They were removed
+for several early 6.0.x releases but have been restored for binary backwards
+compatibility.
 
 * `CatalogResover`, `Resolver`, `ResourceResolver`, `StAXResolver`,
    and `XercesResolver` are replaced by methods on `XMLResolver`.
-* `NamespaceResolver` is also replaced by methods on `XMLResolver`. I’m calling that
-   API a failed experiment.
 * `Resource`, `ResolvedResource` and `ResolvedResourceImpl` are replaced, effectively, by
   `ResourceRequest` and `ResourceResponse`.
 * All the classes related to caching.
