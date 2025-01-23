@@ -29,7 +29,7 @@ public class SchemeResolverTest {
         config.setFeature(ResolverFeature.ALWAYS_RESOLVE, true);
         XMLResolver localresolver = new XMLResolver(config);
 
-        String baseURI = URIUtils.cwd().resolve("test-scheme://path/to/sample10/sample.xml").toString();
+        String baseURI = "test-scheme://path/to/sample10/sample.xml";
         ResolvingXMLReader reader = new ResolvingXMLReader(localresolver);
         InputSource source = new InputSource(baseURI);
         try {
