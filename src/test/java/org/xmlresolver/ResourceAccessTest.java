@@ -118,7 +118,14 @@ public class ResourceAccessTest {
             Assertions.assertEquals(URI.create(uri), resp.getURI());
             Assertions.assertEquals("iso-8859-1", resp.getEncoding());
             Assertions.assertFalse(resp.getHeaders().isEmpty());
-            Assertions.assertEquals("74", resp.getHeader("content-length"));
+
+            if (URIUtils.isWindows()) {
+                // Someone sticks in a CR/LF instead of just LF at the end.
+                Assertions.assertEquals("75", resp.getHeader("content-length"));
+            } else {
+                Assertions.assertEquals("74", resp.getHeader("content-length"));
+            }
+
         } catch (IOException | URISyntaxException ex) {
             fail();
         }
