@@ -50,4 +50,36 @@ public class WindowsTests {
 
     }
 
+    @Test
+    public void parseWindowsFilename() {
+        String cwd = System.getProperty("user.dir");
+
+        if (!":".equals(cwd.substring(1,2))) {
+            // Not a useful windows test
+            return;
+        }
+
+        if (!cwd.endsWith("\\")) {
+            cwd += "\\";
+        }
+
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+        config.setFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS, true);
+
+        ArrayList<String> catalogs = new ArrayList<>();
+        catalogs.add(cwd + "src\\test\\resources\\windows-catalog.xml");
+        config.setFeature(ResolverFeature.CATALOG_FILES, catalogs);
+
+        XMLResolver resolver = new XMLResolver(config);
+
+        ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
+        InputSource source = new InputSource("src/test/resources/windows.xml");
+        try {
+            reader.parse(source);
+        } catch (IOException | SAXException ex) {
+            fail();
+        }
+
+
+    }
 }
