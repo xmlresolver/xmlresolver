@@ -1,10 +1,8 @@
 package org.xmlresolver.adapters;
 
-import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.xmlresolver.ResolverConstants;
 import org.xmlresolver.ResourceRequest;
 import org.xmlresolver.ResourceResponse;
-import org.xmlresolver.XMLResolver;
 
 import javax.xml.stream.XMLStreamException;
 

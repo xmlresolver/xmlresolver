@@ -6,7 +6,6 @@ import org.xmlresolver.utils.RsrcUtils;
 
 import javax.xml.transform.sax.SAXSource;
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 

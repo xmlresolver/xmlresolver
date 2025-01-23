@@ -118,7 +118,7 @@ public class XmlLoader implements CatalogLoader {
             return catalogMap.get(catalog);
           }
           try {
-              ResourceRequest request = new ResourceRequest(config);
+              ResourceRequest request = new ResourceRequestImpl(config);
               request.setURI(catalog);
               request.setOpenStream(true);
               ResourceResponse resp = config.getResource(request);
