@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book SYSTEM "ymcsm2-4.dtd"[
+<!-- On a non-Windows system, Xerces doesn't do the right thing
+     with "\" in URIs. Well. It doesn't do the thing we need for
+     this test to pass. So we use "/" and this test isn't really
+     testing anything. -->
+<!ENTITY % gls.entities SYSTEM "../master/glossary/gls.ent">
+%gls.entities;
+]>
+<book>&test;</book>

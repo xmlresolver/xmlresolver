@@ -2,4 +2,6 @@
          prefer="public">
   <system systemId="\\hostname\xmlresolver\test\sample.dtd"
           uri="sample10/sample.dtd"/>
+  <system systemId="file://hostname/xmlresolver/test/sample.dtd"
+          uri="sample10/sample.dtd"/>
 </catalog>

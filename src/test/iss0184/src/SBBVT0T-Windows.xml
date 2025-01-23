@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book SYSTEM "ymcsm2-4.dtd"[
+<!-- This works on Windows, because Xerces does the right thing
+     with "\" on Windows. -->
+<!ENTITY % gls.entities SYSTEM "..\master\glossary\gls.ent">
+%gls.entities;
+]>
+<book>&test;</book>
