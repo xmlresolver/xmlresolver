@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmlresolver.tools.ResolvingXMLReader;
+import org.xmlresolver.utils.URIUtils;
 
 import java.io.IOException;
 
@@ -27,7 +28,10 @@ public class Issue0184Test {
         try {
             ResolvingXMLReader reader = new ResolvingXMLReader(resolver);
             reader.getResolver().config.setFeature(ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS, true);
-            String filename = "src/test/iss0184/src/SBBVT0T-Deployment-Flat-mod.xml";
+            String filename = "src/test/iss0184/src/SBBVT0T-Not-Windows.xml";
+            if (URIUtils.isWindows()) {
+                filename = "src/test/iss0184/src/SBBVT0T-Windows.xml";
+            }
             InputSource source = new InputSource(filename);
             reader.parse(source);
         } catch (IOException | SAXException ex) {
