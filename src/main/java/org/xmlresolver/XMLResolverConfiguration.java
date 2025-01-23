@@ -362,7 +362,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                     URI baseURI = URIUtils.cwd();
                     for (String fn : propfn.split("\\s*;\\s*")) {
                         try {
-                            propertyFilesList.add(baseURI.resolve(fn).toURL());
+                            propertyFilesList.add(baseURI.resolve(URIUtils.safePath(fn)).toURL());
                         } catch (MalformedURLException ex) {
                             // nevermind
                         }
@@ -409,7 +409,8 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 if (fn.trim().isEmpty()) {
                     continue;
                 }
-                catalogs.add(fn);
+                String caturi = URIUtils.safePath(fn);
+                catalogs.add(caturi);
             }
         }
 
@@ -431,8 +432,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!token.trim().isEmpty()) {
-                    showConfigChange("Catalog: %s", token);
-                    catalogs.add(token);
+                    String caturi = URIUtils.safePath(token);
+                    showConfigChange("Catalog: %s", caturi);
+                    catalogs.add(caturi);
                 }
             }
         }
@@ -443,8 +445,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (!token.trim().isEmpty()) {
-                    showConfigChange("Catalog: %s", token);
-                    catalogs.add(token);
+                    String caturi = URIUtils.safePath(token);
+                    showConfigChange("Catalog: %s", caturi);
+                    catalogs.add(caturi);
                 }
             }
         }
@@ -709,7 +712,9 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             String token = tokens.nextToken();
             if (!token.trim().isEmpty()) {
                 if (relative && propertiesURI != null) {
-                    token = propertiesURI.resolve(token).toString();
+                    token = propertiesURI.resolve(URIUtils.safePath(token)).toString();
+                } else {
+                    token = URIUtils.safePath(token);
                 }
                 showConfigChange("Catalog: %s", token);
                 catalogs.add(token);
@@ -852,27 +857,29 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
                 if (value != null) {
                     for (String cat : (List<String>) value) {
                         if (!cat.trim().isEmpty() && !catalogs.contains(cat.trim())) {
-                            showConfigChange("Catalog: %s", cat.trim());
-                            catalogs.add(cat.trim());
+                            String caturi = URIUtils.safePath(cat);
+                            showConfigChange("Catalog: %s", caturi);
+                            catalogs.add(caturi);
                         }
                     }
                 }
             }
             return;
         } else if (feature == ResolverFeature.CATALOG_ADDITIONS) {
-                synchronized (catalogs) {
-                    if (value == null) {
-                        additionalCatalogs.clear();
-                    } else {
-                        for (String cat : (List<String>) value) {
-                            if (!cat.trim().isEmpty() && !additionalCatalogs.contains(cat.trim())) {
-                                showConfigChange("Catalog: %s", cat.trim());
-                                additionalCatalogs.add(cat.trim());
-                            }
+            synchronized (catalogs) {
+                if (value == null) {
+                    additionalCatalogs.clear();
+                } else {
+                    for (String cat : (List<String>) value) {
+                        if (!cat.trim().isEmpty() && !additionalCatalogs.contains(cat.trim())) {
+                            String caturi = URIUtils.safePath(cat);
+                            showConfigChange("Catalog: %s", caturi);
+                            additionalCatalogs.add(caturi);
                         }
                     }
                 }
-                return;
+            }
+            return;
         } else if (feature == ResolverFeature.CLASSLOADER) {
             classLoader = (ClassLoader) value;
             if (classLoader == null) {

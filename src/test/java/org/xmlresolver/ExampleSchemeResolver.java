@@ -2,6 +2,7 @@ package org.xmlresolver;
 
 import org.xmlresolver.spi.SchemeResolver;
 import org.xmlresolver.spi.SchemeResolverManager;
+import org.xmlresolver.utils.URIUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class ExampleSchemeResolver implements SchemeResolverManager {
             if (!path.startsWith("path/to/")) {
                 return null;
             }
-            path = System.getProperty("user.dir") + "/src/test/resources/" + path.substring(8);
+            path = URIUtils.safePath(System.getProperty("user.dir") + "/src/test/resources/" + path.substring(8));
 
             ResourceResponse response = new CustomResponse(request, uri, path);
             return response;
@@ -44,7 +45,21 @@ public class ExampleSchemeResolver implements SchemeResolverManager {
         public CustomResponse(ResourceRequest request, URI uri, String path) {
             this.request = request;
             this.uri = uri;
-            this.path = path;
+
+            String fpath = path;
+            try {
+                // On Windows, the presence of C: at the beginning of the string will
+                // have triggered turning it into a file:/// URI; so now we need to get
+                // the path back.
+                URI furi = URI.create(path);
+                if ("file".equals(furi.getScheme())) {
+                    fpath = furi.getPath();
+                }
+            } catch (Exception ex) {
+                // nop
+            }
+
+            this.path = fpath;
         }
 
         @Override

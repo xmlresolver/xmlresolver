@@ -48,6 +48,21 @@ public abstract class URIUtils {
     }
 
     /**
+     * Make the path provided "safe".
+     *
+     * <p>Encode the path so that non-URI characters are percent encoded.
+     * On Windows, if it looks like D:\path\, call windowsPathURI(path)</p>
+     *
+     * @return the safe path
+     */
+    public static String safePath(String path) {
+        if (isWindows()) {
+            return normalizeURI(windowsPathURI(path));
+        }
+        return normalizeURI(path);
+    }
+
+    /**
      * Creates a URI for the users current working directory.
      *
      * In order that this method should neither raise an exception nor return <code>null</code>,
