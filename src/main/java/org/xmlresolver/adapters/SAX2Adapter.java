@@ -11,7 +11,6 @@ import org.xmlresolver.XMLResolver;
 import org.xmlresolver.sources.ResolverInputSource;
 
 import java.io.IOException;
-import java.net.URI;
 
 /**
  * This class implements the {@link EntityResolver2} API.

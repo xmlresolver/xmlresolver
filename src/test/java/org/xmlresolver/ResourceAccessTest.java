@@ -16,7 +16,7 @@ public class ResourceAccessTest {
     public void testRelativeFileAccess() {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
-            ResourceRequest request = new ResourceRequest(config);
+            ResourceRequest request = new ResourceRequestImpl(config);
 
             String relativeURI = "src/test/resources/rescat.xml";
 
@@ -38,7 +38,7 @@ public class ResourceAccessTest {
     public void testAbsoluteFileAccess() {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
-            ResourceRequest request = new ResourceRequest(config);
+            ResourceRequest request = new ResourceRequestImpl(config);
 
             String relativeURI = "src/test/resources/rescat.xml";
             URI absURI = URIUtils.cwd().resolve(relativeURI);
@@ -64,7 +64,7 @@ public class ResourceAccessTest {
             // If jar (and classpath) URIs are masked, I get back the original classpath URI
             // that's not what's being tested here.
             config.setFeature(ResolverFeature.MASK_JAR_URIS, false);
-            ResourceRequest request = new ResourceRequest(config);
+            ResourceRequest request = new ResourceRequestImpl(config);
 
             // n.b., leading "/" is not how classpath: URIs should be constructed
             String uri = "classpath:/org/xmlresolver/schemas/catalog.xml";
@@ -85,7 +85,7 @@ public class ResourceAccessTest {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
             config.setFeature(ResolverFeature.MASK_JAR_URIS, false);
-            ResourceRequest request = new ResourceRequest(config);
+            ResourceRequest request = new ResourceRequestImpl(config);
 
             URI jarURI = URIUtils.cwd().resolve("src/test/resources/data1.jar");
             String uri = "jar:" + jarURI + "!/path/test.txt";
@@ -106,7 +106,7 @@ public class ResourceAccessTest {
     public void testHttpAccess() {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
-            ResourceRequest request = new ResourceRequest(config);
+            ResourceRequest request = new ResourceRequestImpl(config);
 
             String uri = "http://localhost:8222/docs/iso-8859-1.txt";
             request.setURI(uri);
@@ -128,7 +128,7 @@ public class ResourceAccessTest {
     public void testHttpFollowRedirectAccess() {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
-            ResourceRequest request = new ResourceRequest(config);
+            ResourceRequest request = new ResourceRequestImpl(config);
 
             String uri = "http://localhost:8222/docs/foo";
             request.setURI(uri);

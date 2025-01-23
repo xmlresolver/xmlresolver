@@ -103,7 +103,7 @@ public class XMLResolver {
      * @return The request.
      */
     public ResourceRequest getRequest(String uri, String baseUri, String nature, String purpose) {
-        ResourceRequest request = new ResourceRequest(config, nature, purpose);
+        ResourceRequest request = new ResourceRequestImpl(config, nature, purpose);
         request.setURI(uri);
         request.setBaseURI(baseUri);
         return request;
@@ -242,11 +242,11 @@ public class XMLResolver {
     public ResourceResponse lookup(ResourceRequest request) {
         CatalogManager manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
 
-        if (ResolverConstants.DTD_NATURE.equals(request.nature)) {
+        if (ResolverConstants.DTD_NATURE.equals(request.getNature())) {
             return lookupDtd(request, manager);
         }
 
-        if (ResolverConstants.EXTERNAL_ENTITY_NATURE.equals(request.nature)) {
+        if (ResolverConstants.EXTERNAL_ENTITY_NATURE.equals(request.getNature())) {
             return lookupEntity(request, manager);
         }
 
@@ -256,7 +256,7 @@ public class XMLResolver {
             return response;
         }
 
-        if (request.nature == null) { // == ResolverConstants.ANY_NATURE :-(
+        if (request.getNature() == null) { // == ResolverConstants.ANY_NATURE :-(
             // What about an entity?
             response = lookupEntity(request, manager);
             if (!response.isResolved() && request.getEntityName() != null) {
@@ -286,7 +286,7 @@ public class XMLResolver {
             }
         }
 
-        return new ResourceResponse(request, found);
+        return new ResourceResponseImpl(request, found);
     }
 
     private ResourceResponse lookupEntity(ResourceRequest request, CatalogManager manager) {
@@ -299,7 +299,7 @@ public class XMLResolver {
 
         if (name == null && publicId == null && systemId == null && baseUri == null) {
             logger.log(AbstractLogger.REQUEST, "lookupEntity: null");
-            return new ResourceResponse(request);
+            return new ResourceResponseImpl(request);
         }
 
         URI systemIdURI = makeUri(systemId);
@@ -307,7 +307,7 @@ public class XMLResolver {
             if (systemIdURI.isAbsolute()) {
                 if (URIUtils.forbidAccess(allowed, systemId, config.getFeature(ResolverFeature.MERGE_HTTPS))) {
                     logger.log(AbstractLogger.REQUEST, "lookupEntity (access denied): %s", systemIdURI.toString());
-                    return new ResourceResponse(request, true);
+                    return new ResourceResponseImpl(request, true);
                 }
             }
         }
@@ -321,14 +321,14 @@ public class XMLResolver {
         }
 
         if (resolved != null) {
-            return new ResourceResponse(request, resolved);
+            return new ResourceResponseImpl(request, resolved);
         }
 
         URI absSystem = makeAbsolute(request);
         if (absSystem != null) {
             if (URIUtils.forbidAccess(allowed, absSystem.toString(), config.getFeature(ResolverFeature.MERGE_HTTPS))) {
                 logger.log(AbstractLogger.REQUEST, "lookupEntity: (access denied): null");
-                return new ResourceResponse(request, true);
+                return new ResourceResponseImpl(request, true);
             }
 
             resolved = manager.lookupEntity(name, absSystem.toString(), publicId);
@@ -340,15 +340,15 @@ public class XMLResolver {
         if (resolved == null) {
             if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 if (absSystem == null) {
-                    return new ResourceResponse(request);
+                    return new ResourceResponseImpl(request);
                 } else {
-                    return new ResourceResponse(request, absSystem);
+                    return new ResourceResponseImpl(request, absSystem);
                 }
             }
-            return new ResourceResponse(request);
+            return new ResourceResponseImpl(request);
         }
 
-        return new ResourceResponse(request, resolved);
+        return new ResourceResponseImpl(request, resolved);
     }
 
     private ResourceResponse lookupUri(ResourceRequest request, CatalogManager manager) {
@@ -359,7 +359,7 @@ public class XMLResolver {
 
         if (systemId == null && baseUri == null) {
             logger.log(AbstractLogger.REQUEST, "lookupUri: null");
-            return new ResourceResponse(request);
+            return new ResourceResponseImpl(request);
         }
 
         if (systemId == null) {
@@ -371,41 +371,41 @@ public class XMLResolver {
             if (systemIdURI.isAbsolute()) {
                 if (URIUtils.forbidAccess(allowed, systemId, config.getFeature(ResolverFeature.MERGE_HTTPS))) {
                     logger.log(AbstractLogger.REQUEST, "lookupUri (access denied): null");
-                    return new ResourceResponse(request, true);
+                    return new ResourceResponseImpl(request, true);
                 }
             }
         }
 
         logger.log(AbstractLogger.REQUEST, "lookupUri: %s (baseURI: %s)", systemId, baseUri);
 
-        URI resolved = manager.lookupNamespaceURI(systemId, request.nature, request.purpose);
+        URI resolved = manager.lookupNamespaceURI(systemId, request.getNature(), request.getPurpose());
 
         if (resolved != null) {
-            return new ResourceResponse(request, resolved);
+            return new ResourceResponseImpl(request, resolved);
         }
 
         URI absSystem = makeAbsolute(request);
         if (absSystem != null) {
             if (URIUtils.forbidAccess(allowed, absSystem.toString(), config.getFeature(ResolverFeature.MERGE_HTTPS))) {
                 logger.log(AbstractLogger.REQUEST, "lookupUri (access denied): null");
-                return new ResourceResponse(request, true);
+                return new ResourceResponseImpl(request, true);
             }
 
-            resolved = manager.lookupNamespaceURI(absSystem.toString(), request.nature, request.purpose);
+            resolved = manager.lookupNamespaceURI(absSystem.toString(), request.getNature(), request.getPurpose());
         }
 
         if (resolved == null) {
             if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 if (absSystem == null) {
-                    return new ResourceResponse(request);
+                    return new ResourceResponseImpl(request);
                 } else {
-                    return new ResourceResponse(request, absSystem);
+                    return new ResourceResponseImpl(request, absSystem);
                 }
             }
-            return new ResourceResponse(request);
+            return new ResourceResponseImpl(request);
         }
 
-        return new ResourceResponse(request, resolved);
+        return new ResourceResponseImpl(request, resolved);
     }
 
     /**
@@ -428,15 +428,15 @@ public class XMLResolver {
         }
 
         boolean tryRddl = config.getFeature(ResolverFeature.PARSE_RDDL)
-                && lookup.request.nature != null && lookup.request.purpose != null;
+                && lookup.getRequest().getNature() != null && lookup.getRequest().getPurpose() != null;
 
         try {
             if (tryRddl) {
                 if (lookup.isResolved()) {
                     lookup = rddlLookup(lookup);
                 } else {
-                    if (lookup.request.getAbsoluteURI() != null) {
-                        lookup = rddlLookup(lookup, lookup.request.getAbsoluteURI());
+                    if (lookup.getRequest().getAbsoluteURI() != null) {
+                        lookup = rddlLookup(lookup, lookup.getRequest().getAbsoluteURI());
                     }
                 }
             }
@@ -465,22 +465,22 @@ public class XMLResolver {
     }
 
     private ResourceResponse rddlLookup(ResourceResponse lookup, URI resolved) {
-        String nature = lookup.request.nature;
-        String purpose = lookup.request.purpose;
+        String nature = lookup.getRequest().getNature();
+        String purpose = lookup.getRequest().getPurpose();
 
         URI rddl = checkRddl(resolved, nature, purpose);
         if (rddl == null) {
             return lookup;
         }
 
-        ResourceRequest rddlRequest = new ResourceRequest(config, ResolverConstants.ANY_NATURE, ResolverConstants.ANY_PURPOSE);
+        ResourceRequest rddlRequest = new ResourceRequestImpl(config, ResolverConstants.ANY_NATURE, ResolverConstants.ANY_PURPOSE);
         rddlRequest.setURI(rddl.toString());
         rddlRequest.setBaseURI(resolved.toString());
 
         ResourceResponse resp = lookup(rddlRequest);
         if (!resp.isResolved()) {
             logger.log(AbstractLogger.RESPONSE, "RDDL %s: %s", resolved, rddl);
-            return new ResourceResponse(lookup.request, rddl);
+            return new ResourceResponseImpl(lookup.getRequest(), rddl);
         }
         logger.log(AbstractLogger.RESPONSE, "RDDL %s: %s", resolved, resp.getURI());
 
@@ -494,7 +494,7 @@ public class XMLResolver {
             spf.setValidating(false);
             spf.setXIncludeAware(false);
 
-            ResourceRequest req = new ResourceRequest(config, nature, purpose);
+            ResourceRequest req = new ResourceRequestImpl(config, nature, purpose);
             req.setURI(uri.toString());
 
             ResourceResponse rsrc = config.getResource(req);

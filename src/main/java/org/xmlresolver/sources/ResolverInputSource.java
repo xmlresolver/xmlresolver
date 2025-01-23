@@ -4,9 +4,7 @@ import org.xml.sax.InputSource;
 import org.xmlresolver.ResourceResponse;
 import org.xmlresolver.utils.RsrcUtils;
 
-import java.io.InputStream;
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +12,7 @@ import java.util.Map;
  *
  */
 public class ResolverInputSource extends InputSource implements ResolverResourceInfo {
-    private ResourceResponse response;
+    private final ResourceResponse response;
     private final URI resolvedURI;
     private final int statusCode;
     private final Map<String,List<String>> resolvedHeaders;
@@ -26,7 +24,7 @@ public class ResolverInputSource extends InputSource implements ResolverResource
     public ResolverInputSource(ResourceResponse rsrc) {
         super(rsrc.getInputStream());
         setSystemId(rsrc.getURI().toString());
-        setPublicId(rsrc.request.getPublicId());
+        setPublicId(rsrc.getRequest().getPublicId());
         this.response = rsrc;
         resolvedURI = rsrc.getResolvedURI();
         statusCode = rsrc.getStatusCode();

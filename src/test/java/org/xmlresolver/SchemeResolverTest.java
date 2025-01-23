@@ -2,17 +2,23 @@ package org.xmlresolver;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xmlresolver.spi.SchemeResolver;
+import org.xmlresolver.tools.ResolvingXMLReader;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.xmlresolver.ClasspathTest.resolver;
 
 public class SchemeResolverTest {
     public static final String catalog1 = "src/test/resources/schemecat.xml";
@@ -23,12 +29,13 @@ public class SchemeResolverTest {
         config.setFeature(ResolverFeature.ALWAYS_RESOLVE, true);
         XMLResolver localresolver = new XMLResolver(config);
 
+        String baseURI = URIUtils.cwd().resolve("test-scheme://path/to/sample10/sample.xml").toString();
+        ResolvingXMLReader reader = new ResolvingXMLReader(localresolver);
+        InputSource source = new InputSource(baseURI);
         try {
-            String baseURI = URIUtils.cwd().resolve("test-scheme://path/to/file.xml").toString();
-            Source result = localresolver.getURIResolver().resolve("", baseURI);
-            Assertions.assertNotNull(result);
-        } catch (Exception ex) {
-            fail(ex.getMessage());
+            reader.parse(source);
+        } catch (IOException | SAXException ex) {
+            fail();
         }
     }
 
@@ -66,7 +73,7 @@ public class SchemeResolverTest {
     private static class MySchemeResolver implements SchemeResolver {
         @Override
         public ResourceResponse getResource(ResourceRequest request, URI uri) throws IOException {
-            ResourceResponse response = new ResourceResponse(request, uri);
+            ResourceResponseImpl response = new ResourceResponseImpl(request, uri);
             ResourceConnection conn = new ResourceConnection(uri);
             ByteArrayInputStream bais = new ByteArrayInputStream("<doc>".getBytes(StandardCharsets.UTF_8));
             conn.setStream(bais);

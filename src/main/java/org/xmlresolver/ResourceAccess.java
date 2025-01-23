@@ -73,10 +73,10 @@ public class ResourceAccess {
      */
     public ResourceResponse getResource(ResourceResponse response) throws URISyntaxException, IOException {
         URI uri = response.getUnmaskedURI();
-        if (uri == null && response.request != null) {
-            uri = response.request.getAbsoluteURI();
-            if (uri == null && response.request.getURI() != null) {
-                uri = new URI(response.request.getURI());
+        if (uri == null && response.getRequest() != null) {
+            uri = response.getRequest().getAbsoluteURI();
+            if (uri == null && response.getRequest().getURI() != null) {
+                uri = new URI(response.getRequest().getURI());
             }
         }
 
@@ -88,7 +88,7 @@ public class ResourceAccess {
             uri = URIUtils.resolve(URIUtils.cwd(), uri.toString());
         }
 
-        return getResourceFromURI(response.request, uri);
+        return getResourceFromURI(response.getRequest(), uri);
     }
 
     private ResourceResponse getResourceFromURI(ResourceRequest request, URI uri) throws URISyntaxException, IOException {
@@ -107,26 +107,30 @@ public class ResourceAccess {
                     // scheme to provider so that subsequent requests can skip this work. The cost is that
                     // we construct SchemeResolvers we may never use. But there aren't expected to be many of them.
                     loadedSPI = true;
-                    ServiceLoader<SchemeResolverProvider> loader = ServiceLoader.load(SchemeResolverProvider.class);
-                    for (SchemeResolverProvider provider : loader) {
-                        SchemeResolverManager manager = provider.create();
-                        for (String scheme : manager.getKnownSchemes()) {
-                            if (!schemeResolvers.containsKey(scheme)) {
-                                schemeResolvers.put(scheme, new ArrayList<>());
-                            }
-                            try {
-                                schemeResolvers.get(scheme).add(manager.getSchemeResolver(scheme));
-                            } catch (Exception ex) {
-                                // just ignore it
+                    synchronized (schemeResolvers) {
+                        ServiceLoader<SchemeResolverProvider> loader = ServiceLoader.load(SchemeResolverProvider.class);
+                        for (SchemeResolverProvider provider : loader) {
+                            SchemeResolverManager manager = provider.create();
+                            for (String scheme : manager.getKnownSchemes()) {
+                                if (!schemeResolvers.containsKey(scheme)) {
+                                    schemeResolvers.put(scheme, new ArrayList<>());
+                                }
+                                try {
+                                    schemeResolvers.get(scheme).add(manager.getSchemeResolver(scheme));
+                                } catch (Exception ex) {
+                                    // just ignore it
+                                }
                             }
                         }
                     }
                 }
                 String scheme = uri.getScheme();
-                for (SchemeResolver schemeResolver : schemeResolvers.computeIfAbsent(scheme, k -> new ArrayList<>())) {
-                    ResourceResponse resp = schemeResolver.getResource(request, uri);
-                    if (resp != null) {
-                        return resp;
+                synchronized (schemeResolvers) {
+                    for (SchemeResolver schemeResolver : schemeResolvers.computeIfAbsent(scheme, k -> new ArrayList<>())) {
+                        ResourceResponse resp = schemeResolver.getResource(request, uri);
+                        if (resp != null) {
+                            return resp;
+                        }
                     }
                 }
 
@@ -171,18 +175,18 @@ public class ResourceAccess {
                 contentType = mediatype.isEmpty() ? null : mediatype;
             }
 
-            ResourceResponse resp = new ResourceResponse(request, resourceURI);
+            ResourceResponseImpl resp = new ResourceResponseImpl(request, resourceURI);
             resp.setInputStream(inputStream);
             resp.setContentType(contentType);
             return resp;
         } else {
-            boolean throwExceptions = request.config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
-            ResolverLogger logger = request.config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+            boolean throwExceptions = request.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+            ResolverLogger logger = request.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
             logger.log(AbstractLogger.REQUEST, "Comma separator missing in data: URI");
             if (throwExceptions) {
                 throw new URISyntaxException(resourceURI.toString(), "Comma separator missing in data: URI");
             }
-            return new ResourceResponse(request);
+            return new ResourceResponseImpl(request);
         }
     }
 
@@ -200,29 +204,29 @@ public class ResourceAccess {
         // found (if one is found). That means downstream processes will
         // have a "useful" URI. It still might not work, due to class loaders and
         // such, but at least it won't immediately blow up.
-        URL rsrc = request.config.getFeature(ResolverFeature.CLASSLOADER).getResource(path);
+        URL rsrc = request.getConfiguration().getFeature(ResolverFeature.CLASSLOADER).getResource(path);
         if (rsrc == null) {
-            return new ResourceResponse(request);
+            return new ResourceResponseImpl(request);
         } else {
             try {
-                ResourceResponse resp = new ResourceResponse(request, resourceURI);
+                ResourceResponseImpl resp = new ResourceResponseImpl(request, resourceURI);
                 resp.setInputStream(rsrc.openStream());
                 return resp;
             } catch (IOException ex) {
-                boolean throwExceptions = request.config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
-                ResolverLogger logger = request.config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+                boolean throwExceptions = request.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+                ResolverLogger logger = request.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
                 logger.log(AbstractLogger.REQUEST, "I/O error reading %s", resourceURI.toString());
                 if (throwExceptions) {
                     throw new IllegalArgumentException("I/O error reading " + resourceURI);
                 }
-                return new ResourceResponse(request);
+                return new ResourceResponseImpl(request);
             }
         }
     }
 
     private static ResourceResponse getJarResource(ResourceRequest request, URI resourceURI) {
         try {
-            ResourceResponse resp = new ResourceResponse(request, resourceURI);
+            ResourceResponseImpl resp = new ResourceResponseImpl(request, resourceURI);
             JarURLConnection conn = (JarURLConnection) resourceURI.toURL().openConnection();
             resp.setUri(request.getAbsoluteURI());
             resp.setInputStream(conn.getInputStream());
@@ -232,18 +236,18 @@ public class ResourceAccess {
         } catch (MalformedURLException|URISyntaxException ex) {
             throw new IllegalArgumentException(ex);
         } catch (IOException ex) {
-            boolean throwExceptions = request.config.getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
-            ResolverLogger logger = request.config.getFeature(ResolverFeature.RESOLVER_LOGGER);
+            boolean throwExceptions = request.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
+            ResolverLogger logger = request.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
             logger.log(AbstractLogger.REQUEST, "I/O error reading %s", resourceURI.toString());
             if (throwExceptions) {
                 throw new IllegalArgumentException("I/O error reading " + resourceURI);
             }
-            return new ResourceResponse(request);
+            return new ResourceResponseImpl(request);
         }
     }
 
     private static ResourceResponse getNetResource(ResourceRequest request, URI resourceURI) {
-        ResolverConfiguration config = request.config;
+        ResolverConfiguration config = request.getConfiguration();
         ResolverLogger logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
 
         final boolean mergeHttps = config.getFeature(ResolverFeature.MERGE_HTTPS);
@@ -264,14 +268,14 @@ public class ResourceAccess {
             } else {
                 logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: " + resourceURI);
             }
-            return new ResourceResponse(request, true);
+            return new ResourceResponseImpl(request, true);
         }
 
         ResourceConnection connx = new ResourceConnection(resourceURI);
-        connx.get(request.config, !request.openStream());
+        connx.get(request.getConfiguration(), !request.isOpenStream());
         URI redirect = connx.getRedirect();
         URI uri = redirect == null ? resourceURI : redirect;
-        ResourceResponse resp = new ResourceResponse(request, uri);
+        ResourceResponseImpl resp = new ResourceResponseImpl(request, uri);
         resp.setResolved(connx.isConnected());
         resp.setResolvedURI(uri);
         resp.setConnection(connx);

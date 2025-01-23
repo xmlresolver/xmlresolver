@@ -64,7 +64,7 @@ public class ConcurrencyTests {
         {
           XMLResolverConfiguration config = new XMLResolverConfiguration(catalogFiles);
   
-          CountDownLatch latch= new CountDownLatch(numThreads);
+          CountDownLatch latch = new CountDownLatch(numThreads);
           
           Callable<OpResult> createConfiguration= () -> {
             latch.countDown();
