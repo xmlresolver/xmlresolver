@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A {@code ResourceResponse} is the return type for either an attempt to lookup a resource
+ * A {@code ResourceResponse} is the return type for either an attempt to look up a resource
  * in the catalog or to resolve a resource. It encapsulates the results of the attempt.
  */
 public class ResourceResponseImpl implements ResourceResponse {
@@ -88,7 +88,7 @@ public class ResourceResponseImpl implements ResourceResponse {
      * response.</p>
      * @param conn The resource connection.
      */
-    /* package */ void setConnection(ResourceConnection conn) {
+    public void setConnection(ResourceConnection conn) {
         connection = conn;
     }
 
@@ -97,7 +97,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return connection;
     }
 
-    /* package */ void setContentType(String contentType) {
+    public void setContentType(String contentType) {
         this.contentType = contentType;
     }
 
@@ -106,7 +106,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return contentType;
     }
 
-    /* package */ void setInputStream(InputStream stream) {
+    public void setInputStream(InputStream stream) {
         this.stream = stream;
     }
 
@@ -115,7 +115,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return stream;
     }
 
-    /* package */ void setRejected(boolean rejected) {
+    public void setRejected(boolean rejected) {
         this.rejected = rejected;
     }
 
@@ -124,7 +124,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return rejected;
     }
 
-    /* package */ void setResolved(boolean resolved) {
+    public void setResolved(boolean resolved) {
         this.resolved = resolved;
     }
 
@@ -133,7 +133,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return resolved;
     }
 
-    /* package */ void setUri(URI uri) {
+    public void setUri(URI uri) {
         this.uri = uri;
     }
 
@@ -142,7 +142,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return uri;
     }
 
-    /* package */ void setResolvedURI(URI uri) {
+    public void setResolvedURI(URI uri) {
         resolvedURI = uri;
     }
 
@@ -162,7 +162,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return resolvedURI;
     }
 
-    /* package */ void setEncoding(String encoding) {
+    public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
@@ -171,7 +171,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return encoding;
     }
 
-    /* package */ void setHeaders(Map<String,List<String>> headers) {
+    public void setHeaders(Map<String,List<String>> headers) {
         this.headers.clear();
         this.headers.putAll(headers);
     }
@@ -200,7 +200,7 @@ public class ResourceResponseImpl implements ResourceResponse {
         return null;
     }
 
-    /* package */ void setStatusCode(int code) {
+    public void setStatusCode(int code) {
         statusCode = code;
     }
 
