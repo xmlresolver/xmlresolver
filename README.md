@@ -92,6 +92,17 @@ release. Etc.
 
 ## ChangeLog
 
+### 6.0.12
+
+* Reworked the API to use interfaces for `ResourceRequest` and
+  `ResourceResponse`. This makes writing a schema handler easier. This is a
+  backwards incompatible change if you were directly accessing those objects.
+  You have to access the `ResourceRequestImpl` and `ResourceResponseImpl`
+  instead. On the plus side, the setters are now public on those methods.
+* Added code that attempts to detect a Windows path (C:\path) passed as a
+  catalog or property file name and avoid accidentally constructing a URI with
+  the scheme “C”.
+
 ### 6.0.11
 
 This version introduces a new API for registering a scheme resolver. This will
