@@ -92,6 +92,17 @@ release. Etc.
 
 ## ChangeLog
 
+### 6.0.13 / 5.3.0
+
+* Changed the API so that an attempt to read a scheme that’s forbidden (by
+  `ResolverFeature.ACCESS_EXTERNAL_ENTITY` or
+  `ResolverFeature.ACCESS_EXTERNAL_DOCUMENT`) raises an
+  `IllegalArgumentException` instead of returning `null`.
+* Generally, the XML Resolver tries to avoid throwing exceptions, but in this
+  case failing to do so opens a security vulnerability. Returning `null` often
+  signals the underlying parser to simply load the resource with the original
+  URI. This circumvents the attempt to limit access.
+
 ### 6.0.12
 
 * Reworked the API to use interfaces for `ResourceRequest` and
