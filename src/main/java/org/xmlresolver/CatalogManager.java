@@ -109,6 +109,9 @@ public class CatalogManager implements XMLCatalogResolver {
         catalogLoader = loader;
     }
 
+    /** Return the catalog files.
+     * @return the list of catalog files
+     */
     public List<URI> catalogs() {
         ArrayList<URI> catlist = new ArrayList<>();
         for (String cat : resolverConfiguration.getFeature(ResolverFeature.CATALOG_FILES)) {

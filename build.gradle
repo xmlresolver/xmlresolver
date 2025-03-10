@@ -7,18 +7,13 @@ plugins {
   id 'com.nwalsh.gradle.docker.container' version '0.0.5'
 }
 
-sourceCompatibility=1.8
-targetCompatibility=1.8
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+}
 
 repositories {
   mavenLocal()
   mavenCentral()
-}
-
-java {
-  registerFeature('validating') {
-    usingSourceSet(sourceSets.main)
-  }
 }
 
 jar {
@@ -37,21 +32,20 @@ configurations {
 
 dependencies {
   implementation (
-    [group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.1.3'],
-    [group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.1.3'],
+    [group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.3.1'],
+    [group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.3.1'],
+    [group: 'xerces', name: 'xercesImpl', version: '2.12.2' ]
   )
 
   compileOnly (
-    [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36' ]
-  )
-
-  validatingImplementation (
-    [group: 'org.relaxng', name: 'jing', version: '20220510' ]
+    [group: 'org.slf4j', name: 'slf4j-api', version: '2.0.16' ],
+    [group: 'org.relaxng', name: 'jing', version: '20241231' ]
   )
 
   testImplementation (
     [group: 'junit', name: 'junit', version: '4.13.2'],
-    [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36' ],
+    [group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.16' ],
+    [group: 'org.relaxng', name: 'jing', version: '20241231' ],
     // Because reasons: https://blog.adamretter.org.uk/xerces-xsd11-maven/
     [group: 'org.exist-db.thirdparty.xerces', name: 'xercesImpl', version: '2.12.2' ],
     files("src/test/resources/data1.jar"),
@@ -174,7 +168,7 @@ task dist(dependsOn: ["copyDocs", "copyJars", "test"], type: Zip) {
 }
 
 javadoc {
-  title 'XML Catalog Resolver API'
+  title = 'XML Catalog Resolver API'
   exclude 'org/xmlresolver/utils/**'
   exclude 'org/xmlresolver/BuildConfig.java'
   exclude 'org/xmlresolver/ResourceConnection.java'
@@ -308,7 +302,7 @@ clean.dependsOn deleteBuild
 // ======================================================================
 
 tasks.register("dockerup") {
-  description "Make sure the Docker container is running."
+  description = "Make sure the Docker container is running."
   doLast {
     if (!DockerContainer.running(c_restest)) {
       DockerContainer.compose {
@@ -323,7 +317,7 @@ tasks.register("dockerup") {
 test.dependsOn dockerup
 
 tasks.register("dockerdown") {
-  description "Make sure the Docker container is not running."
+  description = "Make sure the Docker container is not running."
   doLast {
     if (DockerContainer.running(c_restest)) {
       DockerContainer.compose {
@@ -336,7 +330,7 @@ tasks.register("dockerdown") {
 }
 
 tasks.register("dockerstatus") {
-  description "Print a short summary of running containers"
+  description = "Print a short summary of running containers"
   doLast {
     if (DockerContainer.containers().isEmpty()) {
       println("There are no docker containers running.")

@@ -1,6 +1,5 @@
 package org.xmlresolver;
 
-import com.thaiopensource.resolver.xml.sax.SAX;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmlresolver.cache.ResourceCache;

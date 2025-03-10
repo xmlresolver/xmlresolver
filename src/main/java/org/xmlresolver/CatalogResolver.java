@@ -99,8 +99,8 @@ public class CatalogResolver implements ResourceResolver {
             URI uri = new URI(href);
             if (uri.isAbsolute()) {
                 if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), href)) {
-                    logger.log(AbstractLogger.REQUEST, "resolveURI (access denied): null");
-                    return null;
+                    logger.log(AbstractLogger.REQUEST, "resolveURI (access denied): " + href);
+                    throw new IllegalArgumentException("Resource protocol access denied: " + href);
                 }
             }
         } catch (URISyntaxException ex) {
@@ -120,8 +120,8 @@ public class CatalogResolver implements ResourceResolver {
                 absolute = new URI(baseURI).resolve(href).toString();
                 if (!href.equals(absolute)) {
                     if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), absolute)) {
-                        logger.log(AbstractLogger.REQUEST, "resolveURI (access denied): null");
-                        return null;
+                        logger.log(AbstractLogger.REQUEST, "resolveURI (access denied): " + absolute);
+                        throw new IllegalArgumentException("Resource protocol access denied: " + absolute);
                     }
                     resolved = catalog.lookupURI(absolute);
                     if (resolved != null) {
@@ -229,8 +229,8 @@ public class CatalogResolver implements ResourceResolver {
                 URI uri = new URI(systemId);
                 if (uri.isAbsolute()) {
                     if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY), systemId)) {
-                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): null");
-                        return null;
+                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): " + systemId);
+                        throw new IllegalArgumentException("Resource protocol access denied: " + systemId);
                     }
                 }
             } catch (URISyntaxException ex) {
@@ -274,8 +274,8 @@ public class CatalogResolver implements ResourceResolver {
                     }
 
                     if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY), absSystem.toString())) {
-                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): null");
-                        return null;
+                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): " + absSystem);
+                        throw new IllegalArgumentException("Resource protocol access denied: " + absSystem);
                     }
 
                     resolved = catalog.lookupEntity(name, absSystem.toString(), publicId);
@@ -361,8 +361,8 @@ public class CatalogResolver implements ResourceResolver {
                 URI uri = new URI(baseURI);
                 if (uri.isAbsolute()) {
                     if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_ENTITY), baseURI)) {
-                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): null");
-                        return null;
+                        logger.log(AbstractLogger.REQUEST, "resolveEntity (access denied): " + baseURI);
+                        throw new IllegalArgumentException("Resource protocol access denied: " + baseURI);
                     }
                 }
             } catch (URISyntaxException ex) {
@@ -410,8 +410,8 @@ public class CatalogResolver implements ResourceResolver {
             absolute = new URI(uri);
             if (absolute.isAbsolute()) {
                 if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), uri)) {
-                    logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): null");
-                    return null;
+                    logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): " + uri);
+                    throw new IllegalArgumentException("Resource protocol access denied: " + uri);
                 }
             }
         } catch (URISyntaxException ex) {
@@ -433,8 +433,8 @@ public class CatalogResolver implements ResourceResolver {
 
                 if (absolute.isAbsolute()) {
                     if (forbidAccess(config.getFeature(ResolverFeature.ACCESS_EXTERNAL_DOCUMENT), uri)) {
-                        logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): null");
-                        return null;
+                        logger.log(AbstractLogger.REQUEST, "resolveNamespace (access denied): " + uri);
+                        throw new IllegalArgumentException("Resource protocol access denied: " + uri);
                     }
                 }
 
