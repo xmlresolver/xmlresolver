@@ -55,3 +55,6 @@ jobs:
           git submodule sync
           git submodule update --init
           ./gradlew dist
+          cat build/reports/problems/problems-report.html
+          cat build/reports/tests/test/index.html
+
