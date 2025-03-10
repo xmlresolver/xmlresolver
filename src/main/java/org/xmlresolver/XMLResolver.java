@@ -278,12 +278,20 @@ public class XMLResolver {
             throw new NullPointerException("Name must not be null for DTD lookup");
         }
 
+        logger.log(AbstractLogger.REQUEST, "lookupDoctype: %s %s (baseURI: %s, publicId: %s)", name, systemId, baseUri, publicId);
+
         URI found = manager.lookupDoctype(name, systemId, publicId);
         if (found == null && baseUri != null) {
             URI absuri = makeAbsolute(request);
             if (absuri != null) {
                 found = manager.lookupDoctype(name, absuri.toString(), publicId);
             }
+        }
+
+        if (found == null) {
+            logger.log(AbstractLogger.RESPONSE, "lookupDoctype: null");
+        } else {
+            logger.log(AbstractLogger.RESPONSE, "lookupDoctype: %s", found);
         }
 
         return new ResourceResponseImpl(request, found);
@@ -307,7 +315,7 @@ public class XMLResolver {
             if (systemIdURI.isAbsolute()) {
                 if (URIUtils.forbidAccess(allowed, systemId, config.getFeature(ResolverFeature.MERGE_HTTPS))) {
                     logger.log(AbstractLogger.REQUEST, "lookupEntity (access denied): %s", systemIdURI.toString());
-                    return new ResourceResponseImpl(request, true);
+                    throw new IllegalArgumentException("lookupEntity (access denied): " + systemIdURI);
                 }
             }
         }
@@ -321,14 +329,15 @@ public class XMLResolver {
         }
 
         if (resolved != null) {
+            logger.log(AbstractLogger.RESPONSE, "lookupEntity: %s", resolved);
             return new ResourceResponseImpl(request, resolved);
         }
 
         URI absSystem = makeAbsolute(request);
         if (absSystem != null) {
             if (URIUtils.forbidAccess(allowed, absSystem.toString(), config.getFeature(ResolverFeature.MERGE_HTTPS))) {
-                logger.log(AbstractLogger.REQUEST, "lookupEntity: (access denied): null");
-                return new ResourceResponseImpl(request, true);
+                logger.log(AbstractLogger.REQUEST, "lookupEntity: (access denied): " + absSystem);
+                throw new IllegalArgumentException("lookupEntity (access denied): " + absSystem);
             }
 
             resolved = manager.lookupEntity(name, absSystem.toString(), publicId);
@@ -340,14 +349,18 @@ public class XMLResolver {
         if (resolved == null) {
             if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 if (absSystem == null) {
+                    logger.log(AbstractLogger.RESPONSE, "lookupEntity: null");
                     return new ResourceResponseImpl(request);
                 } else {
+                    logger.log(AbstractLogger.RESPONSE, "lookupEntity: %s", absSystem);
                     return new ResourceResponseImpl(request, absSystem);
                 }
             }
+            logger.log(AbstractLogger.RESPONSE, "lookupEntity: null");
             return new ResourceResponseImpl(request);
         }
 
+        logger.log(AbstractLogger.RESPONSE, "lookupEntity: %s", resolved);
         return new ResourceResponseImpl(request, resolved);
     }
 
@@ -370,8 +383,8 @@ public class XMLResolver {
         if (systemIdURI != null) {
             if (systemIdURI.isAbsolute()) {
                 if (URIUtils.forbidAccess(allowed, systemId, config.getFeature(ResolverFeature.MERGE_HTTPS))) {
-                    logger.log(AbstractLogger.REQUEST, "lookupUri (access denied): null");
-                    return new ResourceResponseImpl(request, true);
+                    logger.log(AbstractLogger.REQUEST, "lookupUri (access denied): " + systemId);
+                    throw new IllegalArgumentException("lookupUri (access denied): " + systemId);
                 }
             }
         }
@@ -381,14 +394,15 @@ public class XMLResolver {
         URI resolved = manager.lookupNamespaceURI(systemId, request.getNature(), request.getPurpose());
 
         if (resolved != null) {
+            logger.log(AbstractLogger.RESPONSE, "lookupUri: %s", resolved);
             return new ResourceResponseImpl(request, resolved);
         }
 
         URI absSystem = makeAbsolute(request);
         if (absSystem != null) {
             if (URIUtils.forbidAccess(allowed, absSystem.toString(), config.getFeature(ResolverFeature.MERGE_HTTPS))) {
-                logger.log(AbstractLogger.REQUEST, "lookupUri (access denied): null");
-                return new ResourceResponseImpl(request, true);
+                logger.log(AbstractLogger.REQUEST, "lookupUri (access denied): " + absSystem);
+                throw new IllegalArgumentException("lookupUri (access denied): " + absSystem);
             }
 
             resolved = manager.lookupNamespaceURI(absSystem.toString(), request.getNature(), request.getPurpose());
@@ -397,14 +411,18 @@ public class XMLResolver {
         if (resolved == null) {
             if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
                 if (absSystem == null) {
+                    logger.log(AbstractLogger.RESPONSE, "lookupUri: null");
                     return new ResourceResponseImpl(request);
                 } else {
+                    logger.log(AbstractLogger.RESPONSE, "lookupUri: %s", absSystem);
                     return new ResourceResponseImpl(request, absSystem);
                 }
             }
+            logger.log(AbstractLogger.RESPONSE, "lookupUri: null");
             return new ResourceResponseImpl(request);
         }
 
+        logger.log(AbstractLogger.RESPONSE, "lookupUri: %s", resolved);
         return new ResourceResponseImpl(request, resolved);
     }
 
@@ -482,8 +500,8 @@ public class XMLResolver {
             logger.log(AbstractLogger.RESPONSE, "RDDL %s: %s", resolved, rddl);
             return new ResourceResponseImpl(lookup.getRequest(), rddl);
         }
-        logger.log(AbstractLogger.RESPONSE, "RDDL %s: %s", resolved, resp.getURI());
 
+        logger.log(AbstractLogger.RESPONSE, "RDDL %s: %s", resolved, resp.getURI());
         return resp;
     }
 

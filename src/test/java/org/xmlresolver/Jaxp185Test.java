@@ -104,7 +104,9 @@ public class Jaxp185Test {
     public void lookupSystemFailHttpsNotFake() {
         try {
             InputSource source = restrictedResolver.getEntityResolver().resolveEntity(null, "https://example.com/sample/1.0/sample.dtd");
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (Exception ex) {
             fail();
         }
@@ -114,7 +116,9 @@ public class Jaxp185Test {
     public void lookupSystemFailHttpNotFake() {
         try {
             InputSource source = restrictedResolver.getEntityResolver().resolveEntity(null, "http://example.com/sample/1.0/sample.dtd");
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (Exception ex) {
             fail();
         }
@@ -134,7 +138,9 @@ public class Jaxp185Test {
     public void lookupUriFailHttpsNotFake() {
         try {
             Source source = restrictedResolver.getURIResolver().resolve("https://example.com/sample/1.0/document.xml", null);
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (Exception ex) {
             fail();
         }
@@ -144,7 +150,9 @@ public class Jaxp185Test {
     public void lookupUriFailHttpNotFake() {
         try {
             Source source = restrictedResolver.getURIResolver().resolve("http://example.com/sample/1.0/document.xml", null);
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (Exception ex) {
             fail();
         }
@@ -194,7 +202,9 @@ public class Jaxp185Test {
     public void lookupSystemFailHttp() {
         try {
             InputSource source = allowHttpsResolver.getEntityResolver().resolveEntity(null, "http://example.com/sample/1.0/sample.dtd");
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -204,7 +214,9 @@ public class Jaxp185Test {
     public void lookupSystemFailHttps() {
         try {
             InputSource source = allowHttpResolver.getEntityResolver().resolveEntity(null, "https://example.com/sample/1.0/sample.dtd");
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (IOException | SAXException ex) {
             fail();
         }
@@ -282,7 +294,9 @@ public class Jaxp185Test {
     public void lookupUriFailHttp() {
         try {
             Source source = allowHttpsResolver.getURIResolver().resolve("http://example.com/sample/1.0/document.xml", null);
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (Exception ex) {
             fail();
         }
@@ -292,7 +306,9 @@ public class Jaxp185Test {
     public void lookupUriFailHttps() {
         try {
             Source source = allowHttpResolver.getURIResolver().resolve("https://example.com/sample/1.0/document.xml", null);
-            Assertions.assertNull(source);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            Assertions.assertTrue(ex.getMessage().contains("access denied"));
         } catch (Exception ex) {
             fail();
         }

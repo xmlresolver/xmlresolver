@@ -265,10 +265,11 @@ public class ResourceAccess {
         if (URIUtils.forbidAccess(accessList.concat(",file"), resourceURI.toString(), mergeHttps)) {
             if (request.isResolvingAsEntity()) {
                 logger.log(AbstractLogger.REQUEST, "resolveEntity, access denied: " + resourceURI);
+                throw new IllegalArgumentException("resolveEntity, access denied: " + resourceURI);
             } else {
                 logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: " + resourceURI);
+                throw new IllegalArgumentException("resolveURI, access denied: " + resourceURI);
             }
-            return new ResourceResponseImpl(request, true);
         }
 
         ResourceConnection connx = new ResourceConnection(resourceURI);
