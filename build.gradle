@@ -20,6 +20,10 @@ jar {
   enabled = true
 }
 
+test {
+    testLogging.showStandardStreams = true
+}
+
 configurations.all {
   resolutionStrategy {
     exclude group: 'xml-apis', module: 'xml-apis'

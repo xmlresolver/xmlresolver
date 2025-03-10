@@ -50,6 +50,7 @@ public class LoaderTest {
     @Test
     public void validatingDtd10ValidCatalog() {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "debug");
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/dtd10catalog.xml"));
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
@@ -61,6 +62,7 @@ public class LoaderTest {
     @Test
     public void validatingDtd11ValidCatalog() {
         XMLResolverConfiguration config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+        config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "debug");
         config.setFeature(ResolverFeature.CATALOG_FILES, Collections.singletonList("classpath:/dtd11catalog.xml"));
         config.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
