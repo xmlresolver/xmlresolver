@@ -40,13 +40,17 @@ configurations {
 }
 
 dependencies {
+  implementation (
+    [group: 'xerces', name: 'xercesImpl', version: '2.12.2']
+  )
+
   validatingImplementation (
-    [group: 'org.relaxng', name: 'jing', version: '20220510' ]
+    [group: 'org.relaxng', name: 'jing', version: '20241231' ]
   )
 
   docletImplementation (
-    [group: 'org.relaxng', name: 'jing', version: '20220510' ],
-    [group: 'com.saxonica', name: 'xmldoclet', version: '0.4.0']
+    [group: 'org.relaxng', name: 'jing', version: '20241231' ],
+    [group: 'com.saxonica', name: 'xmldoclet', version: '0.16.0']
   )
 
   testImplementation (
