@@ -92,6 +92,19 @@ release. Etc.
 
 ## ChangeLog
 
+### 6.0.14
+
+* Fixed [#229](https://github.com/xmlresolver/xmlresolver/issues/229). The
+  interaction between the “always resolve” feature and namespace URI lookup had
+  the unfortunate consequence of returning the (almost always incorrect)
+  document at the namespace URI as the resource. I’ve adjusted the API so that
+  this is no longer the case. It’s now possible to configure “always resolve” on
+  a per-request basis. This changes an interface so it’s not binary backwards
+  compatible with previous 6.x releases.
+* Fixed [#230](https://github.com/xmlresolver/xmlresolver/issues/230). When
+  “always resolve” returned a resource, that URI wasn’t being logged which lead
+  to a confusing log trace.
+
 ### 6.0.13 / 5.3.0
 
 * Changed the API so that an attempt to read a scheme that’s forbidden (by
