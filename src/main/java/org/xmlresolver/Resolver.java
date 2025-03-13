@@ -107,6 +107,9 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
     @Override
     public Source resolveNamespace(String uri, String nature, String purpose) throws TransformerException {
         ResourceRequest req = resolver.getRequest(uri, nature, purpose);
+        // If we're attempting to resolve a namespace, don't return the namespace URI if we didn't
+        // find anything better. The namespace URI is almost never the right thing by itself.
+        req.setAlwaysResolve(false);
         return resolverAdapter(req);
     }
 
@@ -114,7 +117,7 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
         ResourceResponse resp = resolver.resolve(req);
 
         if (!resp.isResolved()) {
-            if (!config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+            if (!req.isAlwaysResolve()) {
                 return null;
             }
             try {

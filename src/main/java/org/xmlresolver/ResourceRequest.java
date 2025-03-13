@@ -16,6 +16,21 @@ public interface ResourceRequest {
     ResolverConfiguration getConfiguration();
 
     /**
+     * Get the always resolve setting.
+     * <p>If always resolve is true, then the original URI will be retrieved if the lookup
+     * fails to find a local resource. It's initialized to the value of the
+     * {@link org.xmlresolver.ResolverFeature#ALWAYS_RESOLVE} feature.</p>
+     */
+    boolean isAlwaysResolve();
+
+    /**
+     * Set the always resolve setting.
+     * <p>If this flag is true, then the original URI will be retrieved if the lookup
+     * fails to find a local resource.</p>
+     */
+    void setAlwaysResolve(boolean always);
+
+    /**
      * The RDDL nature of the request.
      * @return the nature
      */
