@@ -90,7 +90,7 @@ public class XercesXniAdapter implements XMLEntityResolver {
 
     private ResourceResponse safeOpenConnection(ResourceRequest request) {
         // This is "safe" in the weird sense that it doesn't throw a checked exception
-        if (resolver.getConfiguration().getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+        if (request.isAlwaysResolve()) {
             try {
                 return resolver.getConfiguration().getResource(request);
             } catch (URISyntaxException | IOException err) {

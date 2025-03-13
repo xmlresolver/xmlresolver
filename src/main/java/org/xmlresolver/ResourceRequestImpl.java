@@ -23,6 +23,7 @@ public class ResourceRequestImpl implements ResourceRequest {
     private String encoding = null;
     private boolean openStream = true;
     private boolean resolveAsEntity = false;
+    private boolean alwaysResolve = false;
 
     /**
      * ResourceRequest constructor.
@@ -49,11 +50,22 @@ public class ResourceRequestImpl implements ResourceRequest {
 
         resolveAsEntity = ResolverConstants.EXTERNAL_ENTITY_NATURE.equals(nature)
                 || ResolverConstants.DTD_NATURE.equals(nature);
+        alwaysResolve = config.getFeature(ResolverFeature.ALWAYS_RESOLVE);
     }
 
     @Override
     public ResolverConfiguration getConfiguration() {
         return config;
+    }
+
+    @Override
+    public void setAlwaysResolve(boolean always) {
+        alwaysResolve = always;
+    }
+
+    @Override
+    public boolean isAlwaysResolve() {
+        return alwaysResolve;
     }
 
     @Override

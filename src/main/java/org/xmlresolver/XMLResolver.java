@@ -347,7 +347,7 @@ public class XMLResolver {
         }
 
         if (resolved == null) {
-            if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+            if (request.isAlwaysResolve()) {
                 if (absSystem == null) {
                     logger.log(AbstractLogger.RESPONSE, "lookupEntity: null");
                     return new ResourceResponseImpl(request);
@@ -409,7 +409,7 @@ public class XMLResolver {
         }
 
         if (resolved == null) {
-            if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+            if (request.isAlwaysResolve()) {
                 if (absSystem == null) {
                     logger.log(AbstractLogger.RESPONSE, "lookupUri: null");
                     return new ResourceResponseImpl(request);
@@ -460,7 +460,7 @@ public class XMLResolver {
             }
 
             if (!lookup.isResolved()) {
-                if (config.getFeature(ResolverFeature.ALWAYS_RESOLVE)) {
+                if (request.isAlwaysResolve()) {
                     return config.getResource(lookup);
                 } else {
                     return lookup;

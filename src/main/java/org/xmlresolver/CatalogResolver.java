@@ -97,6 +97,9 @@ public class CatalogResolver {
      */
     public ResolvedResource resolveNamespace(String uri, String baseURI, String nature, String purpose) {
         ResourceRequest req = resolver.getRequest(uri, baseURI, nature, purpose);
+        // If we're attempting to resolve a namespace, don't return the namespace URI if we didn't
+        // find anything better. The namespace URI is almost never the right thing by itself.
+        req.setAlwaysResolve(false);
         ResourceResponse resp = resolver.resolve(req);
         if (resp.isResolved()) {
             return new ResolvedResource(resp);
