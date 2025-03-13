@@ -58,7 +58,11 @@ public class ResourceAccess {
             uri = URIUtils.resolve(URIUtils.cwd(), uri.toString());
         }
 
-        return getResourceFromURI(request, uri);
+        ResourceResponse resp = getResourceFromURI(request, uri);
+
+        this.logger.log(AbstractLogger.RESPONSE, "getResource: " + resp.isResolved() + ": " + resp.getURI());
+
+        return resp;
     }
 
     /**
@@ -88,7 +92,11 @@ public class ResourceAccess {
             uri = URIUtils.resolve(URIUtils.cwd(), uri.toString());
         }
 
-        return getResourceFromURI(response.getRequest(), uri);
+        ResourceResponse resp = getResourceFromURI(response.getRequest(), uri);
+
+        this.logger.log(AbstractLogger.RESPONSE, "getResource: " + resp.isResolved() + ": " + resp.getURI());
+
+        return resp;
     }
 
     private ResourceResponse getResourceFromURI(ResourceRequest request, URI uri) throws URISyntaxException, IOException {
