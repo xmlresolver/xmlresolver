@@ -31,15 +31,10 @@ configurations {
 }
 
 dependencies {
-  implementation (
-    [group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.3.1'],
-    [group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.3.1'],
-    [group: 'xerces', name: 'xercesImpl', version: '2.12.2' ]
-  )
-
   compileOnly (
     [group: 'org.slf4j', name: 'slf4j-api', version: '2.0.16' ],
-    [group: 'org.relaxng', name: 'jing', version: '20241231' ]
+    [group: 'org.relaxng', name: 'jing', version: '20241231' ],
+    [group: 'xerces', name: 'xercesImpl', version: '2.12.2' ]
   )
 
   testImplementation (

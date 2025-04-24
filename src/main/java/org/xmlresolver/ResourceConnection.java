@@ -1,27 +1,12 @@
 package org.xmlresolver;
 
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpHead;
-import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.protocol.HttpClientContext;
-import org.apache.hc.client5.http.protocol.RedirectLocations;
-import org.apache.hc.client5.http.utils.URIUtils;
-import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpHost;
-import org.apache.hc.core5.http.HttpResponse;
 import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class ResourceConnection {
     private InputStream stream = null;
@@ -32,7 +17,6 @@ public class ResourceConnection {
     private String etag = null;
     private Long lastModified = -1L;
     private Long date = -1L;
-    private CloseableHttpClient httpclient = null;
 
     // The headOnly parameter is a bit of a hack, but it's convenient to reuse the
     // ResourceConnection logic in multiple places. To check properties, I only
@@ -44,81 +28,68 @@ public class ResourceConnection {
 
     public ResourceConnection(ResolverConfiguration config, String resolved, boolean headOnly) {
         try {
+            HashSet<URI> visited = new HashSet<URI>();
             uri = org.xmlresolver.utils.URIUtils.newURI(resolved);
-            URL url = uri.toURL();
+            URI connURI = uri;
+            URLConnection connection = null;
 
-            if ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) {
-                // Use Apache HttpClient so that we can follow the redirect
-                httpclient = HttpClients.createDefault();
-                HttpClientContext context = HttpClientContext.create();
+            boolean tryAgain = true;
+            while (tryAgain) {
+                visited.add(connURI);
 
-                HttpUriRequestBase httpreq = null;
-                if (headOnly) {
-                    httpreq = new HttpHead(uri);
-                } else {
-                    httpreq = new HttpGet(uri);
-                }
+                URL url = connURI.toURL();
+                connection = url.openConnection();
 
-                HttpResponse httpResponse = httpclient.execute(httpreq, context);
-                HttpHost target = context.getHttpRoute().getTargetHost();
-                RedirectLocations redirectLocations = context.getRedirectLocations();
-                URI location = URIUtils.resolve(httpreq.getUri(), target, redirectLocations.getAll());
-                if (uri.equals(location)) {
-                    redirect = null;
-                } else {
-                    redirect = location;
-                }
-
-                statusCode = httpResponse.getCode();
-                contentType = getHeader(httpResponse, "Content-Type", "application/octet-stream");
-                etag = getHeader(httpResponse, "Etag", null);
-                if (!headOnly) {
-                    stream = ((ClassicHttpResponse)httpResponse).getEntity().getContent();
-                }
-
-                SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-                String dateString = getHeader(httpResponse, "Last-Modified", null);
-                if (dateString != null) {
-                    try {
-                        Date d = format.parse(dateString);
-                        lastModified = d.getTime();
-                    } catch (ParseException e) {
-                        // nop
+                if (connection instanceof HttpURLConnection) {
+                    HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                    httpConnection.setInstanceFollowRedirects(true);
+                    if (headOnly) {
+                        httpConnection.setRequestMethod("HEAD");
+                    } else {
+                        httpConnection.setRequestMethod("GET");
                     }
-                }
+                    httpConnection.connect();
 
-                dateString = getHeader(httpResponse, "Date", null);
-                if (dateString != null) {
-                    try {
-                        Date d = format.parse(dateString);
-                        date = d.getTime();
-                    } catch (ParseException e) {
-                        // nop
+                    statusCode = httpConnection.getResponseCode();
+                    tryAgain = statusCode == HttpURLConnection.HTTP_MOVED_PERM || statusCode == HttpURLConnection.HTTP_MOVED_TEMP;
+
+                    if (tryAgain) {
+                        if (!headOnly) {
+                            try {
+                                httpConnection.getInputStream().close();
+                            } catch (IOException ex) {
+                                // ignore
+                            }
+                        }
+                        String location = httpConnection.getHeaderField("Location");
+                        connURI = URI.create(location);
+                        if (visited.contains(connURI)) {
+                            throw new IllegalArgumentException("Redirect URI already visited: " + connURI);
+                        }
                     }
+                } else {
+                    tryAgain = false;
+                    connection.connect();
+                    statusCode = 200; // Assume it's "OK" if the connect() succeeded
+                }
+            }
+
+            if (headOnly) {
+                if (connection.getInputStream() != null) {
+                    connection.getInputStream().close();
                 }
             } else {
-                URLConnection connection = url.openConnection();
-                connection.connect();
+                stream = connection.getInputStream();
+            }
 
-                if (headOnly) {
-                    connection.getInputStream().close();
-                } else {
-                    stream = connection.getInputStream();
-                }
+            contentType = connection.getContentType();
+            etag = connection.getHeaderField("ETag");
+            lastModified = connection.getLastModified();
+            date = connection.getDate();
 
-                contentType = null; // No point if it's not http
-                etag = connection.getHeaderField("Etag");
-                lastModified = connection.getLastModified();
-                date = connection.getDate();
-
-                try {
-                    // This is almost always going to be an http URL
-                    HttpURLConnection http = (HttpURLConnection) connection;
-                    statusCode = http.getResponseCode();
-                } catch (ClassCastException ex) {
-                    // Assume it's ok?
-                    statusCode = 200;
-                }
+            redirect = connection.getURL().toURI();
+            if (uri.equals(redirect)) {
+                redirect = null;
             }
         } catch (URISyntaxException | IOException | IllegalArgumentException use) {
             ResolverLogger logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
@@ -159,27 +130,6 @@ public class ResourceConnection {
     }
 
     public void close() {
-        if (httpclient != null) {
-            try {
-                httpclient.close();
-            } catch (IOException e) {
-                // nop
-            }
-        }
-    }
-
-    private String getHeader(HttpResponse resp, String name, String def) {
-        Header[] headers = resp.getHeaders(name);
-
-        if (headers == null) {
-            return def;
-        }
-
-        if (headers.length == 0) {
-            // This should never happen
-            return def;
-        } else {
-            return headers[0].getValue();
-        }
+        // nop now that httpClient libraries have been removed
     }
 }
