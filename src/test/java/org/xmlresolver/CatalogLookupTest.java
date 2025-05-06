@@ -41,6 +41,26 @@ public class CatalogLookupTest {
         assertNull(result);
     }
 
+    @Test
+    public void lookupAbsoluteCatalogFile() {
+        // This test checks that a catalog file passed in that starts at the root of the filesystem
+        // works correctly. Specifically, that on Windows, C:\path\catalog.xml doesn't get mangled
+        // into C:%2Fpath%2Fcatalog.xml or something worse.
+
+        config = new XMLResolverConfiguration(Collections.emptyList(), Collections.emptyList());
+
+        String cwd = System.getProperty("user.dir");
+        if (!cwd.endsWith("/") && !cwd.endsWith("\\")) {
+            cwd = cwd + "/";
+        }
+
+        config.setFeature(ResolverFeature.CATALOG_FILES, Arrays.asList(cwd + catalog1, cwd + catalog2));
+        config.setFeature(ResolverFeature.URI_FOR_SYSTEM, false);
+        manager = config.getFeature(ResolverFeature.CATALOG_MANAGER);
+        URI result = manager.lookupSystem("https://example.com/sample/1.0/sample.dtd");
+        assertEquals(URIUtils.cwd().resolve(catalog1).resolve("sample10/sample-system.dtd"), result);
+    }
+
     // ============================================================
     // See https://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html#attrib.prefer
     // Note that the N/A entries in column three are a bit misleading.

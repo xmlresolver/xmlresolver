@@ -208,6 +208,9 @@ public abstract class URIUtils {
             return null;
         }
 
+        // If this thing is a Windows path, fix that first.
+        uriref = windowsPathURI(uriref);
+
         StringBuilder newRef = new StringBuilder();
         byte[] bytes = uriref.getBytes(StandardCharsets.UTF_8);
 
