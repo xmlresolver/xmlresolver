@@ -1,0 +1,13 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <!-- These entries are for rewrite testing -->
+  <rewriteURI uriStartString="http://www.example.org/path/to/" rewritePrefix="/path/to/"/>
+  <rewriteURI uriStartString="http://www.example.org/schema/location.xsd"
+              rewritePrefix="/my/schema/location.xsd"/>
+
+  <rewriteSystem systemIdStartString="http://www.example.org/path/to/" rewritePrefix="/path/to/"/>
+  <rewriteSystem systemIdStartString="http://www.example.org/schema/location.dtd"
+                 rewritePrefix="/my/schema/location.dtd"/>
+
+</catalog>
