@@ -3,9 +3,11 @@ package org.xmlresolver.catalog.query;
 import org.xmlresolver.CatalogManager;
 import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.catalog.entry.*;
+import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 public class QuerySystem extends QueryCatalog {
@@ -47,8 +49,14 @@ public class QuerySystem extends QueryCatalog {
             }
         }
         if (rewrite != null) {
-            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, compareSystem.substring(rewriteStart.length()));
-            return new QueryResult(resolved);
+            try {
+                URI resolved = new URI(rewrite.rewritePrefix.toString() + compareSystem.substring(rewriteStart.length()));
+                return new QueryResult(resolved);
+            } catch (URISyntaxException ex) {
+                ResolverLogger logger = manager.getResolverConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
+                logger.debug("Invalid URI syntax resolving rewriteSystem: " + ex.getMessage());
+                return null;
+            }
         }
 
         // <systemSuffix>
