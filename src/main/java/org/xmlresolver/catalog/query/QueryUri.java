@@ -1,10 +1,13 @@
 package org.xmlresolver.catalog.query;
 
 import org.xmlresolver.CatalogManager;
+import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.catalog.entry.*;
+import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 public class QueryUri extends QueryCatalog {
@@ -58,8 +61,14 @@ public class QueryUri extends QueryCatalog {
             }
         }
         if (rewrite != null) {
-            URI resolved = URIUtils.resolve(rewrite.rewritePrefix, compareUri.substring(rewriteStart.length()));
-            return new QueryResult(resolved);
+            try {
+                URI resolved = new URI(rewrite.rewritePrefix.toString() + compareUri.substring(rewriteStart.length()));
+                return new QueryResult(resolved);
+            } catch (URISyntaxException ex) {
+                ResolverLogger logger = manager.getResolverConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
+                logger.debug("Invalid URI syntax resolving rewriteUri: " + ex.getMessage());
+                return null;
+            }
         }
 
         // <uriSuffix>
