@@ -97,6 +97,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return connection;
     }
 
+    /**
+     * Set the content type of the response
+     * @param contentType the content type
+     */
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
@@ -106,6 +110,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return contentType;
     }
 
+    /**
+     * Set the response input stream.
+     * @param stream the stream.
+     */
     public void setInputStream(InputStream stream) {
         this.stream = stream;
     }
@@ -115,6 +123,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return stream;
     }
 
+    /**
+     * Set the response rejected value.
+     * @param rejected the value.
+     */
     public void setRejected(boolean rejected) {
         this.rejected = rejected;
     }
@@ -124,6 +136,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return rejected;
     }
 
+    /**
+     * Set the response resolved value.
+     * @param resolved the value.
+     */
     public void setResolved(boolean resolved) {
         this.resolved = resolved;
     }
@@ -133,6 +149,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return resolved;
     }
 
+    /**
+     * Set the response URI.
+     * @param uri the response URI
+     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
@@ -142,6 +162,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return uri;
     }
 
+    /**
+     * Set the resolved URI.
+     * @param uri the resolved URI.
+     */
     public void setResolvedURI(URI uri) {
         resolvedURI = uri;
     }
@@ -162,6 +186,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return resolvedURI;
     }
 
+    /**
+     * Set the response encoding.
+     * @param encoding the encoding
+     */
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
@@ -171,6 +199,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return encoding;
     }
 
+    /**
+     * Set the response headers.
+     * @param headers the headers.
+     */
     public void setHeaders(Map<String,List<String>> headers) {
         this.headers.clear();
         this.headers.putAll(headers);
@@ -200,6 +232,10 @@ public class ResourceResponseImpl implements ResourceResponse {
         return null;
     }
 
+    /**
+     * Set the response status code.
+     * @param code the status code
+     */
     public void setStatusCode(int code) {
         statusCode = code;
     }
