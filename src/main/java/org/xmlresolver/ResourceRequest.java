@@ -20,6 +20,7 @@ public interface ResourceRequest {
      * <p>If always resolve is true, then the original URI will be retrieved if the lookup
      * fails to find a local resource. It's initialized to the value of the
      * {@link org.xmlresolver.ResolverFeature#ALWAYS_RESOLVE} feature.</p>
+     * @return true if always resolve is enabled
      */
     boolean isAlwaysResolve();
 
@@ -27,6 +28,7 @@ public interface ResourceRequest {
      * Set the always resolve setting.
      * <p>If this flag is true, then the original URI will be retrieved if the lookup
      * fails to find a local resource.</p>
+     * @param always sets always resolve
      */
     void setAlwaysResolve(boolean always);
 

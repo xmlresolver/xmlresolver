@@ -278,44 +278,40 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         showConfigChanges = true;
     }
 
-    /** A copying constructor.
-     *
-     * <p>This constructor creates a new resolver configuration with the same properties
-     * as an existing configuration. It gets its own copy of the catalog file list and
-     * {@link CatalogManager}.</p>
-     *
-     * @param current The configuration to copy.
-     */
-    public XMLResolverConfiguration(XMLResolverConfiguration current) {
-        catalogs = new ArrayList<>(current.catalogs);
-        additionalCatalogs = new ArrayList<>();
-        classLoader = current.classLoader;
-        preferPublic = current.preferPublic;
-        preferPropertyFile = current.preferPropertyFile;
-        allowCatalogPI = current.allowCatalogPI;
-        alwaysResolve = current.alwaysResolve;
-        if (current.manager == null) {
-            manager = null;
-        } else {
-            manager = new CatalogManager(current.manager, this);
+    @Override
+    public ResolverConfiguration copy() {
+        XMLResolverConfiguration config = new XMLResolverConfiguration();
+
+        config.catalogs.addAll(catalogs);
+        config.additionalCatalogs.addAll(additionalCatalogs);
+        config.classLoader = classLoader;
+        config.preferPublic = preferPublic;
+        config.preferPropertyFile = preferPropertyFile;
+        config.allowCatalogPI = allowCatalogPI;
+        config.alwaysResolve = alwaysResolve;
+        config.uriForSystem = uriForSystem;
+        config.mergeHttps = mergeHttps;
+        config.maskJarUris = maskJarUris;
+        config.catalogLoader = catalogLoader;
+        config.parseRddl = parseRddl;
+        config.classpathCatalogs = classpathCatalogs;
+        config.archivedCatalogs = archivedCatalogs;
+        config.throwUriExceptions = throwUriExceptions;
+        config.showConfigChanges = showConfigChanges;
+        config.resolverLoggerClass = resolverLoggerClass;
+        config.resolverLogger = resolverLogger;
+        config.defaultLoggerLogLevel = defaultLoggerLogLevel;
+        config.accessExternalEntity = accessExternalEntity;
+        config.accessExternalDocument = accessExternalDocument;
+        config.saxParserFactoryClass = saxParserFactoryClass;
+        config.xmlReaderSupplier = xmlReaderSupplier;
+        config.fixWindowsSystemIdentifiers = fixWindowsSystemIdentifiers;
+
+        if (manager != null) {
+            config.manager = new CatalogManager(manager, config);
         }
-        uriForSystem = current.uriForSystem;
-        mergeHttps = current.mergeHttps;
-        maskJarUris = current.maskJarUris;
-        catalogLoader = current.catalogLoader;
-        parseRddl = current.parseRddl;
-        classpathCatalogs = current.classpathCatalogs;
-        archivedCatalogs = current.archivedCatalogs;
-        throwUriExceptions = current.throwUriExceptions;
-        showConfigChanges = current.showConfigChanges;
-        resolverLoggerClass = current.resolverLoggerClass;
-        resolverLogger = current.resolverLogger;
-        defaultLoggerLogLevel = current.defaultLoggerLogLevel;
-        accessExternalEntity = current.accessExternalEntity;
-        accessExternalDocument = current.accessExternalDocument;
-        saxParserFactoryClass = current.saxParserFactoryClass;
-        xmlReaderSupplier = current.xmlReaderSupplier;
-        fixWindowsSystemIdentifiers = current.fixWindowsSystemIdentifiers;
+
+        return config;
     }
 
     private String getConfigProperty(String name) {

@@ -105,13 +105,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
         try {
             if (allowXMLCatalogPI) {
                 // The parse may change the catalog list; isolate this configuration to this parse
-                ResolverConfiguration config = resolver.getConfiguration();
-                if (config instanceof XMLResolverConfiguration) {
-                    config = new XMLResolverConfiguration((XMLResolverConfiguration) config);
-                } else {
-                    logger.log(AbstractLogger.CONFIG, "Temporary configuration could not inherit from current configuration");
-                    config = new XMLResolverConfiguration();
-                }
+                ResolverConfiguration config = resolver.getConfiguration().copy();
                 resolver = new XMLResolver(config);
                 entityResolver = resolver.getEntityResolver2();
             }

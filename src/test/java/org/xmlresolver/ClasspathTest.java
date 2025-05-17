@@ -92,7 +92,7 @@ public class ClasspathTest {
     public void testAlternateClassLoader() {
         String href = "classpath:path/example-doc.xml";
         ClassLoader loader = ClassLoader.getSystemClassLoader();
-        XMLResolverConfiguration localconfig = new XMLResolverConfiguration(config);
+        ResolverConfiguration localconfig = config.copy();
         localconfig.setFeature(ResolverFeature.CLASSLOADER, loader);
         XMLResolver localresolver = new XMLResolver(localconfig);
 

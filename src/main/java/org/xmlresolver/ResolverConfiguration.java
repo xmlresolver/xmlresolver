@@ -34,6 +34,17 @@ public interface ResolverConfiguration {
     public Iterator<ResolverFeature<?>> getFeatures();
 
     /**
+     * Returns a copy of the resolver configuration with independent catalogs.
+     *
+     * <p>Coping a configuration returns a new configuration with the same features, except
+     * that it has an independent set of catalogs. This allows an application to construct
+     * a new resolver with different catalogs but the same functionality.</p>
+     *
+     * @return a copy of the configuration
+     */
+    public ResolverConfiguration copy();
+
+    /**
      * Get a resource.
      * <p>This method takes a {@link ResourceRequest} and attempts to retrieve it.</p>
      * <p>The method should return a response indicating failure if it cannot retrieve the resource.
