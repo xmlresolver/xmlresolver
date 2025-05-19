@@ -89,7 +89,15 @@ public class ResourceAccess {
         }
 
         if (!uri.isAbsolute()) {
-            uri = URIUtils.resolve(URIUtils.cwd(), uri.toString());
+            // If the base URI is an absolute URI, we'll have worked out an absolute uri already
+            // So if the base URI exists, first make it absolute against the cwd().
+            // This means that a base URI of "/path/to/file" will be resolved correctly.
+            if (response.getRequest().getBaseURI() != null) {
+                URI base1 = URIUtils.resolve(URIUtils.cwd(), response.getRequest().getBaseURI());
+                uri = base1.resolve(uri.toString());
+            } else {
+                uri = URIUtils.resolve(URIUtils.cwd(), uri.toString());
+            }
         }
 
         ResourceResponse resp = getResourceFromURI(response.getRequest(), uri);
