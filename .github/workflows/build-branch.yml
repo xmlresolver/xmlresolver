@@ -70,10 +70,12 @@ jobs:
         if: ${{ env.HAVE_GPGKEYURI == 'true' && env.CI_BRANCH == 'main' && env.CI_TAG != '' }}
         run: |
           curl -s -o secret.gpg ${{ secrets.GPGKEYURI }}
-          ./gradlew -PsonatypeUsername=${{ secrets.SONATYPEUSER }} \
-                  -PsonatypePassword="${{ secrets.SONATYPEPASS }}" \
-                  -Psigning.keyId="${{ secrets.SIGNKEY }}" \
-                  -Psigning.password="${{ secrets.SIGNPSW }}" \
-                  -Psigning.secretKeyRingFile=./secret.gpg \
-                  publish
+          ./gradlew -Psigning.keyId="${{ secrets.SIGNKEY }}" \
+                    -Psigning.password="${{ secrets.SIGNPSW }}" \
+                    -Psigning.secretKeyRingFile=./secret.gpg \
+                    publish
           rm -f secret.gpg
+          BEARER_TOKEN=${{ secrets.BEARER_TOKEN }}
+          curl --request POST --verbose --header "Authorization: Bearer $BEARER_TOKEN" \
+               --form bundle=@build/distributions/xmlresolver-maven.zip \
+               https://central.sonatype.com/api/v1/publisher/upload

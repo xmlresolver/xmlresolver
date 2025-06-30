@@ -1,3 +1,7 @@
+import org.gradle.internal.os.OperatingSystem;
+import com.nwalsh.gradle.saxon.SaxonXsltTask
+import com.nwalsh.gradle.docker.DockerContainer
+
 plugins {
   id "java"
   id "maven-publish"
@@ -80,10 +84,6 @@ tasks.withType(Test) {
     //events "passed"
   }
 }
-
-import org.gradle.internal.os.OperatingSystem;
-import com.nwalsh.gradle.saxon.SaxonXsltTask
-import com.nwalsh.gradle.docker.DockerContainer
 
 ext {
   c_restest = "restest"
@@ -317,29 +317,18 @@ publishing {
   }
 
   repositories {
-    if (project.findProperty("mavenLocalPublish") != null) {
-      maven {
-        url = project.findProperty("mavenLocalPublish")
-      }
-    } else {
-      maven {
-        url = resolverVersion.contains("SNAPSHOT") ?
-          "https://oss.sonatype.org/content/repositories/snapshots/" :
-          "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-        credentials {
-          username = findProperty("sonatypeUsername") ?: ""
-          password = findProperty("sonatypePassword") ?: ""
-        }
-      }
+    maven {
+      url = layout.buildDirectory.dir("maven-release").get().asFile.toURI()
     }
   }
 }
 
-task deleteBuild() {
-  delete "build"
+tasks.register('publishzip', Zip) {
+  from("build/maven-release")
+  archiveFileName = "xmlresolver-maven.zip"
 }
 
-clean.dependsOn deleteBuild
+tasks.named("publish").get().finalizedBy("publishzip")
 
 // ======================================================================
 
