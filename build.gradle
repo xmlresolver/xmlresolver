@@ -16,7 +16,7 @@ compileJava {
 repositories {
   mavenLocal()
   mavenCentral()
-  maven { url "https://maven.saxonica.com/maven" }
+  maven { url = "https://maven.saxonica.com/maven" }
 }
 
 java {
@@ -40,7 +40,7 @@ configurations {
 }
 
 dependencies {
-  implementation (
+  compileOnly (
     [group: 'xerces', name: 'xercesImpl', version: '2.12.2']
   )
 
@@ -210,7 +210,7 @@ task dist(dependsOn: ["copyDocs", "copyJars", "test"], type: Zip) {
 }
 
 javadoc {
-  title 'XML Catalog Resolver API'
+  title = 'XML Catalog Resolver API'
   exclude 'org/xmlresolver/utils/**'
   exclude 'org/xmlresolver/BuildConfig.java'
   exclude 'org/xmlresolver/ResourceConnection.java'
@@ -344,7 +344,7 @@ clean.dependsOn deleteBuild
 // ======================================================================
 
 tasks.register("dockerup") {
-  description "Make sure the Docker container is running."
+  description = "Make sure the Docker container is running."
   doLast {
     if (!DockerContainer.running(c_restest)) {
       DockerContainer.compose {
@@ -359,7 +359,7 @@ tasks.register("dockerup") {
 test.dependsOn dockerup
 
 tasks.register("dockerdown") {
-  description "Make sure the Docker container is not running."
+  description = "Make sure the Docker container is not running."
   doLast {
     if (DockerContainer.running(c_restest)) {
       DockerContainer.compose {
@@ -372,7 +372,7 @@ tasks.register("dockerdown") {
 }
 
 tasks.register("dockerstatus") {
-  description "Print a short summary of running containers"
+  description = "Print a short summary of running containers"
   doLast {
     if (DockerContainer.containers().isEmpty()) {
       println("There are no docker containers running.")
