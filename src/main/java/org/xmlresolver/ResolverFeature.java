@@ -345,9 +345,9 @@ public class ResolverFeature<T> {
      * <p>If unconfigured, parsers are created with {@link #XMLREADER_SUPPLIER}.</p>
      *
      * <p>This feature and the {@link #XMLREADER_SUPPLIER} are different mechanisms for
-     * configuring the same underlying feature: how does the resolver get an XML parser if it needs one? (For
-     * example, it needs one to parse the cache, but the {@link org.xmlresolver.tools.ResolvingXMLFilter ResolvingXMLFilter} and
-     * {@link org.xmlresolver.tools.ResolvingXMLReader ResolvingXMLReader} also use this mechanism.)</p>
+     * configuring the same underlying feature: how does the resolver get an XML parser if it needs one? (The
+     * {@link org.xmlresolver.tools.ResolvingXMLFilter ResolvingXMLFilter} and
+     * {@link org.xmlresolver.tools.ResolvingXMLReader ResolvingXMLReader} use this mechanism.)</p>
      *
      * <p>The <code>SAXPARSERFACTORY_CLASS</code> is initially <code>null</code> and the
      * <code>XMLREADER_SUPPLIER</code> is used. The purpose of the <code>SAXPARSERFACTORY_CLASS</code>
@@ -367,9 +367,9 @@ public class ResolverFeature<T> {
      * the global mechanisms that it uses.</p>
      *
      * <p>This feature and the {@link #SAXPARSERFACTORY_CLASS} are different mechanisms for
-     * configuring the same underlying feature: how does the resolver get an XML parser if it needs one? (For
-     * example, it needs one to parse the cache, but the {@link org.xmlresolver.tools.ResolvingXMLFilter ResolvingXMLFilter} and
-     * {@link org.xmlresolver.tools.ResolvingXMLReader ResolvingXMLReader} also use this mechanism.)</p>
+     * configuring the same underlying feature: how does the resolver get an XML parser if it needs one? (The
+     * {@link org.xmlresolver.tools.ResolvingXMLFilter ResolvingXMLFilter} and
+     * {@link org.xmlresolver.tools.ResolvingXMLReader ResolvingXMLReader} use this mechanism.)</p>
      *
      * <p>The {@link #SAXPARSERFACTORY_CLASS} is initially <code>null</code> and the
      * <code>XMLREADER_SUPPLIER</code> is used. The purpose of the <code>SAXPARSERFACTORY_CLASS</code>

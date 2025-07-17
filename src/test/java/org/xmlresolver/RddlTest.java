@@ -9,7 +9,6 @@ import java.net.URI;
 
 public class RddlTest {
     public static final String catalog = "src/test/resources/docker.xml";
-    private static final String relativeCacheDir = "build/rddl-cache";
 
     XMLResolverConfiguration config = null;
     XMLResolver resolver = null;

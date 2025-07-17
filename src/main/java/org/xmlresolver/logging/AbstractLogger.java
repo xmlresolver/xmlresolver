@@ -16,8 +16,6 @@ public abstract class AbstractLogger implements ResolverLogger {
     public static final String TRACE = "trace";
     /** Error messages. */
     public static final String ERROR = "error";
-    /** Messages related to how the cache is used. */
-    public static final String CACHE = "cache";
     /** Messages related to resolver configuration. */
     public static final String CONFIG = "config";
     /** Warning messages. */
