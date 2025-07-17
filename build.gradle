@@ -216,7 +216,6 @@ javadoc {
   exclude 'org/xmlresolver/ResourceConnection.java'
   exclude 'org/xmlresolver/ResolvedResourceImpl.java'
   exclude 'org/xmlresolver/ResourceResolverImpl.java'
-  exclude 'org/xmlresolver/cache/CacheEntryCatalog.java'
   exclude 'org/xmlresolver/catalog/**'
   options.showFromPublic()
   options.overview = 'src/main/java/overview.html'

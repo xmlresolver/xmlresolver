@@ -64,10 +64,6 @@ public class XMLResolverConfigurationTest {
         System.setProperty("xml.catalog.files", "a;b;c");
         System.setProperty("xml.catalog.prefer", "public");
         System.setProperty("xml.catalog.allowPI", "true");
-        System.setProperty("xml.catalog.cache", "/dev/null");
-        System.setProperty("xml.catalog.cacheUnderHome", "true");
-        System.setProperty("xml.catalog.cache.file", "true");
-        System.setProperty("xml.catalog.cache.jar", "true");
 
         XMLResolverConfiguration config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
@@ -87,10 +83,6 @@ public class XMLResolverConfigurationTest {
         System.setProperty("xml.catalog.files", "d;e;f");
         System.setProperty("xml.catalog.prefer", "system");
         System.setProperty("xml.catalog.allowPI", "false");
-        System.setProperty("xml.catalog.cache", "/dev/null");
-        System.setProperty("xml.catalog.cacheUnderHome", "false");
-        System.setProperty("xml.catalog.cache.file", "false");
-        System.setProperty("xml.catalog.cache.jar", "false");
 
         config = new XMLResolverConfiguration();
         config.setFeature(ResolverFeature.CLASSPATH_CATALOGS, false);
