@@ -479,7 +479,8 @@ public class XMLResolver {
     }
 
     private ResourceResponse rddlLookup(ResourceResponse lookup) {
-        return rddlLookup(lookup, lookup.getResolvedURI());
+        // Ignore masked jar URIs here, we want the actual resolved resource.
+        return rddlLookup(lookup, lookup.getUnmaskedURI());
     }
 
     private ResourceResponse rddlLookup(ResourceResponse lookup, URI resolved) {
