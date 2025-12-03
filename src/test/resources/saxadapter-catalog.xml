@@ -3,4 +3,6 @@
 
 <doctype name="book" uri="saxadapter.dtd"/>
 
+<systemSuffix systemIdSuffix="book.dtd" uri="saxadapter.dtd"/>
+
 </catalog>
