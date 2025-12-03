@@ -171,7 +171,9 @@ public class XercesXniAdapter implements XMLEntityResolver {
 
         if (rsrc != null && rsrc.isResolved()) {
             InputSource source = new ResolverInputSource(rsrc);
-            source.setSystemId(rsrc.getResolvedURI().toString());
+            if (rsrc.getResolvedURI() != null) {
+                source.setSystemId(rsrc.getResolvedURI().toString());
+            }
             return new SAXInputSource(source);
         }
 

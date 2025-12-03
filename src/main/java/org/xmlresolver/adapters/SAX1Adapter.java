@@ -40,7 +40,9 @@ public class SAX1Adapter implements EntityResolver {
         ResolverInputSource source = null;
         if (resp.isResolved()) {
             source = new ResolverInputSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
         }
 
         return source;

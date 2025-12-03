@@ -23,7 +23,9 @@ public class ResolverInputSource extends InputSource implements ResolverResource
      * */
     public ResolverInputSource(ResourceResponse rsrc) {
         super(rsrc.getInputStream());
-        setSystemId(rsrc.getURI().toString());
+        if (rsrc.getURI() != null) {
+            setSystemId(rsrc.getURI().toString());
+        }
         setPublicId(rsrc.getRequest().getPublicId());
         this.response = rsrc;
         resolvedURI = rsrc.getResolvedURI();

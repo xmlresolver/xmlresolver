@@ -36,7 +36,11 @@ public class ResolverLSInput implements LSInput, ResolverResourceInfo {
         resolvedURI = resp.getResolvedURI();
         this.response = resp;
         this.body = resp.getInputStream();
-        this.systemId = resp.getResolvedURI().toString();
+        if (resp.getResolvedURI() == null) {
+            this.systemId = null;
+        } else {
+            this.systemId = resp.getResolvedURI().toString();
+        }
         this.publicId = publicId;
         this.uri = resp.getURI();
         this.statusCode = resp.getStatusCode();

@@ -50,7 +50,9 @@ public class SAXAdapter implements EntityResolver, EntityResolver2 {
         ResolverInputSource source = null;
         if (resp.isResolved()) {
             source = new ResolverInputSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
         }
 
         return source;
@@ -66,7 +68,9 @@ public class SAXAdapter implements EntityResolver, EntityResolver2 {
         ResolverInputSource source = null;
         if (resp.isResolved()) {
             source = new ResolverInputSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
         }
 
         return source;
