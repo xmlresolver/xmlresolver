@@ -132,7 +132,9 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
 
         if (resp.isResolved()) {
             ResolverSAXSource source = new ResolverSAXSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
             return source;
         }
 
@@ -181,7 +183,9 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
         ResourceResponse resp = resolver.resolve(req);
         if (resp.isResolved()) {
             ResolverInputSource source = new ResolverInputSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
             return source;
         }
 
@@ -196,7 +200,9 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
         ResourceResponse resp = resolver.resolve(req);
         if (resp.isResolved()) {
             ResolverInputSource source = new ResolverInputSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
             return source;
         }
 

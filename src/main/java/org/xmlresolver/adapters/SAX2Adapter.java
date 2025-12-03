@@ -40,17 +40,23 @@ public class SAX2Adapter implements EntityResolver2 {
         request.setEntityName(name);
         ResourceResponse resp = resolver.resolve(request);
 
+        if (resp == null) {
+            return null;
+        }
+
         // If we didn't find any resource in the catalog, and if ResolverFeature.ALWAYS_RESOLVE is true,
         // the default, then we'll be trying to return the baseURI as the external subset. That's
         // incoherent, so don't.
-        if (resp != null && resp.isResolved() && baseURI != null && baseURI.equals(resp.getURI().toString())) {
+        if (resp.isResolved() && baseURI != null && baseURI.equals(resp.getURI().toString())) {
             return null;
         }
 
         ResolverInputSource source = null;
         if (resp.isResolved()) {
             source = new ResolverInputSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
         }
 
         return source;
@@ -66,7 +72,9 @@ public class SAX2Adapter implements EntityResolver2 {
         ResolverInputSource source = null;
         if (resp.isResolved()) {
             source = new ResolverInputSource(resp);
-            source.setSystemId(resp.getResolvedURI().toString());
+            if (resp.getResolvedURI() != null) {
+                source.setSystemId(resp.getResolvedURI().toString());
+            }
         }
 
         return source;

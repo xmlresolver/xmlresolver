@@ -550,7 +550,9 @@ public class XMLResolver {
             Source source = null;
             if (resp.isResolved()) {
                 source = new ResolverSAXSource(resp);
-                source.setSystemId(resp.getURI().toString());
+                if (resp.getURI() != null) {
+                    source.setSystemId(resp.getURI().toString());
+                    }
             }
 
             return source;
