@@ -4,5 +4,10 @@
 <doctype name="book" uri="saxadapter.dtd"/>
 
 <systemSuffix systemIdSuffix="book.dtd" uri="saxadapter.dtd"/>
+<systemSuffix systemIdSuffix="chapter.xml" uri="saxchapter.xml"/>
+
+<entity name="chapter" uri="saxchapter.xml"/>
+
+<uri name="sample.xsd" uri="sample10/sample.xsd"/>
 
 </catalog>
