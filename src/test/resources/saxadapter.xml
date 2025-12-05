@@ -1,4 +1,7 @@
-<!DOCTYPE book>
+<!DOCTYPE book [
+<!ENTITY chapter SYSTEM "chapter.xml">
+]>
 <book>
   <title>&hello;</title>
+  &chapter;
 </book>

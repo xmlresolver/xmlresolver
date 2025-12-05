@@ -126,7 +126,7 @@ public class XercesXniAdapter implements XMLEntityResolver {
 
     private XMLInputSource resolveEntity(XMLEntityDescription resId) {
         String name = resId.getEntityName();
-        if (name.startsWith("%") || name.startsWith("&")) {
+        if (name != null && (name.startsWith("%") || name.startsWith("&"))) {
             // Oh, please. The [expletive]?
             name = name.substring(1);
         }
