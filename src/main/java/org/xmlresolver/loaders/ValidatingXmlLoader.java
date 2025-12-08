@@ -80,15 +80,15 @@ public class ValidatingXmlLoader implements CatalogLoader {
                 return loadCatalog(catalog, source);
             } catch (CatalogUnavailableException ex) {
                 if (ex.getCause() instanceof FileNotFoundException) {
-                    logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                    logger.warn("Failed to load catalog: %s: %s", catalog, ex.getMessage());
                     catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                     return catalogMap.get(catalog);
                 }
-                logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                logger.error("Failed to load catalog: %s: %s", catalog, ex.getMessage());
                 catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                 throw ex;
             } catch (URISyntaxException | IOException ex) {
-                logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                logger.error("Failed to load catalog: %s: %s", catalog, ex.getMessage());
                 catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                 throw new CatalogUnavailableException(ex);
             }
@@ -278,7 +278,7 @@ public class ValidatingXmlLoader implements CatalogLoader {
             if (firstWarning == null) {
                 firstWarning = exception.getMessage();
             }
-            logger.log(AbstractLogger.WARNING, exception.getMessage());
+            logger.warn(exception.getMessage());
         }
 
         @Override
@@ -286,13 +286,13 @@ public class ValidatingXmlLoader implements CatalogLoader {
             if (firstError == null) {
                 firstError = exception.getMessage();
             }
-            logger.log(AbstractLogger.ERROR, exception.getMessage());
+            logger.error(exception.getMessage());
         }
 
         @Override
         public void fatalError(SAXParseException exception) throws SAXException {
             firstError = exception.getMessage();
-            logger.log(AbstractLogger.ERROR, exception.getMessage());
+            logger.error(exception.getMessage());
         }
 
         public String getMessage() {

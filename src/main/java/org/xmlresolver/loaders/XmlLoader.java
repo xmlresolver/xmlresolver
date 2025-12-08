@@ -1,5 +1,6 @@
 package org.xmlresolver.loaders;
 
+import net.sf.saxon.s9api.SaxonApiException;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.*;
@@ -126,20 +127,20 @@ public class XmlLoader implements CatalogLoader {
                 InputSource source = new InputSource(is);
                 source.setSystemId(catalog.toString());
                 EntryCatalog entries = loadCatalog(catalog, source);
-                logger.log(AbstractLogger.CONFIG, "Loaded catalog: %s", catalog);
+                logger.debug("Loaded catalog: %s", catalog);
                 return entries;
               }
           } catch (CatalogUnavailableException ex) {
               if (ex.getCause() instanceof FileNotFoundException) {
-                  logger.log(AbstractLogger.WARNING, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                  logger.warn("Failed to load catalog: %s: %s", catalog, ex.getMessage());
                   catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                   return catalogMap.get(catalog);
               }
-              logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+              logger.error("Failed to load catalog: %s: %s", catalog, ex.getMessage());
               catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
               throw ex;
           } catch (URISyntaxException | IOException ex) {
-              logger.log(AbstractLogger.ERROR, "Failed to load catalog: %s: %s", catalog, ex.getMessage());
+              logger.error("Failed to load catalog: %s: %s", catalog, ex.getMessage());
               catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
               throw new CatalogUnavailableException(ex);
           }
@@ -171,17 +172,21 @@ public class XmlLoader implements CatalogLoader {
         URI zipcatalog = null;
 
         synchronized (catalogMap) {
+            CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
+            CatalogErrorHandler errorHandler = new CatalogErrorHandler();
+
             try {
                 if (catalogMap.containsKey(catalog)) {
                   return catalogMap.get(catalog);
                 }
-                CatalogContentHandler handler = new CatalogContentHandler(config, catalog, preferPublic);
 
                 Supplier<XMLReader> supplier = config.getFeature(ResolverFeature.XMLREADER_SUPPLIER);
                 if (supplier != null) {
                     XMLReader reader = supplier.get();
                     reader.setContentHandler(handler);
                     reader.setEntityResolver(entityResolver);
+                    errorHandler.forwardsTo = reader.getErrorHandler();
+                    reader.setErrorHandler(errorHandler);
                     reader.parse(source);
                 } else {
                     // Wat?
@@ -190,17 +195,35 @@ public class XmlLoader implements CatalogLoader {
                     spf.setValidating(false);
                     spf.setXIncludeAware(false);
                     SAXParser parser = spf.newSAXParser();
-                    parser.getXMLReader().setEntityResolver(entityResolver);
+                    XMLReader reader = parser.getXMLReader();
+                    reader.setEntityResolver(entityResolver);
+                    errorHandler.forwardsTo = reader.getErrorHandler();
+                    reader.setErrorHandler(errorHandler);
                     parser.parse(source, handler);
                 }
 
                 EntryCatalog entry = handler.catalog();
                 catalogMap.put(catalog, entry);
             } catch (ParserConfigurationException | SAXException | IOException ex) {
-                logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
                 if (archivedCatalogs) {
                     zipcatalog = archiveCatalog(catalog);
                 }
+
+                // Delay this error message until after we've tried to load the zip; if
+                // loading the zip succeeded, there's no error that needs reporting.
+                if (!archivedCatalogs || zipcatalog == null) {
+                    for (SAXParseException exception : errorHandler.warnings) {
+                        logger.warn(exception.getMessage());
+                    }
+                    for (SAXParseException exception : errorHandler.errors) {
+                        logger.error(exception.getMessage());
+                    }
+                    for (SAXParseException exception : errorHandler.fatalErrors) {
+                        logger.error(exception.getMessage());
+                    }
+                    logger.error("Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                }
+
                 if (zipcatalog == null) {
                   catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                 }
@@ -268,7 +291,7 @@ public class XmlLoader implements CatalogLoader {
                 EntryCatalog entry = handler.catalog();
                 catalogMap.put(catalog, entry);
             } catch (SAXException | IOException ex) {
-                logger.log(AbstractLogger.ERROR, "Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                logger.error("Failed to load catalog: " + catalog + ": " + ex.getMessage());
 
                 if (archivedCatalogs) {
                     zipcatalog = archiveCatalog(catalog);
@@ -360,12 +383,43 @@ public class XmlLoader implements CatalogLoader {
                   return new URI("jar:file://" +  catalog.getPath() + "!" + catpath);
               }
             }
-            logger.log(AbstractLogger.ERROR, "Failed to find catalog in archived catalog: " + catalog);
+            logger.error("Failed to find catalog in archived catalog: " + catalog);
         } catch (IOException|URISyntaxException ex) {
-            logger.log(AbstractLogger.ERROR, "Failed to load archived catalog: " + catalog + ": " + ex.getMessage());
+            logger.error("Failed to load archived catalog: " + catalog + ": " + ex.getMessage());
         }
 
         return null;
+    }
+
+    private static class CatalogErrorHandler implements ErrorHandler {
+        public ErrorHandler forwardsTo = null;
+        public List<SAXParseException> warnings = new ArrayList<>();
+        public List<SAXParseException> errors = new ArrayList<>();
+        public List<SAXParseException> fatalErrors = new ArrayList<>();
+
+        @Override
+        public void warning(SAXParseException exception) throws SAXException {
+            warnings.add(exception);
+            if (forwardsTo != null) {
+                forwardsTo.warning(exception);
+            }
+        }
+
+        @Override
+        public void error(SAXParseException exception) throws SAXException {
+            errors.add(exception);
+            if (forwardsTo != null) {
+                forwardsTo.error(exception);
+            }
+        }
+
+        @Override
+        public void fatalError(SAXParseException exception) throws SAXException {
+            fatalErrors.add(exception);
+            if (forwardsTo != null) {
+                forwardsTo.fatalError(exception);
+            }
+        }
     }
 
     private static class CatalogContentHandler extends DefaultHandler {
@@ -417,7 +471,7 @@ public class XmlLoader implements CatalogLoader {
                     if (prefer != null) {
                         preferPublicStack.push("public".equals(prefer));
                         if (!"public".equals(prefer) && !"system".equals(prefer)) {
-                            logger.log(AbstractLogger.ERROR, "Prefer on " + localName + " is neither 'system' nor 'public': " + prefer);
+                            logger.error("Prefer on " + localName + " is neither 'system' nor 'public': " + prefer);
                         }
                     }
                     catalog = new EntryCatalog(config, baseURIStack.peek(), id, preferPublicStack.peek());
@@ -427,7 +481,7 @@ public class XmlLoader implements CatalogLoader {
                         catalog.setLocator(locator);
                     }
                 } else {
-                    logger.log(AbstractLogger.ERROR, "Catalog document is not an XML Catalog (ignored): " + qName);
+                    logger.error("Catalog document is not an XML Catalog (ignored): " + qName);
                     catalog = new EntryCatalog(config, baseURIStack.peek(), null, false);
                     parserStack.push(new EntryNull(config));
                 }
@@ -452,14 +506,14 @@ public class XmlLoader implements CatalogLoader {
                     if (CATALOG_ELEMENTS.contains(localName) || TR9401_ELEMENTS.contains(localName)) {
                         catalogElement(localName, attributes);
                     } else {
-                        logger.log(AbstractLogger.ERROR, "Unexpected catalog element (ignored): " + localName);
+                        logger.error("Unexpected catalog element (ignored): " + localName);
                         pushNull();
                     }
                 } else if (ResolverConstants.TR9401_NS.equals(uri)) {
                     if (TR9401_ELEMENTS.contains(localName)) {
                         catalogElement(localName, attributes);
                     } else {
-                        logger.log(AbstractLogger.ERROR, "Unexpected catalog element (ignored): " + localName);
+                        logger.error("Unexpected catalog element (ignored): " + localName);
                         pushNull();
                     }
                 } else {
@@ -496,7 +550,7 @@ public class XmlLoader implements CatalogLoader {
                     if (prefer != null) {
                         preferPublic = "public".equals(prefer);
                         if (!"public".equals(prefer) && !"system".equals(prefer)) {
-                            logger.log(AbstractLogger.ERROR, "Prefer on " + localName + " is neither 'system' nor 'public': " + prefer);
+                            logger.error("Prefer on " + localName + " is neither 'system' nor 'public': " + prefer);
                         }
                     }
                     entry = catalog.addGroup(baseURI, id, preferPublic);

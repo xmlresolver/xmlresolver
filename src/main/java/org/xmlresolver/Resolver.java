@@ -145,12 +145,12 @@ public class Resolver implements URIResolver, LSResourceResolver, EntityResolver
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
         ResourceRequest req = null;
         if (type == null || "http://www.w3.org/TR/REC-xml".equals(type)) {
-            logger.log(AbstractLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
+            logger.debug("resolveResource: XML: %s (baseURI: %s, publicId: %s)",
                     systemId, baseURI, publicId);
             req = resolver.getRequest(systemId, baseURI, ResolverConstants.EXTERNAL_ENTITY_NATURE, ResolverConstants.ANY_PURPOSE);
             req.setPublicId(publicId);
         } else {
-            logger.log(AbstractLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
+            logger.debug("resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
                     type, systemId, namespaceURI, baseURI, publicId);
 
             String purpose = null;

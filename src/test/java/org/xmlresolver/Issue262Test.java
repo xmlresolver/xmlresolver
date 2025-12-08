@@ -15,7 +15,7 @@ public class Issue262Test {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
             config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
-            config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "debug");
+            config.setFeature(ResolverFeature.LOGGER_LOG_LEVEL, "debug");
             config.setFeature(ResolverFeature.CATALOG_FILES, List.of("classpath:/iss262.xml"));
             EntityResolver resolver = new Resolver(config);
 
@@ -32,7 +32,7 @@ public class Issue262Test {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
             config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
-            config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "debug");
+            config.setFeature(ResolverFeature.LOGGER_LOG_LEVEL, "debug");
             config.setFeature(ResolverFeature.CATALOG_FILES, List.of("classpath:/iss262.xml"));
             config.setFeature(ResolverFeature.MASK_JAR_URIS, false);
             EntityResolver resolver = new Resolver(config);
@@ -50,7 +50,7 @@ public class Issue262Test {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
             config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
-            config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "debug");
+            config.setFeature(ResolverFeature.LOGGER_LOG_LEVEL, "debug");
             config.setFeature(ResolverFeature.CATALOG_FILES, List.of("classpath:/iss262.xml"));
             XMLResolver resolver = new XMLResolver(config);
 
@@ -67,7 +67,7 @@ public class Issue262Test {
         try {
             XMLResolverConfiguration config = new XMLResolverConfiguration();
             config.setFeature(ResolverFeature.PREFER_PUBLIC, true);
-            config.setFeature(ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL, "debug");
+            config.setFeature(ResolverFeature.LOGGER_LOG_LEVEL, "debug");
             config.setFeature(ResolverFeature.CATALOG_FILES, List.of("classpath:/iss262.xml"));
             XMLResolver resolver = new XMLResolver(config);
 

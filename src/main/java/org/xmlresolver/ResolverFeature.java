@@ -314,8 +314,8 @@ public class ResolverFeature<T> {
      * that use it). In particular, it has no effect if the {@link org.xmlresolver.logging.SystemLogger} is used.
      * How that is configured depends on the concrete backend selected at runtime.</p>
      */
-    public static final ResolverFeature<String> DEFAULT_LOGGER_LOG_LEVEL = new ResolverFeature<>(
-            "http://xmlresolver.org/feature/default-logger-log-level", "warn");
+    public static final ResolverFeature<String> LOGGER_LOG_LEVEL = new ResolverFeature<>(
+            "http://xmlresolver.org/feature/logger-log-level", "warn");
 
     /**
      * Specify the protocols allowed for entity lookup.

@@ -56,7 +56,7 @@ public class ConcurrencyTests {
   
   private static void concurrentParseAndResolveOp(String catalogFiles, String content, Optional<Integer> numTestsOpt, Optional<Integer> numThreadsOpt) throws Exception {
     
-    final int numThreads= numThreadsOpt.orElseGet(()->Runtime.getRuntime().availableProcessors() * 3);
+    final int numThreads = numThreadsOpt.orElseGet(()->Runtime.getRuntime().availableProcessors() * 3);
     ExecutorService executorService= Executors.newFixedThreadPool(numThreads);
     int numTests = numTestsOpt.orElse(400);
     try {
