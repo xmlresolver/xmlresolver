@@ -225,7 +225,7 @@ public class ResolvingXMLFilter extends XMLFilterImpl {
                                 ((XMLResolverConfiguration) resolver.getConfiguration()).addCatalog(catalog.toString());
                             }
                         } catch (URISyntaxException mue) {
-                            logger.log(AbstractLogger.WARNING, "URI syntax exception resolving PI catalog: %s", data);
+                            logger.warn("URI syntax exception resolving PI catalog: %s", data);
                         }
                     }
                 }

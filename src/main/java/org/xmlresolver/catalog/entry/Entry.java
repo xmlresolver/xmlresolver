@@ -69,7 +69,7 @@ public abstract class Entry {
         if (NCNAME_RE.matcher(name).matches()) {
             extra.put(name, value == null ? "" : value);
         } else {
-            logger.log(AbstractLogger.ERROR, "Property name invalid: " + name);
+            logger.error("Property name invalid: " + name);
         }
     }
 

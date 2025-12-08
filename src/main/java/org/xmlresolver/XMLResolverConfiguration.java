@@ -3,10 +3,7 @@ package org.xmlresolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmlresolver.logging.AbstractLogger;
-import org.xmlresolver.logging.DefaultLogger;
-import org.xmlresolver.logging.ResolverLogger;
-import org.xmlresolver.logging.SystemLogger;
+import org.xmlresolver.logging.*;
 import org.xmlresolver.spi.SchemeResolver;
 import org.xmlresolver.utils.URIUtils;
 
@@ -93,7 +90,7 @@ import java.util.function.Supplier;
  * <td>classpath-catalogs</td>
  * <td>String</td>
  * </tr>
- * <tr><th>{@link ResolverFeature#DEFAULT_LOGGER_LOG_LEVEL}</th>
+ * <tr><th>{@link ResolverFeature#LOGGER_LOG_LEVEL}</th>
  * <td>xml.catalog.defaultLoggerLogLevel</td>
  * <td>default-logger-log-level</td>
  * <td>String</td>
@@ -175,7 +172,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             ResolverFeature.CLASSPATH_CATALOGS, ResolverFeature.CLASSLOADER,
             ResolverFeature.ARCHIVED_CATALOGS, ResolverFeature.THROW_URI_EXCEPTIONS,
             ResolverFeature.RESOLVER_LOGGER_CLASS, ResolverFeature.RESOLVER_LOGGER,
-            ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL,
+            ResolverFeature.LOGGER_LOG_LEVEL,
             ResolverFeature.ACCESS_EXTERNAL_ENTITY, ResolverFeature.ACCESS_EXTERNAL_DOCUMENT,
             ResolverFeature.SAXPARSERFACTORY_CLASS, ResolverFeature.XMLREADER_SUPPLIER,
             ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS};
@@ -200,12 +197,14 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     private Boolean throwUriExceptions = ResolverFeature.THROW_URI_EXCEPTIONS.getDefaultValue();
     private Boolean showConfigChanges = false; // make the config process a bit less chatty
     private String resolverLoggerClass = ResolverFeature.RESOLVER_LOGGER_CLASS.getDefaultValue();
-    private String defaultLoggerLogLevel = ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL.getDefaultValue();
+    private Integer loggerLogLevel = LogLevels.levelNumber(ResolverFeature.LOGGER_LOG_LEVEL.getDefaultValue());
     private String accessExternalEntity = ResolverFeature.ACCESS_EXTERNAL_ENTITY.getDefaultValue();
     private String accessExternalDocument = ResolverFeature.ACCESS_EXTERNAL_DOCUMENT.getDefaultValue();
     private String saxParserFactoryClass = ResolverFeature.SAXPARSERFACTORY_CLASS.getDefaultValue();
     private Supplier<XMLReader> xmlReaderSupplier = ResolverFeature.XMLREADER_SUPPLIER.getDefaultValue();
     private Boolean fixWindowsSystemIdentifiers = ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS.getDefaultValue();
+
+    private boolean externalResolverLogger = false;
     private ResolverLogger resolverLogger = null;
 
     /** Construct a default configuration.
@@ -300,7 +299,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         config.showConfigChanges = showConfigChanges;
         config.resolverLoggerClass = resolverLoggerClass;
         config.resolverLogger = resolverLogger;
-        config.defaultLoggerLogLevel = defaultLoggerLogLevel;
+        config.loggerLogLevel = loggerLogLevel;
         config.accessExternalEntity = accessExternalEntity;
         config.accessExternalDocument = accessExternalDocument;
         config.saxParserFactoryClass = saxParserFactoryClass;
@@ -526,10 +525,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             resolverLoggerClass = property;
         }
 
-        property = getConfigProperty("xml.catalog.defaultLoggerLogLevel");
+        property = getConfigProperty("xml.catalog.loggerLogLevel");
         if (property != null) {
             showConfigChange("Default logger log level: %s", property);
-            defaultLoggerLogLevel = property;
+            loggerLogLevel = LogLevels.levelNumber(property);
         }
 
         property = getConfigProperty("xml.catalog.accessExternalEntity");
@@ -569,7 +568,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             try {
                 propertiesURI = propertiesURL.toURI();
             } catch (URISyntaxException ex) {
-                resolverLogger.log(AbstractLogger.ERROR, "Cannot make URI from URL: " + propertiesURL);
+                resolverLogger.error("Cannot make URI from URL: " + propertiesURL);
             }
         }
 
@@ -672,10 +671,10 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             resolverLoggerClass = property;
         }
 
-        property = properties.getProperty("default-logger-log-level");
+        property = properties.getProperty("logger-log-level");
         if (property != null) {
             showConfigChange("Default logger log level: %s", property);
-            defaultLoggerLogLevel = property;
+            loggerLogLevel = LogLevels.levelNumber(property);
         }
 
         property = properties.getProperty("access-external-entity");
@@ -719,46 +718,58 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
     }
 
     private void showConfig() {
-        resolverLogger.log(AbstractLogger.CONFIG, "Logging: %s", getConfigProperty("xml.catalog.logging"));
-        resolverLogger.log(AbstractLogger.CONFIG, "Prefer public: %s", preferPublic);
-        resolverLogger.log(AbstractLogger.CONFIG, "Prefer property file: %s", preferPropertyFile);
-        resolverLogger.log(AbstractLogger.CONFIG, "Allow catalog PI: %s", allowCatalogPI);
-        resolverLogger.log(AbstractLogger.CONFIG, "Always resolve: %s", alwaysResolve);
-        resolverLogger.log(AbstractLogger.CONFIG, "Parse RDDL: %s", parseRddl);
-        resolverLogger.log(AbstractLogger.CONFIG, "URI for system: %s", uriForSystem);
-        resolverLogger.log(AbstractLogger.CONFIG, "Merge http/https: %s", mergeHttps);
-        resolverLogger.log(AbstractLogger.CONFIG, "Mask jar URIs: %s", maskJarUris);
-        resolverLogger.log(AbstractLogger.CONFIG, "Catalog loader: %s", catalogLoader);
-        resolverLogger.log(AbstractLogger.CONFIG, "Classpath catalogs: %s", classpathCatalogs);
-        resolverLogger.log(AbstractLogger.CONFIG, "Archived catalogs: %s", archivedCatalogs);
-        resolverLogger.log(AbstractLogger.CONFIG, "Throw URI exceptions: %s", throwUriExceptions);
-        resolverLogger.log(AbstractLogger.CONFIG, "Class loader: %s", classLoader);
-        resolverLogger.log(AbstractLogger.CONFIG, "Logger class: %s", resolverLoggerClass);
-        resolverLogger.log(AbstractLogger.CONFIG, "Access external entity: %s", accessExternalEntity);
-        resolverLogger.log(AbstractLogger.CONFIG, "Access external document: %s", accessExternalDocument);
-        resolverLogger.log(AbstractLogger.CONFIG, "SAXParserFactory class: %s", saxParserFactoryClass);
-        resolverLogger.log(AbstractLogger.CONFIG, "XMLReader supplier: %s", xmlReaderSupplier);
-        resolverLogger.log(AbstractLogger.CONFIG, "Fix Windows system identifiers: %s", fixWindowsSystemIdentifiers);
+        resolverLogger.debug("Logging: %s", getConfigProperty("xml.catalog.logging"));
+        resolverLogger.debug("Prefer public: %s", preferPublic);
+        resolverLogger.debug("Prefer property file: %s", preferPropertyFile);
+        resolverLogger.debug("Allow catalog PI: %s", allowCatalogPI);
+        resolverLogger.debug("Always resolve: %s", alwaysResolve);
+        resolverLogger.debug("Parse RDDL: %s", parseRddl);
+        resolverLogger.debug("URI for system: %s", uriForSystem);
+        resolverLogger.debug("Merge http/https: %s", mergeHttps);
+        resolverLogger.debug("Mask jar URIs: %s", maskJarUris);
+        resolverLogger.debug("Catalog loader: %s", catalogLoader);
+        resolverLogger.debug("Classpath catalogs: %s", classpathCatalogs);
+        resolverLogger.debug("Archived catalogs: %s", archivedCatalogs);
+        resolverLogger.debug("Throw URI exceptions: %s", throwUriExceptions);
+        resolverLogger.debug("Class loader: %s", classLoader);
+        resolverLogger.debug("Logger class: %s", resolverLoggerClass);
+        resolverLogger.debug("Access external entity: %s", accessExternalEntity);
+        resolverLogger.debug("Access external document: %s", accessExternalDocument);
+        resolverLogger.debug("SAXParserFactory class: %s", saxParserFactoryClass);
+        resolverLogger.debug("XMLReader supplier: %s", xmlReaderSupplier);
+        resolverLogger.debug("Fix Windows system identifiers: %s", fixWindowsSystemIdentifiers);
 
-        resolverLogger.log(AbstractLogger.CONFIG, "Default logger log level: %s", defaultLoggerLogLevel);
+        resolverLogger.debug("Default logger log level: %s", loggerLogLevel);
         for (String catalog: catalogs) {
-            resolverLogger.log(AbstractLogger.CONFIG, "Catalog: %s", catalog);
+            resolverLogger.debug("Catalog: %s", catalog);
         }
         if (classpathCatalogs) {
             for (String catalog : findClasspathCatalogFiles()) {
-                resolverLogger.log(AbstractLogger.CONFIG, "Catalog: %s", catalog);
+                resolverLogger.debug("Catalog: %s", catalog);
             }
         }
     }
 
-    private final ResourceAccess accessor = new ResourceAccess(this);
+    private final Object accessorLock = new Object();
+    private ResourceAccess accessor = null;
     @Override
     public ResourceResponse getResource(ResourceRequest request) throws URISyntaxException, IOException {
+        synchronized (accessorLock) {
+            if (accessor == null) {
+                accessor = new ResourceAccess(this);
+            }
+        }
         return accessor.getResource(request);
     }
+
     @Override
-    public ResourceResponse getResource(ResourceResponse request) throws URISyntaxException, IOException {
-        return accessor.getResource(request);
+    public ResourceResponse getResource(ResourceResponse response) throws URISyntaxException, IOException {
+        synchronized (accessorLock) {
+            if (accessor == null) {
+                accessor = new ResourceAccess(this);
+            }
+        }
+        return accessor.getResource(response);
     }
 
     /**
@@ -769,7 +780,11 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
      * @param schemeResolver The resolver.
      */
     public void registerSchemeResolver(String scheme, SchemeResolver schemeResolver) {
-        synchronized (accessor) {
+        synchronized (accessorLock) {
+            if (accessor == null) {
+                accessor = new ResourceAccess(this);
+            }
+
             if (accessor.schemeResolvers.containsKey(scheme)) {
                 accessor.schemeResolvers.get(scheme).add(schemeResolver);
             } else {
@@ -903,7 +918,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             showConfigChange("Always resolve: %s", alwaysResolve);
         } else if (feature == ResolverFeature.CATALOG_MANAGER) {
             manager = (CatalogManager) value;
-            resolverLogger.log(AbstractLogger.CONFIG, "Catalog manager: %s", manager.toString());
+            resolverLogger.debug("Catalog manager: %s", manager.toString());
         } else if (feature == ResolverFeature.URI_FOR_SYSTEM) {
             uriForSystem = (Boolean) value;
             showConfigChange("URI-for-system: %s", uriForSystem);
@@ -931,14 +946,25 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.RESOLVER_LOGGER_CLASS) {
             resolverLoggerClass = (String) value;
             showConfigChange("Resolver logger class: %s", resolverLoggerClass);
-            // Re-initialize the logger so that it is an instance of the requested class
-            resolverLogger = null;
-            resolverLogger = getFeature(ResolverFeature.RESOLVER_LOGGER);
-        } else if (feature == ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL) {
-            defaultLoggerLogLevel = (String) value;
-            showConfigChange("Default logger log level: %s", defaultLoggerLogLevel);
+            if (!externalResolverLogger) {
+                // Re-initialize the logger so that it is an instance of the requested class
+                resolverLogger = null;
+                resolverLogger = getFeature(ResolverFeature.RESOLVER_LOGGER);
+            }
+        } else if (feature == ResolverFeature.LOGGER_LOG_LEVEL) {
+            int newLevel = LogLevels.levelNumber((String) value);
+            if (newLevel != loggerLogLevel) {
+                loggerLogLevel = newLevel;
+                if (!externalResolverLogger) {
+                    // Re-initialize the logger so that it gets the default value, if appropriate
+                    resolverLogger = null;
+                    resolverLogger = getFeature(ResolverFeature.RESOLVER_LOGGER);
+                }
+            }
+            showConfigChange("Default logger log level: %s", loggerLogLevel);
         } else if (feature == ResolverFeature.RESOLVER_LOGGER) {
             resolverLogger = (ResolverLogger) value;
+            externalResolverLogger = true;
             showConfigChange("Resolver logger: %s", resolverLogger);
         } else if (feature == ResolverFeature.ACCESS_EXTERNAL_ENTITY) {
             accessExternalEntity = (String) value;
@@ -980,22 +1006,22 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             fixWindowsSystemIdentifiers = (Boolean) value;
             showConfigChange("Fix windows system identifiers: %s", fixWindowsSystemIdentifiers);
         } else {
-            resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
+            resolverLogger.error("Ignoring unknown feature: %s", feature.getName());
         }
     }
 
     private void showConfigChange(String message) {
         if (showConfigChanges) {
-            resolverLogger.log(AbstractLogger.CONFIG, message);
+            resolverLogger.debug(message);
         }
     }
 
     private void showConfigChange(String message, Object value) {
         if (showConfigChanges) {
             if (value == null) {
-                resolverLogger.log(AbstractLogger.CONFIG, message, "null");
+                resolverLogger.debug(message, "null");
             } else {
-                resolverLogger.log(AbstractLogger.CONFIG, message, value.toString());
+                resolverLogger.debug(message, value.toString());
             }
         }
     }
@@ -1022,7 +1048,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             }
 
             if (sep != null && cpath != null) {
-                resolverLogger.log(AbstractLogger.CONFIG, "Searching for catalogs on classpath:");
+                resolverLogger.debug("Searching for catalogs on classpath:");
                 for (String loc : cpath.split(sep)) {
                     File dir = new File(loc);
                     try {
@@ -1120,15 +1146,15 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             return (T) throwUriExceptions;
         } else if (feature == ResolverFeature.RESOLVER_LOGGER_CLASS) {
             return (T) resolverLoggerClass;
-        } else if (feature == ResolverFeature.DEFAULT_LOGGER_LOG_LEVEL) {
-            return (T) defaultLoggerLogLevel;
+        } else if (feature == ResolverFeature.LOGGER_LOG_LEVEL) {
+            return (T) LogLevels.levelName(loggerLogLevel);
         } else if (feature == ResolverFeature.RESOLVER_LOGGER) {
             if (resolverLogger == null) {
                 // Don't use reflection if we don't have to. (Supports GraalVM and other environments
                 // where reflection is difficult/impossible to configure.)
                 switch (resolverLoggerClass) {
                     case "org.xmlresolver.logging.DefaultLogger":
-                        resolverLogger = new DefaultLogger(this);
+                        resolverLogger = new DefaultLogger(loggerLogLevel);
                         break;
                     case "org.xmlresolver.logging.SystemLogger":
                         resolverLogger = new SystemLogger(this);
@@ -1157,7 +1183,7 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
         } else if (feature == ResolverFeature.FIX_WINDOWS_SYSTEM_IDENTIFIERS) {
             return (T) fixWindowsSystemIdentifiers;
         } else {
-            resolverLogger.log(AbstractLogger.ERROR, "Ignoring unknown feature: %s", feature.getName());
+            resolverLogger.error("Ignoring unknown feature: %s", feature.getName());
             return null;
         }
     }
@@ -1192,46 +1218,68 @@ public class XMLResolverConfiguration implements ResolverConfiguration {
             } catch (SecurityException ex) {
                 // I guess you're not allowed to do this
             }
+            // If you turned this on, you must be desperate.
             fallbackLogging = logging;
         }
 
         @Override
-        public void log(String cat, String message, Object... params) {
-            messages.add(new Message(cat, message, params));
+        public void error(String message, Object... params) {
+            messages.add(new Message(LogLevels.ERROR, message, params));
             if (fallbackLogging != null) {
-                // If you turned this on, you must be desperate.
-                System.err.println(logMessage(cat, message, params));
+                System.err.println(format(message, params));
             }
         }
 
         @Override
-        public void warn(String message) {
-            // never called
+        public void warn(String message, Object... params) {
+            messages.add(new Message(LogLevels.WARN, message, params));
+            if (fallbackLogging != null) {
+                System.err.println(format(message, params));
+            }
         }
 
         @Override
-        public void info(String message) {
-            // never called
+        public void info(String message, Object... params) {
+            messages.add(new Message(LogLevels.INFO, message, params));
+            if (fallbackLogging != null) {
+                System.err.println(format(message, params));
+            }
         }
 
         @Override
-        public void debug(String message) {
-            // never called
+        public void debug(String message, Object... params) {
+            messages.add(new Message(LogLevels.DEBUG, message, params));
+            if (fallbackLogging != null) {
+                System.err.println(format(message, params));
+            }
         }
 
         public void forward(ResolverLogger logger) {
             for (Message message : messages) {
-                logger.log(message.category, message.message, message.params);
+                switch (message.level) {
+                    case LogLevels.DEBUG:
+                        logger.debug(message.message, message.params);
+                        break;
+                    case LogLevels.INFO:
+                        logger.info(message.message, message.params);
+                        break;
+                    case LogLevels.WARN:
+                        logger.warn(message.message, message.params);
+                        break;
+                    default:
+                        logger.error(message.message, message.params);
+                        break;
+                }
             }
             messages.clear();
         }
 
         private static class Message {
-            public final String category;
+            public final int level;
             public final String message;
             public final Object[] params;
-            public Message(String level, String message, Object... params) {
-                this.category = level;
+            public Message(int level, String message, Object... params) {
+                this.level = level;
                 this.message = message;
                 this.params = params;
             }

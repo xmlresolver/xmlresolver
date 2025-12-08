@@ -95,7 +95,7 @@ public class EntryCatalog extends Entry {
         sb.append(":");
         Formatter formatter = new Formatter(sb);
         formatter.format(message, params);
-        logger.log(AbstractLogger.ERROR, sb.toString());
+        logger.error(sb.toString());
     }
 
     /**

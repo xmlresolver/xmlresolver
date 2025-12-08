@@ -347,7 +347,7 @@ public class CatalogManager implements XMLCatalogResolver {
         if (systemId != null && systemId.startsWith("urn:publicid:")) {
             String decodedSysId = PublicId.decodeURN(systemId);
             if (publicId != null && !publicId.equals(decodedSysId)) {
-                logger.log(AbstractLogger.ERROR, "urn:publicid: system identifier differs from public identifier; using public identifier");
+                logger.error("urn:publicid: system identifier differs from public identifier; using public identifier");
             } else {
                 publicId = decodedSysId;
             }

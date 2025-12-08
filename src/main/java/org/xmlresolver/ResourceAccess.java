@@ -60,7 +60,7 @@ public class ResourceAccess {
 
         ResourceResponse resp = getResourceFromURI(request, uri);
 
-        this.logger.log(AbstractLogger.RESPONSE, "getResource: " + resp.isResolved() + ": " + resp.getURI());
+        this.logger.debug("getResource: " + resp.isResolved() + ": " + resp.getURI());
 
         return resp;
     }
@@ -102,7 +102,7 @@ public class ResourceAccess {
 
         ResourceResponse resp = getResourceFromURI(response.getRequest(), uri);
 
-        this.logger.log(AbstractLogger.RESPONSE, "getResource: " + resp.isResolved() + ": " + resp.getURI());
+        this.logger.debug("getResource: " + resp.isResolved() + ": " + resp.getURI());
 
         return resp;
     }
@@ -198,7 +198,7 @@ public class ResourceAccess {
         } else {
             boolean throwExceptions = request.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
             ResolverLogger logger = request.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
-            logger.log(AbstractLogger.REQUEST, "Comma separator missing in data: URI");
+            logger.debug("Comma separator missing in data: URI");
             if (throwExceptions) {
                 throw new URISyntaxException(resourceURI.toString(), "Comma separator missing in data: URI");
             }
@@ -231,7 +231,7 @@ public class ResourceAccess {
             } catch (IOException ex) {
                 boolean throwExceptions = request.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
                 ResolverLogger logger = request.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
-                logger.log(AbstractLogger.REQUEST, "I/O error reading %s", resourceURI.toString());
+                logger.debug("I/O error reading %s", resourceURI.toString());
                 if (throwExceptions) {
                     throw new IllegalArgumentException("I/O error reading " + resourceURI);
                 }
@@ -254,7 +254,7 @@ public class ResourceAccess {
         } catch (IOException ex) {
             boolean throwExceptions = request.getConfiguration().getFeature(ResolverFeature.THROW_URI_EXCEPTIONS);
             ResolverLogger logger = request.getConfiguration().getFeature(ResolverFeature.RESOLVER_LOGGER);
-            logger.log(AbstractLogger.REQUEST, "I/O error reading %s", resourceURI.toString());
+            logger.debug("I/O error reading %s", resourceURI.toString());
             if (throwExceptions) {
                 throw new IllegalArgumentException("I/O error reading " + resourceURI);
             }
@@ -280,10 +280,10 @@ public class ResourceAccess {
         // Note that the resourceURI will be absolute at this point.
         if (URIUtils.forbidAccess(accessList.concat(",file"), resourceURI.toString(), mergeHttps)) {
             if (request.isResolvingAsEntity()) {
-                logger.log(AbstractLogger.REQUEST, "resolveEntity, access denied: " + resourceURI);
+                logger.debug("resolveEntity, access denied: " + resourceURI);
                 throw new IllegalArgumentException("resolveEntity, access denied: " + resourceURI);
             } else {
-                logger.log(AbstractLogger.REQUEST, "resolveURI, access denied: " + resourceURI);
+                logger.debug("resolveURI, access denied: " + resourceURI);
                 throw new IllegalArgumentException("resolveURI, access denied: " + resourceURI);
             }
         }

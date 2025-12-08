@@ -44,7 +44,7 @@ public class LSResourceAdapter implements LSResourceResolver {
         }
 
         final ResourceRequest request;
-        logger.log(AbstractLogger.REQUEST, "resolveResource: XML: %s (baseURI: %s, publicId: %s)",
+        logger.debug("resolveResource: XML: %s (baseURI: %s, publicId: %s)",
                 systemId, baseURI, publicId);
 
         // This isn't DTD_NATURE because there's no name in this API
@@ -56,7 +56,7 @@ public class LSResourceAdapter implements LSResourceResolver {
     }
 
     private LSInput resolveSchema(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-        logger.log(AbstractLogger.REQUEST, "resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
+        logger.debug("resolveResource: %s, %s (namespace: %s, baseURI: %s, publicId: %s)",
                 type, systemId, namespaceURI, baseURI, publicId);
 
         ResourceRequest request;

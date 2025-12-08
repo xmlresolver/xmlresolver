@@ -149,7 +149,7 @@ public class ResourceConnection {
             }
         } catch (URISyntaxException | IOException | IllegalArgumentException use) {
             ResolverLogger logger = config.getFeature(ResolverFeature.RESOLVER_LOGGER);
-            logger.log(AbstractLogger.WARNING, "Failed to %s: %s: %s", headOnly ? "HEAD" : "GET", uri, use.getMessage());
+            logger.warn("Failed to %s: %s: %s", headOnly ? "HEAD" : "GET", uri, use.getMessage());
         }
     }
 
