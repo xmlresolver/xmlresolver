@@ -4,7 +4,6 @@ import org.xmlresolver.CatalogManager;
 import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.catalog.entry.*;
 import org.xmlresolver.logging.ResolverLogger;
-import org.xmlresolver.utils.URIUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;

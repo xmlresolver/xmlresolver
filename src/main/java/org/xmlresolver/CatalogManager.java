@@ -4,7 +4,6 @@ import org.xml.sax.InputSource;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.query.*;
 import org.xmlresolver.loaders.CatalogLoader;
-import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.PublicId;
 import org.xmlresolver.utils.SaxProducer;

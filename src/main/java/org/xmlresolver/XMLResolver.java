@@ -5,7 +5,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.adapters.*;
-import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.sources.ResolverSAXSource;
 import org.xmlresolver.utils.URIUtils;

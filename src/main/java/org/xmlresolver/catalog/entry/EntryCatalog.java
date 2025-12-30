@@ -2,7 +2,6 @@ package org.xmlresolver.catalog.entry;
 
 import org.xml.sax.Locator;
 import org.xmlresolver.ResolverConfiguration;
-import org.xmlresolver.logging.AbstractLogger;
 
 import java.net.URI;
 import java.util.*;

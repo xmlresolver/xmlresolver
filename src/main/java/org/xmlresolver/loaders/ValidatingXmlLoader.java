@@ -8,7 +8,6 @@ import org.xmlresolver.*;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.exceptions.CatalogInvalidException;
 import org.xmlresolver.exceptions.CatalogUnavailableException;
-import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.SaxProducer;
 

@@ -4,7 +4,10 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
-import org.xmlresolver.*;
+import org.xmlresolver.ResolverConstants;
+import org.xmlresolver.ResourceRequest;
+import org.xmlresolver.ResourceResponse;
+import org.xmlresolver.XMLResolver;
 import org.xmlresolver.sources.ResolverInputSource;
 
 import java.io.IOException;
