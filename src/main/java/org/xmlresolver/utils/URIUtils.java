@@ -35,7 +35,7 @@ public abstract class URIUtils {
     /**
      * Make a Windows path URI.
      * <p>This method cleans up backslashes and other aspects of Windows filenames that are not
-     * valid in URIs. If called on a non-Windows system, the URI is returned unchanged.</p>
+     * valid in URIs.</p>
      * @param uri The URI to clean up.
      * @return The resulting URI.
      */

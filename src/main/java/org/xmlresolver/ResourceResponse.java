@@ -2,8 +2,6 @@ package org.xmlresolver;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

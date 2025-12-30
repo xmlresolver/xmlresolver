@@ -1,6 +1,5 @@
 package org.xmlresolver;
 
-import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.spi.SchemeResolver;
 import org.xmlresolver.spi.SchemeResolverManager;

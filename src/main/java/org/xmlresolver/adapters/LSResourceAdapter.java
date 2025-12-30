@@ -3,7 +3,6 @@ package org.xmlresolver.adapters;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xmlresolver.*;
-import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.sources.ResolverLSInput;
 

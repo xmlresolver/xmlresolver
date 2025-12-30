@@ -2,12 +2,10 @@ package org.xmlresolver.catalog.entry;
 
 import org.xmlresolver.ResolverConfiguration;
 import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**

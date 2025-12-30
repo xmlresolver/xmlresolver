@@ -1,6 +1,5 @@
 package org.xmlresolver.loaders;
 
-import net.sf.saxon.s9api.SaxonApiException;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlresolver.*;
@@ -8,7 +7,6 @@ import org.xmlresolver.catalog.entry.Entry;
 import org.xmlresolver.catalog.entry.EntryCatalog;
 import org.xmlresolver.catalog.entry.EntryNull;
 import org.xmlresolver.exceptions.CatalogUnavailableException;
-import org.xmlresolver.logging.AbstractLogger;
 import org.xmlresolver.logging.ResolverLogger;
 import org.xmlresolver.utils.PublicId;
 import org.xmlresolver.utils.SaxProducer;
