@@ -92,6 +92,48 @@ release. Etc.
 
 ## ChangeLog
 
+### 6.0.20
+
+* Added checks to avoid an NPE when trying to set the system identifier to the resolved URI.
+* Substantially rewrote, and simplified, the resolver logger. All of
+  the complexity associated with categories has been removed. Most messages previously
+  associated with a category are simply debug level messages.
+* The `DEFAULT_LOGGER_LOG_LEVEL` is now the `LOGGER_LOG_LEVEL`.
+* Cleaned up the error handling in the catalog loader to avoid spurious error messages
+  about attempting to parse ZIP files (when ultimately retrieving a catalog from the ZIP file).
+
+### 6.0.19
+
+* Fixed [#253](https://github.com/xmlresolver/xmlresolver/issues/253).
+RDDL parsing always uses the resolved resource, not the original URI.
+RDDL parsing is also disabled now, by default. If you’re using RDDL, make sure you
+enable it in your configuration.
+* The caching feature is not present in version 6.x of the resolver, but
+there were several dangling references to it. Those have also been removed.
+
+### 6.0.18
+
+* Fixed [#250](https://github.com/xmlresolver/xmlresolver/issues/250). Xerces is
+no longer an implementation dependency.
+
+### 6.0.17
+
+* Fixed [#248](https://github.com/xmlresolver/xmlresolver/issues/248). In a last
+ditch attempt to resolve a relative URI, resolve it against the base URI of the
+request, not the current working directory. 
+
+### 6.0.16
+
+* This is an interface change. It adds a `copy()` method to the
+`ResolverConfiguration` interface and removes the
+then redundant copy constructor for
+`XMLResolverConfiguration`. There are also a few JavaDoc fixes.
+
+### 6.0.15
+
+* Fixed [#242](https://github.com/xmlresolver/xmlresolver/issues/242).
+Rewrite entries are now concatenated with, not resolved against, the rewrite prefix.
+
 ### 6.0.14
 
 * Fixed [#229](https://github.com/xmlresolver/xmlresolver/issues/229). The
