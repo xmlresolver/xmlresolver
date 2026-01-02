@@ -130,7 +130,7 @@ public class XmlLoader implements CatalogLoader {
               }
           } catch (CatalogUnavailableException ex) {
               if (ex.getCause() instanceof FileNotFoundException) {
-                  logger.warn("Failed to load catalog: %s: %s", catalog, ex.getMessage());
+                  logger.debug("Failed to load catalog: %s: %s", catalog, ex.getMessage());
                   catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                   return catalogMap.get(catalog);
               }
@@ -138,7 +138,11 @@ public class XmlLoader implements CatalogLoader {
               catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
               throw ex;
           } catch (URISyntaxException | IOException ex) {
-              logger.error("Failed to load catalog: %s: %s", catalog, ex.getMessage());
+              if (ex.getCause() instanceof FileNotFoundException) {
+                  logger.debug("Failed to load catalog: %s: %s", catalog, ex.getMessage());
+              } else {
+                  logger.error("Failed to load catalog: %s: %s", catalog, ex.getMessage());
+              }
               catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
               throw new CatalogUnavailableException(ex);
           }
@@ -219,7 +223,11 @@ public class XmlLoader implements CatalogLoader {
                     for (SAXParseException exception : errorHandler.fatalErrors) {
                         logger.error(exception.getMessage());
                     }
-                    logger.error("Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                    if (ex instanceof FileNotFoundException) {
+                        logger.debug("Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                    } else {
+                        logger.error("Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                    }
                 }
 
                 if (zipcatalog == null) {
@@ -289,11 +297,16 @@ public class XmlLoader implements CatalogLoader {
                 EntryCatalog entry = handler.catalog();
                 catalogMap.put(catalog, entry);
             } catch (SAXException | IOException ex) {
-                logger.error("Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                if (ex instanceof FileNotFoundException) {
+                    logger.debug("Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                } else {
+                    logger.error("Failed to load catalog: " + catalog + ": " + ex.getMessage());
+                }
 
                 if (archivedCatalogs) {
                     zipcatalog = archiveCatalog(catalog);
                 }
+
                 if (zipcatalog == null) {
                   catalogMap.put(catalog, new EntryCatalog(config, catalog, null, false));
                 }
@@ -383,7 +396,11 @@ public class XmlLoader implements CatalogLoader {
             }
             logger.error("Failed to find catalog in archived catalog: " + catalog);
         } catch (IOException|URISyntaxException ex) {
-            logger.error("Failed to load archived catalog: " + catalog + ": " + ex.getMessage());
+            if (ex instanceof FileNotFoundException) {
+                logger.debug("Failed to load archived catalog: " + catalog + ": " + ex.getMessage());
+            } else {
+                logger.error("Failed to load archived catalog: " + catalog + ": " + ex.getMessage());
+            }
         }
 
         return null;
