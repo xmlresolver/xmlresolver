@@ -92,6 +92,12 @@ release. Etc.
 
 ## ChangeLog
 
+### 6.0.21
+
+* Log “file not found” errors at the debug level, not the warn or error level. A
+  catalog path that refers to non-existent catalogs (for example, ./catalog.xml)
+  is fairly common and the warnings are usually spurious.
+
 ### 6.0.20
 
 * Added checks to avoid an NPE when trying to set the system identifier to the resolved URI.
